@@ -10,7 +10,8 @@ import com.google.gson.GsonBuilder;
 
 public class RetrofitClient {
 
-    private static final String BASE_URL = "http://192.168.1.8:8080/"; // ✅ Thay thế URL của bạn
+    private static final String BASE_URL = "http://192.168.102.19:8080/"; // ✅ Thay thế URL của bạn
+//    private static final String BASE_URL = "http://192.168.1.8:8080/"; // ✅ Thay thế URL của bạn
     private static RetrofitClient instance;
     private StatusApi statusApi;
 

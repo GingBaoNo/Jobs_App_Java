@@ -52,7 +52,6 @@ public class FeaturedCompanyAdapter extends RecyclerView.Adapter<FeaturedCompany
         private ImageView ivVerifiedLargeCorner;
         private TextView tvCompanyNameCard;
         private TextView tvLocationCard;
-        private TextView tvVerifiedBadge;
         private Button btnDetails;
 
         public FeaturedCompanyViewHolder(@NonNull View itemView) {
@@ -61,7 +60,6 @@ public class FeaturedCompanyAdapter extends RecyclerView.Adapter<FeaturedCompany
             ivVerifiedLargeCorner = itemView.findViewById(R.id.iv_verified_large_corner);
             tvCompanyNameCard = itemView.findViewById(R.id.tv_company_name_card);
             tvLocationCard = itemView.findViewById(R.id.tv_location_card);
-            tvVerifiedBadge = itemView.findViewById(R.id.tv_verified_badge);
             btnDetails = itemView.findViewById(R.id.btn_details);
 
             // Thêm click listener cho nút "Chi tiết"
@@ -98,17 +96,11 @@ public class FeaturedCompanyAdapter extends RecyclerView.Adapter<FeaturedCompany
                 tvLocationCard.setText("Địa điểm chưa cập nhật");
             }
 
-            // Cập nhật trạng thái xác thực
+            // Cập nhật trạng thái xác thực cho icon (nếu cần)
             if (company.isDaXacThuc()) {
-                tvVerifiedBadge.setText("Đã xác thực");
-                tvVerifiedBadge.setBackground(ContextCompat.getDrawable(itemView.getContext(), R.drawable.border_rounded_small));
                 ivVerifiedLargeCorner.setVisibility(View.VISIBLE);
-                tvVerifiedBadge.setVisibility(View.VISIBLE);
             } else {
-                tvVerifiedBadge.setText("Chưa xác thực");
-                tvVerifiedBadge.setBackground(ContextCompat.getDrawable(itemView.getContext(), R.drawable.border_rounded_small));
                 ivVerifiedLargeCorner.setVisibility(View.GONE);
-                tvVerifiedBadge.setVisibility(View.VISIBLE);
             }
 
             // Cập nhật logo công ty nếu có

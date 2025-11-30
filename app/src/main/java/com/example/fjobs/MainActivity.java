@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -23,6 +22,7 @@ import com.example.fjobs.fragments.HomeFragment;
 import com.example.fjobs.fragments.JobsFragment;
 import com.example.fjobs.fragments.SavedJobsFragment;
 import com.example.fjobs.utils.Constants;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawer;
     private NavigationView navigationView;
     private Toolbar toolbar;
+    private BottomNavigationView bottomNavigationView;
     private SharedPreferences sharedPreferences;
 
     @Override
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initViews();
         setupToolbar();
         setupNavigation();
+        setupBottomNavigation();
         loadFragment(new HomeFragment());
     }
 
@@ -68,9 +70,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
         if (item.getItemId() == R.id.action_profile) {
-            // Mở UserProfileActivity từ toolbar
-            Intent intent = new Intent(this, UserProfileActivity.class);
-            startActivity(intent);
+            // Mở UserProfileFragment từ toolbar
+            loadFragment(new UserProfileFragment());
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -78,8 +79,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void initViews() {
         drawer = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.navigation_view);
         toolbar = findViewById(R.id.toolbar);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
     }
 
     private void setupToolbar() {
@@ -95,10 +97,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Update navigation header with user info
         View headerView = navigationView.getHeaderView(0);
-        TextView tvTitle = headerView.findViewById(R.id.tv_nav_header_title);
-        TextView tvSubtitle = headerView.findViewById(R.id.tv_nav_header_subtitle);
-        tvTitle.setText(sharedPreferences.getString(Constants.KEY_USERNAME, "Người dùng"));
-        tvSubtitle.setText("Đã đăng nhập");
+        TextView txtName = headerView.findViewById(R.id.txt_name);
+        TextView txtEmail = headerView.findViewById(R.id.txt_email);
+        txtName.setText(sharedPreferences.getString(Constants.KEY_USERNAME, "Người dùng"));
+        txtEmail.setText(sharedPreferences.getString(Constants.KEY_EMAIL, "gingbao@gmail.com"));
+    }
+
+    private void setupBottomNavigation() {
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home_bottom) {
+                selectedFragment = new HomeFragment();
+            } else if (itemId == R.id.nav_jobs_bottom) {
+                selectedFragment = new JobsFragment();
+            } else if (itemId == R.id.nav_companies_bottom) {
+                selectedFragment = new CompaniesFragment();
+            } else if (itemId == R.id.nav_saved_jobs_bottom) {
+                selectedFragment = new SavedJobsFragment();
+            } else if (itemId == R.id.nav_profile_bottom) {
+                // Mở UserProfileFragment cho tab hồ sơ
+                loadFragment(new UserProfileFragment());
+                return true;
+            }
+
+            if (selectedFragment != null) {
+                loadFragment(selectedFragment);
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
@@ -114,9 +143,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_companies) {
             selectedFragment = new CompaniesFragment();
         } else if (id == R.id.nav_profile) {
-            // Mở UserProfileActivity
-            Intent intent = new Intent(this, UserProfileActivity.class);
-            startActivity(intent);
+            // Mở UserProfileFragment
+            loadFragment(new UserProfileFragment());
         } else if (id == R.id.nav_saved_jobs) {
             // Mở SavedJobsFragment trong MainActivity
             loadFragment(new SavedJobsFragment());
@@ -135,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void loadFragment(Fragment fragment) {
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
+                .replace(R.id.content_frame, fragment)
                 .commit();
     }
 

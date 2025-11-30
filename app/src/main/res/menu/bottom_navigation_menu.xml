@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home_bottom"
+        android:icon="@drawable/ic_home"
+        android:title="Trang chủ" />
+    <item
+        android:id="@+id/nav_jobs_bottom"
+        android:icon="@drawable/ic_work"
+        android:title="Việc làm" />
+    <item
+        android:id="@+id/nav_companies_bottom"
+        android:icon="@drawable/ic_business"
+        android:title="Công ty" />
+    <item
+        android:id="@+id/nav_saved_jobs_bottom"
+        android:icon="@drawable/ic_bookmark"
+        android:title="Đã lưu" />
+    <item
+        android:id="@+id/nav_profile_bottom"
+        android:icon="@drawable/ic_person"
+        android:title="Hồ sơ" />
+</menu>

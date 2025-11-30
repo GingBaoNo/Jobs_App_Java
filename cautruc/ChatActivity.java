@@ -77,7 +77,7 @@ public class ChatActivity extends AppCompatActivity {
 
         try {
             // Kết nối với server Socket.io
-            mSocket = IO.socket("http://192.168.1.8:8080/");
+            mSocket = IO.socket("http://192.168.102.19:8080/");
             mSocket.connect();
 
             // Lắng nghe sự kiện "receiveMessage"

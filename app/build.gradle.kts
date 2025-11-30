@@ -46,4 +46,7 @@ dependencies {
 
     // Thêm thư viện Glide để load ảnh
     implementation("com.github.bumptech.glide:glide:4.15.1")
+
+    // Thêm thư viện CircleImageView
+    implementation("de.hdodenhof:circleimageview:3.1.0")
 }
