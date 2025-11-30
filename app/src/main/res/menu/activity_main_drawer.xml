@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home"
+            android:title="Trang chủ" />
+        <item
+            android:id="@+id/nav_jobs"
+            android:icon="@drawable/ic_work"
+            android:title="Việc làm" />
+        <item
+            android:id="@+id/nav_companies"
+            android:icon="@drawable/ic_business"
+            android:title="Công ty" />
+        <item
+            android:id="@+id/nav_profile"
+            android:icon="@drawable/ic_person"
+            android:title="Hồ sơ" />
+        <item
+            android:id="@+id/nav_saved_jobs"
+            android:icon="@drawable/ic_bookmark"
+            android:title="Công việc đã lưu" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/ic_logout"
+            android:title="Đăng xuất" />
+    </group>
+</menu>

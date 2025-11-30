@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="4dp">
+
+    <!-- Tiêu đề (Mô tả) -->
+    <TextView
+        android:id="@+id/text1"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="Vị trí"
+        android:textSize="14sp"
+        android:textColor="#757575"
+        tools:text="@{rowTitle}" />
+
+    <!-- Giá trị -->
+    <TextView
+        android:id="@+id/text2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="sfgfg"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        tools:text="@{rowValue}" />
+</LinearLayout>

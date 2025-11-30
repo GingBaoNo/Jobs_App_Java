@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="4dp">
+
+    <!-- Icon Star (Vàng) -->
+    <ImageView
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@android:drawable/btn_star_big_on"
+        android:tint="#FFC107"
+        android:contentDescription="Star icon"
+        tools:ignore="UseAppTint" />
+
+    <!-- Nội dung Quyền lợi -->
+    <TextView
+        android:id="@+id/rowText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Môi trường làm việc chuyên nghiệp"
+        android:textSize="14sp"
+        android:textColor="#424242"
+        android:layout_marginStart="8dp"
+        tools:text="@{rowText}" />
+</LinearLayout>
