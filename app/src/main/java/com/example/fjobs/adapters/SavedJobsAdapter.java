@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.fjobs.JobDetailActivity;
+import com.example.fjobs.activities.JobDetailActivity;
 import com.example.fjobs.R;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;

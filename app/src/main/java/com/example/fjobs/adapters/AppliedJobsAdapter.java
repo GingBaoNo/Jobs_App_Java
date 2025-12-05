@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.fjobs.JobDetailActivity;
+import com.example.fjobs.activities.JobDetailActivity;
 import com.example.fjobs.R;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
@@ -67,7 +67,7 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
     }
 
     public class AppliedJobViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvJobTitle, tvCompanyName, tvSalary, tvStatus, tvApplyDate;
+        private TextView tvJobTitle, tvCompanyName, tvSalary, tvStatus, tvApplyDate, tvCvInfo;
         private Button btnCancelApplication;
 
         public AppliedJobViewHolder(@NonNull View itemView) {
@@ -77,6 +77,7 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
             tvSalary = itemView.findViewById(R.id.tv_salary);
             tvStatus = itemView.findViewById(R.id.tv_status);
             tvApplyDate = itemView.findViewById(R.id.tv_apply_date);
+            tvCvInfo = itemView.findViewById(R.id.tv_cv_info);
             btnCancelApplication = itemView.findViewById(R.id.btn_cancel_application);
         }
 
@@ -111,6 +112,13 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
                 tvApplyDate.setText("Ngày ứng tuyển: " + dateStr);
             } else {
                 tvApplyDate.setText("Ngày ứng tuyển: N/A");
+            }
+
+            // Hiển thị thông tin CV đã ứng tuyển
+            if (appliedJob.getUrlCvUngTuyen() != null && !appliedJob.getUrlCvUngTuyen().isEmpty()) {
+                tvCvInfo.setText("CV: Đã nộp");
+            } else {
+                tvCvInfo.setText("CV: Chưa nộp");
             }
 
             // Xử lý sự kiện hủy ứng tuyển

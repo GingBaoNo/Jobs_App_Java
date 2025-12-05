@@ -103,7 +103,7 @@ CREATE TABLE jobdetails (
     thoi_han_lam_viec NVARCHAR(255),
     co_the_thuong_luong_ngay NVARCHAR(3) CHECK (co_the_thuong_luong_ngay IN (N'Có',N'Không')),
     chi_tiet NVARCHAR(MAX),
-
+    
     -- >> CÁC CỘT MỚI ĐƯỢC THÊM VÀO:
     yeu_cau_cong_viec NVARCHAR(MAX) NULL, -- Yêu cầu công việc
     quyen_loi NVARCHAR(MAX) NULL,         -- Quyền lợi
@@ -179,6 +179,7 @@ CREATE TABLE applied_jobs (
         CHECK (trang_thai_ung_tuyen IN (N'Đã gửi', N'Đã xem', N'Phỏng vấn', N'Tuyển dụng', N'Từ chối')),
     danh_gia_ntd TINYINT NULL,
     ngay_ung_tuyen DATETIME NULL DEFAULT GETDATE(),
+    url_cv_ung_tuyen NVARCHAR(MAX) NULL,
     CONSTRAINT uk_employee_job UNIQUE (ma_nguoi_tim_viec, ma_cong_viec),
     CONSTRAINT fk_applied_jobs_employee FOREIGN KEY (ma_nguoi_tim_viec) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE,
     CONSTRAINT fk_applied_jobs_job FOREIGN KEY (ma_cong_viec) REFERENCES jobdetails (ma_cong_viec) ON DELETE NO ACTION
@@ -213,4 +214,32 @@ CREATE TABLE messages (
     thoi_gian_gui DATETIME NULL DEFAULT GETDATE(),
     CONSTRAINT fk_messages_sender FOREIGN KEY (ma_nguoi_gui) REFERENCES [user] (ma_nguoi_dung) ON DELETE NO ACTION,
     CONSTRAINT fk_messages_receiver FOREIGN KEY (ma_nguoi_nhan) REFERENCES [user] (ma_nguoi_dung) ON DELETE NO ACTION
+);
+
+CREATE TABLE company_followers (
+    ma_theo_doi INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_dung INT NOT NULL,
+    ma_cong_ty INT NOT NULL,
+    ngay_theo_doi DATETIME NULL DEFAULT GETDATE(),
+    CONSTRAINT uk_user_company UNIQUE (ma_nguoi_dung, ma_cong_ty),
+    CONSTRAINT fk_company_followers_user FOREIGN KEY (ma_nguoi_dung) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE,
+    CONSTRAINT fk_company_followers_company FOREIGN KEY (ma_cong_ty) REFERENCES company (ma_cong_ty) ON DELETE NO ACTION -- Đã sửa
+);
+
+CREATE TABLE job_alerts (
+    ma_thong_bao_viec_lam INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_dung INT NOT NULL,
+    tieu_de NVARCHAR(255) NOT NULL,
+    tu_khoa NVARCHAR(255) NULL,
+    ma_linh_vuc INT NULL,
+    ma_hinh_thuc INT NULL,
+    tinh_thanh_pho NVARCHAR(100) NULL,
+    vi_tri_cong_viec NVARCHAR(255) NULL,
+    kinh_nghiem_lam_viec NVARCHAR(50) NULL,
+    gioi_tinh NVARCHAR(20) NULL,
+    thoi_gian_tao DATETIME NULL DEFAULT GETDATE(),
+    trang_thai BIT NOT NULL DEFAULT 1,
+    CONSTRAINT fk_job_alerts_user FOREIGN KEY (ma_nguoi_dung) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE,
+    CONSTRAINT fk_job_alerts_field FOREIGN KEY (ma_linh_vuc) REFERENCES work_fields (ma_linh_vuc),
+    CONSTRAINT fk_job_alerts_type FOREIGN KEY (ma_hinh_thuc) REFERENCES work_types (ma_hinh_thuc)
 );

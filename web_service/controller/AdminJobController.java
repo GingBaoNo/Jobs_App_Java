@@ -21,11 +21,17 @@ public class AdminJobController {
     
     // Trang quản lý tin tuyển dụng chờ duyệt
     @GetMapping("/admin/jobs/pending")
-    public String pendingJobs(Model model) {
-        // Lấy các công việc đang chờ duyệt
-        List<JobDetail> pendingJobs = jobDetailService.getJobsByTrangThaiDuyet("Chờ duyệt");
+    public String pendingJobs(@RequestParam(value = "search", required = false) String search, Model model) {
+        List<JobDetail> pendingJobs;
+        if (search != null && !search.trim().isEmpty()) {
+            pendingJobs = jobDetailService.getJobsByTrangThaiDuyetAndSearch("Chờ duyệt", search);
+        } else {
+            // Lấy các công việc đang chờ duyệt
+            pendingJobs = jobDetailService.getJobsByTrangThaiDuyet("Chờ duyệt");
+        }
         model.addAttribute("jobs", pendingJobs);
         model.addAttribute("title", "Quản lý tin tuyển dụng chờ duyệt");
+        model.addAttribute("searchQuery", search != null ? search : "");
         return "admin/jobs-pending";
     }
     
@@ -59,10 +65,16 @@ public class AdminJobController {
     
     // Trang quản lý tất cả tin tuyển dụng
     @GetMapping("/admin/jobs")
-    public String allJobs(Model model) {
-        List<JobDetail> allJobs = jobDetailService.getAllJobs();
+    public String allJobs(@RequestParam(value = "search", required = false) String search, Model model) {
+        List<JobDetail> allJobs;
+        if (search != null && !search.trim().isEmpty()) {
+            allJobs = jobDetailService.getJobsBySearch(search);
+        } else {
+            allJobs = jobDetailService.getAllJobs();
+        }
         model.addAttribute("jobs", allJobs);
         model.addAttribute("title", "Quản lý tất cả tin tuyển dụng");
+        model.addAttribute("searchQuery", search != null ? search : "");
         return "admin/jobs-all";
     }
 }

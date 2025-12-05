@@ -92,8 +92,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- SECTION: CÔNG TY NỔI BẬT -->
-        <!-- ==================================================================== -->
         <TextView
             android:id="@+id/tv_featured_companies_title"
             android:layout_width="0dp"

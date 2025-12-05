@@ -33,4 +33,8 @@ public class WorkTypeService {
     public void deleteWorkType(Integer id) {
         workTypeRepository.deleteById(id);
     }
+
+    public List<WorkType> getWorkTypesBySearch(String search) {
+        return workTypeRepository.findByTenHinhThucContainingIgnoreCase(search);
+    }
 }

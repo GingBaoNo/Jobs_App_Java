@@ -34,22 +34,29 @@ public class JobController {
     
     // Trang danh sách công việc của nhà tuyển dụng
     @GetMapping("/employer/jobs")
-    public String employerJobs(Authentication authentication, Model model) {
+    public String employerJobs(@RequestParam(value = "search", required = false) String search, Authentication authentication, Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
         if (user == null) {
             return "redirect:/login";
         }
-        
+
         Company company = companyService.getCompanyByUser(user).orElse(null);
         if (company == null) {
             model.addAttribute("errorMessage", "Bạn cần đăng ký công ty trước khi tạo tin tuyển dụng.");
             return "employer/jobs";
         }
-        
-        List<JobDetail> jobs = jobDetailService.getJobsByCompany(company);
+
+        List<JobDetail> jobs;
+        if (search != null && !search.trim().isEmpty()) {
+            jobs = jobDetailService.getJobsByCompanyAndTitleContaining(company, search);
+        } else {
+            jobs = jobDetailService.getJobsByCompany(company);
+        }
+
         model.addAttribute("jobs", jobs);
         model.addAttribute("title", "Quản lý tin tuyển dụng");
-        
+        model.addAttribute("searchQuery", search != null ? search : "");
+
         return "employer/jobs";
     }
     
@@ -257,22 +264,22 @@ public class JobController {
         try {
             // Lấy tất cả các công việc đã được duyệt và còn hiệu lực (chưa hết hạn)
             List<JobDetail> activeJobs = jobDetailService.getActiveJobsWithValidDate();
-            
+
             // Lấy tất cả công việc đã duyệt
             List<JobDetail> allApprovedJobs = jobDetailService.getJobsByTrangThaiDuyet("Đã duyệt");
-            
+
             List<JobDetail> jobsToShow;
-            
+
             if (!activeJobs.isEmpty()) {
                 // Nếu có công việc active, dùng danh sách kết hợp
                 java.util.Set<Integer> activeJobIds = new java.util.HashSet<>();
                 for (JobDetail job : activeJobs) {
                     activeJobIds.add(job.getMaCongViec());
                 }
-                
+
                 jobsToShow = new java.util.ArrayList<>();
                 jobsToShow.addAll(activeJobs);
-                
+
                 // Thêm các job đã duyệt khác mà không trùng với active jobs
                 for (JobDetail job : allApprovedJobs) {
                     if (!activeJobIds.contains(job.getMaCongViec())) {
@@ -286,26 +293,87 @@ public class JobController {
                 // Nếu không có công việc đã duyệt, trả về danh sách trống
                 jobsToShow = new java.util.ArrayList<>();
             }
-            
+
             model.addAttribute("jobs", jobsToShow);
             model.addAttribute("title", "Danh sách việc làm");
-            
+
             // Thêm dữ liệu cho bộ lọc
             model.addAttribute("workFields", workFieldService.getAllWorkFields());
             model.addAttribute("workTypes", workTypeService.getAllWorkTypes());
             model.addAttribute("locations", locationService.getProvinces());
-            
+
+            // Thêm dữ liệu cho sidebar
+            // 1. Việc làm theo ngành (top 5 ngành có nhiều việc làm nhất)
+            java.util.Map<WorkField, Long> jobsByField = jobsToShow.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                    JobDetail::getWorkField,
+                    java.util.stream.Collectors.counting()
+                ));
+
+            java.util.List<java.util.Map.Entry<WorkField, Long>> topFields = jobsByField.entrySet().stream()
+                .sorted(java.util.Map.Entry.<WorkField, Long>comparingByValue().reversed())
+                .limit(5)
+                .collect(java.util.ArrayList::new, java.util.ArrayList::add, java.util.ArrayList::addAll);
+            model.addAttribute("topFields", topFields);
+
+            // 2. Việc làm theo địa điểm (top 5 địa điểm có nhiều việc làm nhất)
+            // Lấy địa điểm từ công ty (vì công việc không có địa điểm riêng trong model hiện tại)
+            java.util.Map<String, Long> jobsByLocation = jobsToShow.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                    job -> job.getCompany().getDiaChi(),
+                    java.util.stream.Collectors.counting()
+                ));
+
+            java.util.List<java.util.Map.Entry<String, Long>> topLocations = jobsByLocation.entrySet().stream()
+                .sorted(java.util.Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(5)
+                .collect(java.util.ArrayList::new, java.util.ArrayList::add, java.util.ArrayList::addAll);
+            model.addAttribute("topLocations", topLocations);
+
+            // 3. Thống kê
+            long totalJobs = jobsToShow.size();
+            long totalCompanies = jobsToShow.stream()
+                .map(job -> job.getCompany().getMaCongTy())
+                .distinct()
+                .count();
+            long totalApplications = 0; // Bạn có thể thêm logic tính số lượng ứng tuyển
+
+            model.addAttribute("totalJobs", totalJobs);
+            model.addAttribute("totalCompanies", totalCompanies);
+            model.addAttribute("totalApplications", totalApplications);
+
+            // 4. Công ty nổi bật (các công ty có nhiều việc làm nhất)
+            java.util.Map<Company, Long> companiesByJobCount = jobsToShow.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                    JobDetail::getCompany,
+                    java.util.stream.Collectors.counting()
+                ));
+
+            java.util.List<java.util.Map.Entry<Company, Long>> topCompanies = companiesByJobCount.entrySet().stream()
+                .sorted(java.util.Map.Entry.<Company, Long>comparingByValue().reversed())
+                .limit(3)
+                .collect(java.util.ArrayList::new, java.util.ArrayList::add, java.util.ArrayList::addAll);
+            model.addAttribute("topCompanies", topCompanies);
+
         } catch (Exception e) {
             // Trong trường hợp có lỗi, vẫn trả về trang nhưng với danh sách trống
             model.addAttribute("jobs", new java.util.ArrayList<>());
             model.addAttribute("title", "Danh sách việc làm");
-            
+
             // Thêm dữ liệu cho bộ lọc để tránh lỗi
             model.addAttribute("workFields", workFieldService.getAllWorkFields());
             model.addAttribute("workTypes", workTypeService.getAllWorkTypes());
             model.addAttribute("locations", locationService.getProvinces());
+
+            // Dữ liệu mặc định tránh lỗi
+            model.addAttribute("topFields", new java.util.ArrayList<>());
+            model.addAttribute("topLocations", new java.util.ArrayList<>());
+            model.addAttribute("totalJobs", 0);
+            model.addAttribute("totalCompanies", 0);
+            model.addAttribute("totalApplications", 0);
+            model.addAttribute("topCompanies", new java.util.ArrayList<>());
         }
-        
+
         return "public/jobs";
     }
     

@@ -56,10 +56,18 @@ public class UserService {
         if (userRepository.existsByTaiKhoan(taiKhoan)) {
             throw new RuntimeException("Tài khoản đã tồn tại");
         }
-        
+
         User user = new User(taiKhoan, matKhau, tenHienThi, lienHe);
         user.setRole(role);
-        
+
         return saveUser(user);
+    }
+
+    public List<User> getUsersBySearch(String search) {
+        return userRepository.findByTaiKhoanContainingOrTenHienThiContainingOrLienHeContaining(search, search, search);
+    }
+
+    public List<User> getUsersByRole(Role role) {
+        return userRepository.findByRole(role);
     }
 }

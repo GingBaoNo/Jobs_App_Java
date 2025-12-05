@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Fjobs">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,22 +25,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".LoginActivity"
+            android:name=".activities.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".RegisterActivity"
+            android:name=".activities.RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".JobDetailActivity"
+            android:name=".activities.JobDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".CompanyDetailActivity"
+            android:name=".activities.CompanyDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".AppliedJobsActivity"
+            android:name=".activities.AppliedJobsActivity"
             android:exported="false" />
         <activity
-            android:name=".SavedJobsActivity"
+            android:name=".activities.SavedJobsActivity"
             android:exported="false" />
     </application>
 

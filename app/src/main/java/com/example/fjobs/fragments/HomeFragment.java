@@ -81,10 +81,41 @@ public class HomeFragment extends Fragment {
         if (searchButton != null) {
             searchButton.setOnClickListener(v -> {
                 String query = searchEditText.getText().toString().trim();
-                // Perform search action based on query
-                // This would typically involve navigating to a search results fragment
-                // or calling an API to search for jobs/companies
+                if (!query.isEmpty()) {
+                    navigateToSearchResults(query);
+                }
             });
+        }
+
+        // Thêm sự kiện Enter trên EditText để tìm kiếm
+        searchEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                String query = searchEditText.getText().toString().trim();
+                if (!query.isEmpty()) {
+                    navigateToSearchResults(query);
+                }
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void navigateToSearchResults(String keyword) {
+        // Tạo bundle để truyền từ khóa tìm kiếm
+        Bundle bundle = new Bundle();
+        bundle.putString("keyword", keyword);
+
+        // Tạo và chuyển sang SearchResultFragment
+        SearchResultFragment searchResultFragment = new SearchResultFragment();
+        searchResultFragment.setArguments(bundle);
+
+        // Dùng FragmentTransaction để chuyển fragment
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.content_frame, searchResultFragment)
+                .addToBackStack("search_results") // Thêm vào stack để có thể quay lại
+                .commit();
         }
     }
 

@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.fjobs.CompanyDetailActivity;
+import com.example.fjobs.activities.CompanyDetailActivity;
 import com.example.fjobs.R;
 import com.example.fjobs.adapters.CompanyAdapter;
 import com.example.fjobs.api.ApiClient;

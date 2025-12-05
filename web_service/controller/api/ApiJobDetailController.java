@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/job-details")
@@ -24,7 +25,7 @@ public class ApiJobDetailController {
     public ResponseEntity<?> getAllJobDetails() {
         List<JobDetail> jobDetails = jobDetailService.getAllJobs();
         // Tạo danh sách job đơn giản để tránh circular reference
-        List<Map<String, Object>> simplifiedJobs = jobDetails.stream().map(this::convertJobDetailToMap).toList();
+        List<Map<String, Object>> simplifiedJobs = jobDetails.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
         return ApiResponseUtil.success("Job details retrieved successfully", simplifiedJobs);
     }
 
@@ -72,8 +73,191 @@ public class ApiJobDetailController {
         // Lấy các công việc nổi bật - những công việc được duyệt, còn hiệu lực và có nhiều lượt xem
         List<JobDetail> featuredJobs = jobDetailService.getFeaturedJobs();
         // Tạo danh sách job đơn giản để tránh circular reference
-        List<Map<String, Object>> simplifiedJobs = featuredJobs.stream().map(this::convertJobDetailToMap).toList();
+        List<Map<String, Object>> simplifiedJobs = featuredJobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
         return ApiResponseUtil.success("Featured jobs retrieved successfully", simplifiedJobs);
+    }
+
+    // Endpoint tìm kiếm việc làm
+    @GetMapping("/search")
+    public ResponseEntity<?> searchJobs(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workType,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) Integer maxSalary) {
+
+        // Logging để debug
+        System.out.println("API searchJobs called with parameters:");
+        System.out.println("Keyword: " + keyword);
+        System.out.println("WorkField: " + workField);
+        System.out.println("WorkType: " + workType);
+        System.out.println("MinSalary: " + minSalary);
+        System.out.println("MaxSalary: " + maxSalary);
+
+        List<JobDetail> jobs = jobDetailService.searchJobs(keyword, workField, workType, minSalary, maxSalary);
+
+        System.out.println("Number of jobs found: " + jobs.size());
+
+        List<Map<String, Object>> simplifiedJobs = jobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+        return ApiResponseUtil.success("Jobs searched successfully", simplifiedJobs);
+    }
+
+    // Endpoint tìm kiếm việc làm mở rộng (không áp dụng điều kiện trạng thái nghiêm ngặt)
+    @GetMapping("/search-open")
+    public ResponseEntity<?> searchJobsOpen(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workType,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) Integer maxSalary) {
+
+        // Logging để debug
+        System.out.println("API searchJobsOpen called with parameters:");
+        System.out.println("Keyword: " + keyword);
+        System.out.println("WorkField: " + workField);
+        System.out.println("WorkType: " + workType);
+        System.out.println("MinSalary: " + minSalary);
+        System.out.println("MaxSalary: " + maxSalary);
+
+        List<JobDetail> jobs = jobDetailService.searchJobsOpen(keyword, workField, workType, minSalary, maxSalary);
+
+        System.out.println("Number of jobs found in open search: " + jobs.size());
+
+        List<Map<String, Object>> simplifiedJobs = jobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+        return ApiResponseUtil.success("Jobs searched successfully (open search)", simplifiedJobs);
+    }
+
+    // Endpoint tìm kiếm việc làm không áp dụng điều kiện trạng thái (tìm kiếm toàn diện)
+    @GetMapping("/search-no-status")
+    public ResponseEntity<?> searchJobsNoStatus(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workType,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) Integer maxSalary) {
+
+        List<JobDetail> jobs = jobDetailService.searchJobsNoStatus(keyword, workField, workType, minSalary, maxSalary);
+        List<Map<String, Object>> simplifiedJobs = jobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+        return ApiResponseUtil.success("Jobs searched successfully (no status filter)", simplifiedJobs);
+    }
+
+    // Endpoint tìm kiếm việc làm với phân trang
+    @GetMapping("/search-with-paging")
+    public ResponseEntity<?> searchJobsWithPaging(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workType,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) Integer maxSalary,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "maCongViec") String sortBy) {
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(sortBy));
+        org.springframework.data.domain.Page<JobDetail> jobPage = jobDetailService.searchJobsWithPaging(keyword, workField, workType, minSalary, maxSalary, pageable);
+
+        List<Map<String, Object>> simplifiedJobs = jobPage.getContent().stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", simplifiedJobs);
+        response.put("page", jobPage.getNumber());
+        response.put("size", jobPage.getSize());
+        response.put("totalElements", jobPage.getTotalElements());
+        response.put("totalPages", jobPage.getTotalPages());
+        response.put("first", jobPage.isFirst());
+        response.put("last", jobPage.isLast());
+
+        return ApiResponseUtil.success("Jobs searched successfully with pagination", response);
+    }
+
+    // Endpoint tìm kiếm việc làm đơn lẻ theo ngành nghề hoặc hình thức
+    @GetMapping("/search-single")
+    public ResponseEntity<?> searchJobsSingle(
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "maCongViec") String sortBy) {
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(sortBy));
+        org.springframework.data.domain.Page<JobDetail> jobPage = jobDetailService.searchJobsBySingleCriteriaWithPaging(workField, workType, pageable);
+
+        List<Map<String, Object>> simplifiedJobs = jobPage.getContent().stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", simplifiedJobs);
+        response.put("page", jobPage.getNumber());
+        response.put("size", jobPage.getSize());
+        response.put("totalElements", jobPage.getTotalElements());
+        response.put("totalPages", jobPage.getTotalPages());
+        response.put("first", jobPage.isFirst());
+        response.put("last", jobPage.isLast());
+
+        return ApiResponseUtil.success("Jobs searched successfully with single criteria", response);
+    }
+
+    // Endpoint tìm kiếm việc làm kết hợp theo ngành nghề và hình thức (không áp dụng điều kiện trạng thái)
+    @GetMapping("/search-combined-correct")
+    public ResponseEntity<?> searchJobsCombinedCorrect(
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "maCongViec") String sortBy) {
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(sortBy));
+        org.springframework.data.domain.Page<JobDetail> jobPage = jobDetailService.searchJobsByCombinedCriteriaWithPaging(workField, workType, pageable);
+
+        List<Map<String, Object>> simplifiedJobs = jobPage.getContent().stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", simplifiedJobs);
+        response.put("page", jobPage.getNumber());
+        response.put("size", jobPage.getSize());
+        response.put("totalElements", jobPage.getTotalElements());
+        response.put("totalPages", jobPage.getTotalPages());
+        response.put("first", jobPage.isFirst());
+        response.put("last", jobPage.isLast());
+
+        return ApiResponseUtil.success("Jobs searched successfully with combined criteria", response);
+    }
+
+    // Endpoint tìm kiếm việc làm theo tiêu đề (cho Android API)
+    @GetMapping("/search-by-title")
+    public ResponseEntity<?> searchJobsByTitle(@RequestParam String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return ApiResponseUtil.error("Title is required");
+        }
+
+        try {
+            List<JobDetail> jobs = jobDetailService.searchJobsByTitle(title.trim());
+            List<Map<String, Object>> result = jobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+            return ApiResponseUtil.success("Jobs searched successfully by title", result);
+        } catch (Exception e) {
+            return ApiResponseUtil.error("Error searching jobs by title: " + e.getMessage());
+        }
+    }
+
+    // Endpoint tìm kiếm việc làm kết hợp theo ngành nghề và hình thức (tên cũ - lỗi chính tả, để tương thích)
+    @GetMapping("/search-combined")
+    public ResponseEntity<?> searchJobsCombined(
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "maCongViec") String sortBy) {
+        return searchJobsCombinedCorrect(workField, workType, page, size, sortBy);
+    }
+
+    // Endpoint tìm kiếm việc làm kết hợp theo ngành nghề và hình thức (tên sửa lỗi chính tả)
+    @GetMapping("/search-combined-fix")
+    public ResponseEntity<?> searchJobsCombinedFix(
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "maCongViec") String sortBy) {
+        return searchJobsCombinedCorrect(workField, workType, page, size, sortBy);
     }
 
     // Helper method để chuyển đổi JobDetail thành Map để tránh circular reference
@@ -92,8 +276,8 @@ public class ApiJobDetailController {
         jobMap.put("thoiHanLamViec", job.getThoiHanLamViec());
         jobMap.put("coTheThuongLuongNgay", job.getCoTheThuongLuongNgay());
         jobMap.put("chiTiet", job.getChiTiet());
-        jobMap.put("yeuCauCongViec", job.getYeuCauCongViec());  // Thêm trường mới
-        jobMap.put("quyenLoi", job.getQuyenLoi());              // Thêm trường mới
+        jobMap.put("yeuCauCongViec", job.getYeuCauCongViec());
+        jobMap.put("quyenLoi", job.getQuyenLoi());
         jobMap.put("ngayKetThucTuyenDung", job.getNgayKetThucTuyenDung());
         jobMap.put("ngayDang", job.getNgayDang());
         jobMap.put("luotXem", job.getLuotXem());

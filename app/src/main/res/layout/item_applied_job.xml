@@ -69,6 +69,16 @@
             android:textColor="#999999"
             android:layout_marginTop="8dp" />
 
+        <!-- Thông tin CV đã ứng tuyển -->
+        <TextView
+            android:id="@+id/tv_cv_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CV: Chưa có"
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp" />
+
         <!-- Nút hủy ứng tuyển -->
         <Button
             android:id="@+id/btn_cancel_application"

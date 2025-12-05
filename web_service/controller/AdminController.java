@@ -20,7 +20,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class AdminController {
@@ -70,10 +73,16 @@ public class AdminController {
     
     // Trang quản lý người dùng
     @GetMapping("/admin/users")
-    public String manageUsers(Model model) {
-        List<User> users = userService.getAllUsers();
+    public String manageUsers(@RequestParam(value = "search", required = false) String search, Model model) {
+        List<User> users;
+        if (search != null && !search.trim().isEmpty()) {
+            users = userService.getUsersBySearch(search);
+        } else {
+            users = userService.getAllUsers();
+        }
         model.addAttribute("users", users);
         model.addAttribute("title", "Quản lý người dùng");
+        model.addAttribute("searchQuery", search != null ? search : "");
         return "admin/users";
     }
     
@@ -114,10 +123,25 @@ public class AdminController {
     
     // Trang quản lý vai trò
     @GetMapping("/admin/roles")
-    public String manageRoles(Model model) {
-        List<Role> roles = roleService.getAllRoles();
+    public String manageRoles(@RequestParam(value = "search", required = false) String search, Model model) {
+        List<Role> roles;
+        if (search != null && !search.trim().isEmpty()) {
+            roles = roleService.getRolesBySearch(search);
+        } else {
+            roles = roleService.getAllRoles();
+        }
+
+        // Tạo map để lưu số lượng người dùng cho từng vai trò
+        Map<Integer, Integer> roleUserCount = new HashMap<>();
+        for (Role role : roles) {
+            List<User> users = userService.getUsersByRole(role);
+            roleUserCount.put(role.getMaVaiTro(), users.size());
+        }
+
         model.addAttribute("roles", roles);
+        model.addAttribute("roleUserCount", roleUserCount);
         model.addAttribute("title", "Quản lý vai trò");
+        model.addAttribute("searchQuery", search != null ? search : "");
         return "admin/roles";
     }
     
@@ -152,11 +176,17 @@ public class AdminController {
     
     // Trang quản lý lĩnh vực nghề nghiệp (job categories)
     @GetMapping("/admin/work-fields")
-    public String manageWorkFields(Model model) {
+    public String manageWorkFields(@RequestParam(value = "search", required = false) String search, Model model) {
         try {
-            List<WorkField> workFields = workFieldService.getAllWorkFields();
+            List<WorkField> workFields;
+            if (search != null && !search.trim().isEmpty()) {
+                workFields = workFieldService.getWorkFieldsBySearch(search);
+            } else {
+                workFields = workFieldService.getAllWorkFields();
+            }
             model.addAttribute("workFields", workFields);
             model.addAttribute("title", "Quản lý ngành nghề");
+            model.addAttribute("searchQuery", search != null ? search : "");
         } catch (Exception e) {
             // Log the exception (in a real application, use proper logging)
             e.printStackTrace();
@@ -213,11 +243,17 @@ public class AdminController {
     
     // Trang quản lý hình thức làm việc
     @GetMapping("/admin/work-types")
-    public String manageWorkTypes(Model model) {
+    public String manageWorkTypes(@RequestParam(value = "search", required = false) String search, Model model) {
         try {
-            List<WorkType> workTypes = workTypeService.getAllWorkTypes();
+            List<WorkType> workTypes;
+            if (search != null && !search.trim().isEmpty()) {
+                workTypes = workTypeService.getWorkTypesBySearch(search);
+            } else {
+                workTypes = workTypeService.getAllWorkTypes();
+            }
             model.addAttribute("workTypes", workTypes);
             model.addAttribute("title", "Quản lý hình thức làm việc");
+            model.addAttribute("searchQuery", search != null ? search : "");
         } catch (Exception e) {
             // Log the exception (in a real application, use proper logging)
             e.printStackTrace();

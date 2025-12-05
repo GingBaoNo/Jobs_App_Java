@@ -33,4 +33,8 @@ public class WorkFieldService {
     public void deleteWorkField(Integer id) {
         workFieldRepository.deleteById(id);
     }
+
+    public List<WorkField> getWorkFieldsBySearch(String search) {
+        return workFieldRepository.findByTenLinhVucContainingIgnoreCase(search);
+    }
 }

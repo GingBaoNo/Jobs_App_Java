@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByTaiKhoan(String taiKhoan);
     boolean existsByTaiKhoan(String taiKhoan);
+    java.util.List<User> findByTaiKhoanContainingOrTenHienThiContainingOrLienHeContaining(String taiKhoan, String tenHienThi, String lienHe);
+    java.util.List<User> findByRole(com.example.demo.entity.Role role);
 }

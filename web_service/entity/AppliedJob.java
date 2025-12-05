@@ -28,6 +28,9 @@ public class AppliedJob {
     @Column(name = "ngay_ung_tuyen")
     private LocalDateTime ngayUngTuyen;
 
+    @Column(name = "url_cv_ung_tuyen")
+    private String urlCvUngTuyen; // URL CV cụ thể cho đơn ứng tuyển này
+
     // Constructors
     public AppliedJob() {
         this.ngayUngTuyen = LocalDateTime.now();
@@ -36,6 +39,13 @@ public class AppliedJob {
     public AppliedJob(User employee, JobDetail jobDetail) {
         this.employee = employee;
         this.jobDetail = jobDetail;
+        this.ngayUngTuyen = LocalDateTime.now();
+    }
+
+    public AppliedJob(User employee, JobDetail jobDetail, String urlCvUngTuyen) {
+        this.employee = employee;
+        this.jobDetail = jobDetail;
+        this.urlCvUngTuyen = urlCvUngTuyen;
         this.ngayUngTuyen = LocalDateTime.now();
     }
 
@@ -86,5 +96,13 @@ public class AppliedJob {
 
     public void setNgayUngTuyen(LocalDateTime ngayUngTuyen) {
         this.ngayUngTuyen = ngayUngTuyen;
+    }
+
+    public String getUrlCvUngTuyen() {
+        return urlCvUngTuyen;
+    }
+
+    public void setUrlCvUngTuyen(String urlCvUngTuyen) {
+        this.urlCvUngTuyen = urlCvUngTuyen;
     }
 }

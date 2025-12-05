@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface WorkTypeRepository extends JpaRepository<WorkType, Integer> {
+    java.util.List<WorkType> findByTenHinhThucContainingIgnoreCase(String tenHinhThuc);
 }

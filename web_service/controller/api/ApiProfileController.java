@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ public class ApiProfileController {
 
     @Autowired
     private ProfileService profileService;
-    
+
     @Autowired
     private UserService userService;
 
@@ -73,7 +74,7 @@ public class ApiProfileController {
         profileService.deleteProfile(id);
         return ApiResponseUtil.noContent();
     }
-    
+
     // API mới: Lấy hồ sơ của người dùng hiện tại
     @GetMapping("/my-profile")
     public ResponseEntity<?> getMyProfile() {
@@ -97,7 +98,7 @@ public class ApiProfileController {
             return ApiResponseUtil.error("User not authenticated");
         }
     }
-    
+
     // API mới: Tạo hồ sơ cho người dùng hiện tại
     @PostMapping("/my-profile")
     public ResponseEntity<?> createMyProfile(@RequestBody Profile profile) {
@@ -125,7 +126,7 @@ public class ApiProfileController {
                     createdProfile.setHinhThucLamViec(profile.getHinhThucLamViec());
                     createdProfile.setLoaiLuongMongMuon(profile.getLoaiLuongMongMuon());
                     createdProfile.setMucLuongMongMuon(profile.getMucLuongMongMuon());
-                    
+
                     Profile savedProfile = profileService.updateProfile(createdProfile);
                     Map<String, Object> profileMap = convertProfileToMap(savedProfile);
                     return ApiResponseUtil.created(profileMap);
@@ -139,7 +140,7 @@ public class ApiProfileController {
             return ApiResponseUtil.error("User not authenticated");
         }
     }
-    
+
     // API mới: Cập nhật hồ sơ của người dùng hiện tại
     @PutMapping("/my-profile")
     public ResponseEntity<?> updateMyProfile(@RequestBody Profile profile) {
@@ -171,12 +172,110 @@ public class ApiProfileController {
                     updatedProfile.setLoaiLuongMongMuon(profile.getLoaiLuongMongMuon());
                     updatedProfile.setMucLuongMongMuon(profile.getMucLuongMongMuon());
                     updatedProfile.setNgayCapNhat(java.time.LocalDateTime.now());
-                    
+
                     Profile savedProfile = profileService.updateProfile(updatedProfile);
                     Map<String, Object> profileMap = convertProfileToMap(savedProfile);
                     return ApiResponseUtil.success("Profile updated successfully", profileMap);
                 } else {
                     return ApiResponseUtil.error("Profile not found for current user");
+                }
+            } else {
+                return ApiResponseUtil.error("User not found");
+            }
+        } else {
+            return ApiResponseUtil.error("User not authenticated");
+        }
+    }
+
+    // API mới: Upload avatar
+    @PostMapping("/my-profile/avatar")
+    public ResponseEntity<?> updateAvatar(@RequestParam("avatar") MultipartFile avatarFile) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String username = authentication.getName();
+            Optional<User> user = userService.getUserByTaiKhoan(username);
+            if (user.isPresent()) {
+                try {
+                    Profile updatedProfile = profileService.updateAvatar(user.get(), avatarFile);
+                    Map<String, Object> profileMap = convertProfileToMap(updatedProfile);
+                    return ApiResponseUtil.success("Avatar updated successfully", profileMap);
+                } catch (Exception e) {
+                    return ApiResponseUtil.error("Error updating avatar: " + e.getMessage());
+                }
+            } else {
+                return ApiResponseUtil.error("User not found");
+            }
+        } else {
+            return ApiResponseUtil.error("User not authenticated");
+        }
+    }
+
+    // API mới: Upload CV
+    @PostMapping("/my-profile/cv")
+    public ResponseEntity<?> updateCv(@RequestParam("cvFile") MultipartFile cvFile) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String username = authentication.getName();
+            Optional<User> user = userService.getUserByTaiKhoan(username);
+            if (user.isPresent()) {
+                try {
+                    Profile updatedProfile = profileService.updateCv(user.get(), cvFile);
+                    Map<String, Object> profileMap = convertProfileToMap(updatedProfile);
+                    return ApiResponseUtil.success("CV updated successfully", profileMap);
+                } catch (Exception e) {
+                    return ApiResponseUtil.error("Error updating CV: " + e.getMessage());
+                }
+            } else {
+                return ApiResponseUtil.error("User not found");
+            }
+        } else {
+            return ApiResponseUtil.error("User not authenticated");
+        }
+    }
+
+    // API mới: Xóa avatar
+    @DeleteMapping("/my-profile/avatar")
+    public ResponseEntity<?> deleteAvatar() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String username = authentication.getName();
+            Optional<User> user = userService.getUserByTaiKhoan(username);
+            if (user.isPresent()) {
+                try {
+                    Profile updatedProfile = profileService.deleteAvatar(user.get());
+                    Map<String, Object> profileMap = convertProfileToMap(updatedProfile);
+                    return ApiResponseUtil.success("Avatar deleted successfully", profileMap);
+                } catch (Exception e) {
+                    return ApiResponseUtil.error("Error deleting avatar: " + e.getMessage());
+                }
+            } else {
+                return ApiResponseUtil.error("User not found");
+            }
+        } else {
+            return ApiResponseUtil.error("User not authenticated");
+        }
+    }
+
+    // API mới: Lấy hồ sơ theo ID người dùng (dành cho nhà tuyển dụng)
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getProfileByUserId(@PathVariable Integer userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String username = authentication.getName();
+            Optional<User> currentUser = userService.getUserByTaiKhoan(username);
+            if (currentUser.isPresent()) {
+                // Người dùng là nhà tuyển dụng, có thể xem hồ sơ ứng viên
+                Optional<User> targetUser = userService.getUserById(userId);
+                if (targetUser.isPresent()) {
+                    Optional<Profile> profile = profileService.getProfileByUser(targetUser.get());
+                    if (profile.isPresent()) {
+                        Map<String, Object> profileMap = convertProfileToMap(profile.get());
+                        return ApiResponseUtil.success("Profile retrieved successfully", profileMap);
+                    } else {
+                        return ApiResponseUtil.success("No profile found for user", null);
+                    }
+                } else {
+                    return ApiResponseUtil.error("User not found");
                 }
             } else {
                 return ApiResponseUtil.error("User not found");

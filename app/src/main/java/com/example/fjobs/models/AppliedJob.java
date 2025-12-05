@@ -21,6 +21,9 @@ public class AppliedJob {
     @SerializedName("ngayUngTuyen")
     private String ngayUngTuyen;
 
+    @SerializedName("urlCvUngTuyen")
+    private String urlCvUngTuyen;
+
     // Constructors
     public AppliedJob() {}
 
@@ -71,5 +74,13 @@ public class AppliedJob {
 
     public void setNgayUngTuyen(String ngayUngTuyen) {
         this.ngayUngTuyen = ngayUngTuyen;
+    }
+
+    public String getUrlCvUngTuyen() {
+        return urlCvUngTuyen;
+    }
+
+    public void setUrlCvUngTuyen(String urlCvUngTuyen) {
+        this.urlCvUngTuyen = urlCvUngTuyen;
     }
 }

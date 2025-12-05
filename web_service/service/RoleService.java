@@ -47,4 +47,8 @@ public class RoleService {
             return roleRepository.save(newRole);
         }
     }
+
+    public List<Role> getRolesBySearch(String search) {
+        return roleRepository.findByTenVaiTroContainingIgnoreCase(search);
+    }
 }

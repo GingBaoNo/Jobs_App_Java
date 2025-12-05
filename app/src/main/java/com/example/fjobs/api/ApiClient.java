@@ -28,7 +28,9 @@ public class ApiClient {
             OkHttpClient.Builder httpClient = new OkHttpClient.Builder()
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
-                    .writeTimeout(30, TimeUnit.SECONDS);
+                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .retryOnConnectionFailure(true);
+                    // Mặc định OkHttpClient sẽ giới hạn số lần redirect
 
             if (context != null) {
                 httpClient.addInterceptor(new AuthInterceptor(context));

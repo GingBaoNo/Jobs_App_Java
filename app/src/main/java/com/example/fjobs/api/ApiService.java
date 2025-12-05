@@ -4,12 +4,17 @@ import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.JobDetail;
 import com.example.fjobs.models.LoginRequest;
 import com.example.fjobs.models.User;
+
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -50,8 +55,16 @@ public interface ApiService {
     Call<ApiResponse> getJobsByCompanyId(@Path("id") int companyId);
 
     // Search API
-    @GET("v1/job-details")
+    @GET("v1/job-details/search")
     Call<ApiResponse> searchJobs(@Query("keyword") String keyword);
+
+    // Open Search API (ít điều kiện hơn)
+    @GET("v1/job-details/search-open")
+    Call<ApiResponse> searchJobsOpen(@Query("keyword") String keyword);
+
+    // No Status Search API (không áp dụng điều kiện trạng thái)
+    @GET("v1/job-details/search-no-status")
+    Call<ApiResponse> searchJobsNoStatus(@Query("keyword") String keyword);
 
     // Featured Jobs API
     @GET("v1/job-details/featured")
@@ -70,6 +83,15 @@ public interface ApiService {
 
     @PUT("v1/profiles/my-profile")
     Call<ApiResponse> updateMyProfile(@Body com.example.fjobs.models.Profile profile);
+
+    // Upload APIs
+    @Multipart
+    @POST("v1/profiles/my-profile/avatar")
+    Call<ApiResponse> uploadAvatar(@Part MultipartBody.Part file);
+
+    @Multipart
+    @POST("v1/profiles/my-profile/cv")
+    Call<ApiResponse> uploadCv(@Part MultipartBody.Part file);
 
     // Applied Jobs APIs
     @GET("v1/applied-jobs/my-applications")

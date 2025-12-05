@@ -13,8 +13,24 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/uploads/companies/**")
                 .addResourceLocations("file:./uploads/companies/");
 
+        // Cấu hình để phục vụ các CV từ thư mục upload
+        registry.addResourceHandler("/uploads/cvs/**")
+                .addResourceLocations("file:./uploads/cvs/");
+
+        // Cấu hình để phục vụ các ảnh đại diện từ thư mục upload
+        registry.addResourceHandler("/uploads/avatars/**")
+                .addResourceLocations("file:./uploads/avatars/");
+
+        // Cấu hình để phục vụ các ảnh đại diện từ thư mục upload (tương thích với ứng dụng Android)
+        registry.addResourceHandler("/uploads/profiles/**")
+                .addResourceLocations("file:./uploads/avatars/");
+
         // Nếu bạn lưu file ở thư mục ngoài dự án, có thể sử dụng đường dẫn tuyệt đối
         // Ví dụ: registry.addResourceHandler("/uploads/companies/**")
         //            .addResourceLocations("file:C:/uploads/companies/");
+        //            registry.addResourceHandler("/uploads/cvs/**")
+        //            .addResourceLocations("file:C:/uploads/cvs/");
+        //            registry.addResourceHandler("/uploads/avatars/**")
+        //            .addResourceLocations("file:C:/uploads/avatars/");
     }
 }

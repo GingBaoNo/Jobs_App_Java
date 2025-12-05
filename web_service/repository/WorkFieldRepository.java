@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface WorkFieldRepository extends JpaRepository<WorkField, Integer> {
+    java.util.List<WorkField> findByTenLinhVucContainingIgnoreCase(String tenLinhVuc);
 }

@@ -11,7 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import com.example.fjobs.JobDetailActivity;
+import com.example.fjobs.activities.JobDetailActivity;
 import com.example.fjobs.R;
 import com.example.fjobs.models.JobDetail;
 import java.util.List;
@@ -97,7 +97,7 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
 
                 // Load company logo
                 if (job.getCompany().getHinhAnhCty() != null && !job.getCompany().getHinhAnhCty().isEmpty()) {
-                    String logoUrl = "http://192.168.1.8:8080" + job.getCompany().getHinhAnhCty();
+                    String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty();
                     Glide.with(itemView.getContext())
                         .load(logoUrl)
                         .placeholder(R.drawable.ic_boss)
