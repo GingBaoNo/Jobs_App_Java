@@ -56,8 +56,8 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
         private TextView tvLocation;
         private TextView tvPostingDate;
         private TextView tvApplicationDeadline;
-        private Button btnTagApproved;
-        private Button btnTagOpen;
+        private TextView btnTagApproved;
+        private TextView btnTagOpen;
         private Button btnViewDetails;
 
         public JobViewHolder(@NonNull View itemView) {
@@ -100,7 +100,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
                 // Hiển thị logo công ty nếu có
                 if (job.getCompany().getHinhAnhCty() != null) {
-                    String logoUrl = "http://172.24.134.32:8080" + job.getCompany().getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
+                    String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
                     Glide.with(itemView.getContext())
                         .load(logoUrl)
                         .placeholder(R.drawable.ic_boss) // Ảnh placeholder khi đang load
@@ -117,7 +117,11 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
             // Cập nhật mức lương
             if (job.getLuong() > 0) {
-                tvSalary.setText(String.format("%,d VNĐ", job.getLuong()));
+                String salaryText = String.format("%,d", job.getLuong()) + " VNĐ";
+                if (job.getLoaiLuong() != null && !job.getLoaiLuong().isEmpty()) {
+                    salaryText += " (" + job.getLoaiLuong() + ")";
+                }
+                tvSalary.setText(salaryText);
             } else {
                 tvSalary.setText("Thương lượng");
             }
@@ -149,18 +153,14 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
             }
 
             // Cập nhật trạng thái đã duyệt
-            if ("Đã duyệt".equals(job.getTrangThaiDuyet())) {
-                btnTagApproved.setVisibility(View.VISIBLE);
-            } else {
-                btnTagApproved.setVisibility(View.GONE);
-            }
+            String approvalStatus = job.getTrangThaiDuyet();
+            btnTagApproved.setText(approvalStatus.equals("Đã duyệt") ? "Đã duyệt" : "Chờ duyệt");
+            btnTagApproved.setVisibility(approvalStatus.equals("Đã duyệt") ? View.VISIBLE : View.GONE);
 
             // Cập nhật trạng thái mở
-            if ("Mở".equals(job.getTrangThaiTinTuyen())) {
-                btnTagOpen.setVisibility(View.VISIBLE);
-            } else {
-                btnTagOpen.setVisibility(View.GONE);
-            }
+            String openStatus = job.getTrangThaiTinTuyen();
+            btnTagOpen.setText(openStatus);
+            btnTagOpen.setVisibility(View.VISIBLE); // Luôn hiển thị nhưng có thể ẩn nếu cần
         }
     }
 }

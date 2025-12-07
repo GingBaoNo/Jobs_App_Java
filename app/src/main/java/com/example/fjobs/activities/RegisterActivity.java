@@ -13,6 +13,7 @@ import com.example.fjobs.R;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
+import com.example.fjobs.models.RegisterRequest;
 import com.example.fjobs.models.User;
 import com.google.android.material.textfield.TextInputEditText;
 import retrofit2.Call;
@@ -21,7 +22,6 @@ import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
     private TextInputEditText etUsername, etDisplayName, etContact, etPassword;
-    private RadioGroup rgUserRole;
     private Button btnRegister;
 
     @Override
@@ -38,8 +38,18 @@ public class RegisterActivity extends AppCompatActivity {
         etDisplayName = findViewById(R.id.et_display_name);
         etContact = findViewById(R.id.et_contact);
         etPassword = findViewById(R.id.et_password);
-        rgUserRole = findViewById(R.id.rg_user_role);
         btnRegister = findViewById(R.id.btn_register);
+
+        // Tìm TextView đăng nhập
+        findViewById(R.id.tv_login).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Chuyển sang LoginActivity
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     private void setupClickListeners() {
@@ -54,26 +64,20 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
-            // Xác định vai trò người dùng
-            int selectedRoleId = 2; // Mặc định là NV (người tìm việc)
-            int selectedRadioButtonId = rgUserRole.getCheckedRadioButtonId();
-            if (selectedRadioButtonId == R.id.rb_employer) {
-                selectedRoleId = 3; // NTD (nhà tuyển dụng)
-            }
-
-            performRegister(username, displayName, contact, password, selectedRoleId);
+            performRegister(username, displayName, contact, password);
         });
     }
 
-    private void performRegister(String username, String displayName, String contact, String password, int roleId) {
+    private void performRegister(String username, String displayName, String contact, String password) {
         ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
 
-        // Tạo user object để gửi đăng ký
-        // Chú ý: API Spring Boot có thể yêu cầu DTO riêng biệt cho đăng ký
-        // ở đây tôi giả định API có thể sử dụng model User trực tiếp
-        User user = new User(username, displayName, contact, roleId);
+        // Vai trò cố định là người tìm việc (NV)
+        String roleName = "NV";
 
-        Call<ApiResponse> call = apiService.register(user);
+        // Tạo register request object
+        RegisterRequest registerRequest = new RegisterRequest(username, password, displayName, contact, roleName);
+
+        Call<ApiResponse> call = apiService.register(registerRequest);
         call.enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {

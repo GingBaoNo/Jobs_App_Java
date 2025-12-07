@@ -13,7 +13,7 @@
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
-        android:background="#3b82f6"
+        android:background="@color/primary_500"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:layout_constraintTop_toTopOf="parent"
@@ -181,7 +181,7 @@
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:src="@drawable/ic_phone"
-                            app:tint="@color/blue_500"
+                            app:tint="@color/primary_500"
                             android:layout_marginEnd="4dp"/>
                         <TextView
                             android:id="@+id/tv_company_phone"
@@ -201,7 +201,7 @@
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:src="@drawable/ic_mail"
-                            app:tint="@color/blue_500"
+                            app:tint="@color/primary_500"
                             android:layout_marginEnd="4dp"/>
                         <TextView
                             android:id="@+id/tv_company_email"
@@ -302,7 +302,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@drawable/ic_user"
-                                app:tint="@color/blue_500"
+                                app:tint="@color/primary_500"
                                 android:layout_marginEnd="12dp"/>
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -338,7 +338,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@drawable/ic_phone"
-                                app:tint="@color/blue_500"
+                                app:tint="@color/primary_500"
                                 android:layout_marginEnd="12dp"/>
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -374,7 +374,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@drawable/ic_credit_card"
-                                app:tint="@color/blue_500"
+                                app:tint="@color/primary_500"
                                 android:layout_marginEnd="12dp"/>
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -410,7 +410,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@drawable/ic_location2"
-                                app:tint="@color/blue_500"
+                                app:tint="@color/primary_500"
                                 android:layout_marginEnd="12dp"/>
                             <LinearLayout
                                 android:layout_width="0dp"

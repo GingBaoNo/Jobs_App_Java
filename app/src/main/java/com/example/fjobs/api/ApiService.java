@@ -3,6 +3,7 @@ package com.example.fjobs.api;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.JobDetail;
 import com.example.fjobs.models.LoginRequest;
+import com.example.fjobs.models.RegisterRequest;
 import com.example.fjobs.models.User;
 
 import okhttp3.MultipartBody;
@@ -25,7 +26,7 @@ public interface ApiService {
     Call<ApiResponse> login(@Body LoginRequest loginRequest);
 
     @POST("auth/register")
-    Call<ApiResponse> register(@Body User user);
+    Call<ApiResponse> register(@Body RegisterRequest registerRequest);
 
     // Job APIs
     @GET("v1/job-details")

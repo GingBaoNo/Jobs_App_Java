@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bottom Navigation Height -->
+    <dimen name="bottom_navigation_height">80dp</dimen>
+    
+    <!-- Standard padding/margin values -->
+    <dimen name="standard_margin">16dp</dimen>
+    <dimen name="standard_padding">16dp</dimen>
+</resources>

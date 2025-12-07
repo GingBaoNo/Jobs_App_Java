@@ -394,7 +394,7 @@ public class JobDetailActivity extends AppCompatActivity {
 
             // Load logo công ty nếu có
             if (job.getCompany().getHinhAnhCty() != null && !job.getCompany().getHinhAnhCty().isEmpty()) {
-                String logoUrl = "http://172.24.134.32:8080" + job.getCompany().getHinhAnhCty();
+                String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty();
                 Glide.with(this)
                     .load(logoUrl)
                     .placeholder(R.drawable.ic_boss)

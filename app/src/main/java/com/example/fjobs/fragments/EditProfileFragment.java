@@ -40,6 +40,7 @@ public class EditProfileFragment extends Fragment {
     private Button btnUpdate, btnCancel;
     private ApiService apiService;
     private Profile currentProfile;
+    private boolean isUpdating = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -365,6 +366,12 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void updateProfile() {
+        // Kiểm tra trạng thái cập nhật để tránh gọi nhiều lần
+        if (isUpdating) {
+            Toast.makeText(getContext(), "Đang cập nhật hồ sơ, vui lòng chờ...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Validate required fields
         String fullName = etFullName.getText().toString().trim();
         if (fullName.isEmpty()) {
@@ -378,9 +385,21 @@ public class EditProfileFragment extends Fragment {
             return;
         }
 
+        // Kiểm tra xem hồ sơ hiện tại đã được tải chưa
+        if (currentProfile == null) {
+            Toast.makeText(getContext(), "Vui lòng chờ tải hồ sơ hoàn tất trước khi cập nhật", Toast.LENGTH_SHORT).show();
+            loadCurrentProfile(); // Gọi lại để đảm bảo hồ sơ được tải
+            return;
+        }
+
         // Create profile object with updated values
         Profile updatedProfile = new Profile();
-        updatedProfile.setMaHoSo(currentProfile.getMaHoSo());
+        Integer profileId = currentProfile.getMaHoSo();
+        if (profileId == null) {
+            Toast.makeText(getContext(), "Không thể xác định hồ sơ người dùng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        updatedProfile.setMaHoSo(profileId);
         updatedProfile.setHoTen(fullName);
         updatedProfile.setGioiThieuBanThan(etIntroduction.getText().toString().trim());
         updatedProfile.setSoDienThoai(etPhone.getText().toString().trim());
@@ -412,10 +431,22 @@ public class EditProfileFragment extends Fragment {
         updatedProfile.setUrlCv(currentProfile.getUrlCv()); // Giữ nguyên đường dẫn CV
         updatedProfile.setCongKhai(currentProfile.getCongKhai()); // Giữ nguyên trạng thái công khai
 
+        // Thiết lập trạng thái đang cập nhật
+        isUpdating = true;
+        btnUpdate.setEnabled(false); // Vô hiệu hóa nút trong khi cập nhật
+        btnUpdate.setText("Đang cập nhật..."); // Cập nhật văn bản nút
+
         Call<ApiResponse> call = apiService.updateMyProfile(updatedProfile);
         call.enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                // Reset trạng thái cập nhật
+                isUpdating = false;
+                if (getActivity() != null) {
+                    btnUpdate.setEnabled(true);
+                    btnUpdate.setText("Cập nhật hồ sơ");
+                }
+
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
@@ -444,6 +475,13 @@ public class EditProfileFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Reset trạng thái cập nhật
+                isUpdating = false;
+                if (getActivity() != null) {
+                    btnUpdate.setEnabled(true);
+                    btnUpdate.setText("Cập nhật hồ sơ");
+                }
+
                 Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });

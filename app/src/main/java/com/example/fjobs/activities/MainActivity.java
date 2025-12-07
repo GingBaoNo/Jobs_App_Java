@@ -198,9 +198,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (avatarUrl != null && !avatarUrl.isEmpty()) {
                 String imageUrl;
                 if (avatarUrl.startsWith("/")) {
-                    imageUrl = "http://172.24.134.32:8080" + avatarUrl;
+                    imageUrl = "http://192.168.102.19:8080" + avatarUrl;
                 } else {
-                    imageUrl = "http://172.24.134.32:8080/" + avatarUrl;
+                    imageUrl = "http://192.168.102.19:8080/" + avatarUrl;
                 }
 
                 try {

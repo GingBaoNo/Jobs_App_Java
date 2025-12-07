@@ -317,7 +317,7 @@ public class CompanyDetailActivity extends AppCompatActivity {
 
     private void loadCompanyLogo(String logoUrl) {
         if (logoUrl != null && !logoUrl.isEmpty()) {
-            String fullLogoUrl = "http://172.24.134.32:8080" + logoUrl;
+            String fullLogoUrl = "http://192.168.102.19:8080" + logoUrl;
             Glide.with(this)
                 .load(fullLogoUrl)
                 .placeholder(R.drawable.ic_boss) // Ảnh placeholder

@@ -12,12 +12,15 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-    
+
     private final UserRepository userRepository;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
+    @Autowired
+    private com.example.demo.service.ProfileService profileService;
+
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -60,7 +63,20 @@ public class UserService {
         User user = new User(taiKhoan, matKhau, tenHienThi, lienHe);
         user.setRole(role);
 
-        return saveUser(user);
+        User savedUser = saveUser(user);
+
+        // Tự động tạo hồ sơ mặc định cho người dùng mới
+        // Chỉ tạo hồ sơ mặc định nếu người dùng là NV (người tìm việc)
+        if (role.getTenVaiTro().equals("NV")) {
+            try {
+                profileService.createProfileForUser(savedUser, tenHienThi, "Nam"); // Mặc định giới tính là Nam, người dùng có thể cập nhật sau
+            } catch (Exception e) {
+                // Nếu tạo hồ sơ thất bại, log lỗi nhưng không làm hỏng quá trình đăng ký
+                System.err.println("Không thể tạo hồ sơ mặc định cho người dùng " + taiKhoan + ": " + e.getMessage());
+            }
+        }
+
+        return savedUser;
     }
 
     public List<User> getUsersBySearch(String search) {

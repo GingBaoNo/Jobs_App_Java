@@ -5,4 +5,7 @@
     <string name="navigation_drawer_open">Mở ngăn điều hướng</string>
     <string name="navigation_drawer_close">Đóng ngăn điều hướng</string>
     <string name="action_settings">Cài đặt</string>
+    <string name="splash_app_name">FJobs</string>
+    <string name="splash_slogan">Phần mềm tìm việc làm tốt nhất</string>
+    <string name="splash_description">Kết nối ứng viên với nhà tuyển dụng hàng đầu</string>
 </resources>

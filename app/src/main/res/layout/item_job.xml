@@ -5,10 +5,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
+    android:layout_marginHorizontal="12dp"
     android:layout_marginVertical="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    android:elevation="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardUseCompatPadding="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -17,11 +19,13 @@
 
         <ImageView
             android:id="@+id/iv_company_logo"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="Company Logo"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:contentDescription="Logo công ty"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_boss"
+            android:background="@drawable/circle_background"
+            android:padding="8dp"
+            android:backgroundTint="@color/primary_100"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -32,7 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:text="Tên công việc"
-            android:textColor="#333333"
+            android:textColor="@color/gray_900"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/tv_status_badge"
@@ -45,8 +49,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Tên công ty"
-            android:textColor="#757575"
+            android:textColor="@color/primary_600"
             android:textSize="14sp"
+            android:layout_marginTop="4dp"
             app:layout_constraintEnd_toEndOf="@+id/tv_job_title"
             app:layout_constraintStart_toStartOf="@+id/tv_job_title"
             app:layout_constraintTop_toBottomOf="@+id/tv_job_title" />
@@ -57,19 +62,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/border_rounded_small"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
             android:text="Mở"
-            android:textColor="#4CAF50"
+            android:textColor="@color/secondary_600"
             android:textSize="12sp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@+id/tv_company_name"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/tv_job_title" />
 
-
-        <!-- ==================================================================== -->
-        <!-- DÒNG 2: LƯƠNG & MÔ TẢ NGẮN -->
-        <!-- ==================================================================== -->
 
         <!-- Lương (Màu xanh lá cây) -->
         <TextView
@@ -77,95 +79,92 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="15 - 25 triệu VNĐ"
-            android:textColor="#4CAF50"
-            android:textSize="14sp"
+            android:text="3,000,000 VNĐ"
+            android:textColor="@color/secondary_600"
+            android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/iv_company_logo" />
 
         <!-- Mô tả ngắn -->
-
-
-        <!-- ==================================================================== -->
-        <!-- DÒNG 4: TAGS, DIVIDER & NÚT XEM CHI TIẾT -->
-        <!-- ==================================================================== -->
-
-        <!-- Divider -->
         <TextView
             android:id="@+id/tv_short_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:text="Mô tả ngắn công việc"
-            android:textColor="#757575"
+            android:textColor="@color/gray_600"
             android:textSize="14sp"
+            android:maxLines="2"
+            android:ellipsize="end"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_salary" />
 
+        <!-- Divider -->
         <View
             android:id="@+id/divider"
-            android:layout_width="363dp"
+            android:layout_width="0dp"
             android:layout_height="1dp"
-            android:layout_marginTop="10dp"
-            android:background="#EEEEEE"
+            android:layout_marginTop="12dp"
+            android:background="@color/gray_200"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_short_description"
-            tools:ignore="MissingConstraints" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_short_description" />
 
         <!-- Tag "Đã duyệt" -->
-        <Button
+        <TextView
             android:id="@+id/btn_tag_approved"
-            style="@style/Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="#4CAF50"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/border_rounded_small2"
+            android:backgroundTint="@color/secondary_500"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
             android:text="Đã duyệt"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="12sp"
-            app:cornerRadius="4dp"
+            android:gravity="center"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider" />
 
         <!-- Tag "Mở" -->
-        <Button
+        <TextView
             android:id="@+id/btn_tag_open"
-            style="@style/Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
             android:layout_marginStart="8dp"
-            android:backgroundTint="#2196F3"
+            android:background="@drawable/border_rounded_small2"
+            android:backgroundTint="@color/primary_500"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
             android:text="Mở"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="12sp"
-            app:cornerRadius="4dp"
+            android:gravity="center"
             app:layout_constraintStart_toEndOf="@+id/btn_tag_approved"
             app:layout_constraintTop_toTopOf="@+id/btn_tag_approved" />
 
         <!-- Nút "Xem chi tiết" -->
         <Button
             android:id="@+id/btn_view_details"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="38dp"
-            android:drawableStart="@drawable/ic_eye"
-            android:drawableTint="#2196F3"
-            android:paddingHorizontal="16dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:text="Xem chi tiết"
             android:textAllCaps="false"
-            android:textColor="#2196F3"
-            android:textSize="12sp"
-            app:cornerRadius="8dp"
+            android:textColor="@color/primary_600"
+            android:textSize="14sp"
+            android:drawableEnd="@drawable/ic_next"
+            android:drawableTint="@color/primary_600"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/btn_tag_approved"
-            app:strokeColor="#2196F3"
-            app:strokeWidth="1dp" />
+            app:layout_constraintBottom_toBottomOf="@+id/btn_tag_approved" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

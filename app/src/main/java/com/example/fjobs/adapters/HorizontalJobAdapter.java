@@ -58,7 +58,7 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
         private TextView tvApplicationDeadline;
         private TextView tvPostingDate;
         private TextView btnTagApproved;
-        private Button btnTagOpen;
+        private TextView btnTagOpen;
         private Button btnViewDetails;
 
         public JobViewHolder(@NonNull View itemView) {
@@ -97,7 +97,7 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
 
                 // Load company logo
                 if (job.getCompany().getHinhAnhCty() != null && !job.getCompany().getHinhAnhCty().isEmpty()) {
-                    String logoUrl = "http://172.24.134.32:8080" + job.getCompany().getHinhAnhCty();
+                    String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty();
                     Glide.with(itemView.getContext())
                         .load(logoUrl)
                         .placeholder(R.drawable.ic_boss)
@@ -115,7 +115,7 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
             // Set salary
             if (job.getLuong() > 0) {
                 String salaryText = String.format("%,d", job.getLuong()) + " VNĐ";
-                if (job.getLoaiLuong() != null) {
+                if (job.getLoaiLuong() != null && !job.getLoaiLuong().isEmpty()) {
                     salaryText += " (" + job.getLoaiLuong() + ")";
                 }
                 tvSalary.setText(salaryText);

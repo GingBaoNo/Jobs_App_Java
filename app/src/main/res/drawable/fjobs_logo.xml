@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorOnPrimary">
+  <group android:scaleX="0.8"
+      android:scaleY="0.8"
+      android:translateX="2.4"
+      android:translateY="2.4">
+    <!-- Briefcase (suitcase) icon representing jobs -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M21,7H3A2,2 0,0 0,1 9v10a2,2 0,0 0,2 2h18a2,2 0,0 0,2 -2V9a2,2 0,0 0,-2 -2z"/>
+    <!-- Inner content of briefcase -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M5,7v2h14V7a2,2 0,0 0,-2 -2H7A2,2 0,0 0,5 7z"/>
+    <!-- Dollar sign in briefcase -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,14H11a1,1 0,0 1,-1 -1V11a1,1 0,0 1,2 0v0.5a1.5,1.5 0,0 0,1.5 1.5,1.5 1.5,0,0 0,1.5 -1.5,1.5 1.5,0,0 0,-1.5 -1.5H12a2,2 0,0 0,0 4h1V16a1,1 0,0 1,-2 0v-0.5a1.5,1.5 0,0 0,-1.5 -1.5"/>
+  </group>
+</vector>

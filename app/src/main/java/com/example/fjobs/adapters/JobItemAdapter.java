@@ -56,8 +56,8 @@ public class JobItemAdapter extends RecyclerView.Adapter<JobItemAdapter.JobItemV
         private TextView tvStatusBadge;
         private TextView tvSalary;
         private TextView tvShortDescription;
-        private Button btnTagApproved;
-        private Button btnTagOpen;
+        private TextView btnTagApproved;
+        private TextView btnTagOpen;
         private Button btnViewDetails;
 
         public JobItemViewHolder(@NonNull View itemView) {
@@ -100,7 +100,7 @@ public class JobItemAdapter extends RecyclerView.Adapter<JobItemAdapter.JobItemV
 
                 // Load company logo
                 if (job.getCompany().getHinhAnhCty() != null && !job.getCompany().getHinhAnhCty().isEmpty()) {
-                    String logoUrl = "http://172.24.134.32:8080" + job.getCompany().getHinhAnhCty();
+                    String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty();
                     Glide.with(itemView.getContext())
                         .load(logoUrl)
                         .placeholder(R.drawable.ic_boss)
@@ -118,7 +118,7 @@ public class JobItemAdapter extends RecyclerView.Adapter<JobItemAdapter.JobItemV
             // Set salary
             if (job.getLuong() > 0) {
                 String salaryText = String.format("%,d", job.getLuong()) + " VNĐ";
-                if (job.getLoaiLuong() != null) {
+                if (job.getLoaiLuong() != null && !job.getLoaiLuong().isEmpty()) {
                     salaryText += " (" + job.getLoaiLuong() + ")";
                 }
                 tvSalary.setText(salaryText);
