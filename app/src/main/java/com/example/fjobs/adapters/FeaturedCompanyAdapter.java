@@ -105,7 +105,7 @@ public class FeaturedCompanyAdapter extends RecyclerView.Adapter<FeaturedCompany
 
             // Cập nhật logo công ty nếu có
             if (company.getHinhAnhCty() != null && !company.getHinhAnhCty().isEmpty()) {
-                String logoUrl = "http://192.168.102.19:8080" + company.getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
+                String logoUrl = "http://172.24.134.32:8080" + company.getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
                 Glide.with(itemView.getContext())
                     .load(logoUrl)
                     .placeholder(R.drawable.ic_boss) // Ảnh placeholder khi đang load

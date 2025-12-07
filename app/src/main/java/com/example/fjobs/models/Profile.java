@@ -6,8 +6,6 @@ public class Profile {
     @SerializedName("maHoSo")
     private Integer maHoSo;
 
-    @SerializedName("user")
-    private User user;
 
     @SerializedName("urlAnhDaiDien")
     private String urlAnhDaiDien;
@@ -81,13 +79,6 @@ public class Profile {
         this.maHoSo = maHoSo;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 
     public String getUrlAnhDaiDien() {
         return urlAnhDaiDien;
@@ -241,11 +232,4 @@ public class Profile {
         this.ngayTao = ngayTao;
     }
 
-    public String getNgayCapNhat() {
-        return ngayCapNhat;
-    }
-
-    public void setNgayCapNhat(String ngayCapNhat) {
-        this.ngayCapNhat = ngayCapNhat;
-    }
 }

@@ -206,8 +206,17 @@ public class JobController {
             existingJob.setChiTiet(job.getChiTiet());
             existingJob.setYeuCauCongViec(job.getYeuCauCongViec());
             existingJob.setQuyenLoi(job.getQuyenLoi());
-            existingJob.setNgayKetThucTuyenDung(job.getNgayKetThucTuyenDung());
-            
+            // Bảo toàn giá trị ngày hết hạn tuyển dụng
+            // Nếu form gửi giá trị mới, sử dụng giá trị mới
+            // Nếu form không gửi giá trị (null), giữ nguyên giá trị cũ
+            LocalDate newEndDate = job.getNgayKetThucTuyenDung();
+            if (newEndDate != null) {
+                existingJob.setNgayKetThucTuyenDung(newEndDate);
+            } else {
+                // Nếu người dùng không chọn ngày mới, giữ nguyên giá trị cũ từ DB
+                // Không thay đổi ngày hết hạn hiện tại
+            }
+
             // Chỉ cập nhật trạng thái nếu công việc chưa được duyệt
             if ("Chờ duyệt".equals(existingJob.getTrangThaiDuyet())) {
                 existingJob.setTrangThaiDuyet("Chờ duyệt");

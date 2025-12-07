@@ -125,6 +125,14 @@ public class Company {
         this.daXacThuc = daXacThuc;
     }
 
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
+
     public LocalDateTime getNgayTao() {
         return ngayTao;
     }

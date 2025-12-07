@@ -127,9 +127,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Set default avatar with proper handling for CircleImageView
         de.hdodenhof.circleimageview.CircleImageView imgAvt = headerView.findViewById(R.id.img_avt);
         if (imgAvt != null) {
-            // Set image safely to avoid "width and height must be > 0" error
+            // Sử dụng Glide để đảm bảo ảnh được tải an toàn tránh lỗi width/height = 0
             imgAvt.post(() -> {
-                imgAvt.setImageResource(R.drawable.avt);
+                com.bumptech.glide.Glide.with(this)
+                        .load(R.drawable.avt)  // Ảnh mặc định
+                        .placeholder(R.drawable.avt)  // Ảnh placeholder
+                        .error(R.drawable.avt)  // Ảnh khi lỗi
+                        .into(imgAvt);
             });
 
             // Set click listener to login
@@ -194,24 +198,51 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (avatarUrl != null && !avatarUrl.isEmpty()) {
                 String imageUrl;
                 if (avatarUrl.startsWith("/")) {
-                    imageUrl = "http://192.168.102.19:8080" + avatarUrl;
+                    imageUrl = "http://172.24.134.32:8080" + avatarUrl;
                 } else {
-                    imageUrl = "http://192.168.102.19:8080/" + avatarUrl;
+                    imageUrl = "http://172.24.134.32:8080/" + avatarUrl;
                 }
 
                 try {
-                    com.bumptech.glide.Glide.with(this)
-                            .load(imageUrl)
-                            .placeholder(R.drawable.avt)  // Ảnh mặc định
-                            .error(R.drawable.avt)        // Ảnh khi lỗi
-                            .into(imgAvt);
+                    // Đảm bảo rằng imgAvt đã có kích thước hợp lệ trước khi load ảnh
+                    imgAvt.post(() -> {
+                        if (imgAvt.getWidth() > 0 && imgAvt.getHeight() > 0) {
+                            com.bumptech.glide.Glide.with(this)
+                                    .load(imageUrl)
+                                    .placeholder(R.drawable.avt)  // Ảnh mặc định
+                                    .error(R.drawable.avt)        // Ảnh khi lỗi
+                                    .into(imgAvt);
+                        } else {
+                            // Nếu chưa có kích thước, đợi thêm một chút
+                            imgAvt.post(() -> {
+                                com.bumptech.glide.Glide.with(this)
+                                        .load(imageUrl)
+                                        .placeholder(R.drawable.avt)  // Ảnh mặc định
+                                        .error(R.drawable.avt)        // Ảnh khi lỗi
+                                        .into(imgAvt);
+                            });
+                        }
+                    });
                 } catch (Exception e) {
                     System.out.println("Lỗi load avatar trong header navigation: " + e.getMessage());
-                    imgAvt.post(() -> imgAvt.setImageResource(R.drawable.avt));
+                    // Sử dụng Glide để đảm bảo ảnh được tải an toàn tránh lỗi width/height = 0
+                    imgAvt.post(() -> {
+                        com.bumptech.glide.Glide.with(this)
+                                .load(R.drawable.avt)  // Ảnh mặc định
+                                .placeholder(R.drawable.avt)  // Ảnh placeholder
+                                .error(R.drawable.avt)  // Ảnh khi lỗi
+                                .into(imgAvt);
+                    });
                 }
             } else {
                 // Nếu không có avatar, sử dụng ảnh mặc định
-                imgAvt.post(() -> imgAvt.setImageResource(R.drawable.avt));
+                imgAvt.post(() -> {
+                    com.bumptech.glide.Glide.with(this)
+                            .load(R.drawable.avt)  // Ảnh mặc định
+                            .placeholder(R.drawable.avt)  // Ảnh placeholder
+                            .error(R.drawable.avt)  // Ảnh khi lỗi
+                            .into(imgAvt);
+                });
             }
         }
     }

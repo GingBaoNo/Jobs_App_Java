@@ -100,7 +100,7 @@ public class JobItemAdapter extends RecyclerView.Adapter<JobItemAdapter.JobItemV
 
                 // Load company logo
                 if (job.getCompany().getHinhAnhCty() != null && !job.getCompany().getHinhAnhCty().isEmpty()) {
-                    String logoUrl = "http://192.168.1.8:8080" + job.getCompany().getHinhAnhCty();
+                    String logoUrl = "http://172.24.134.32:8080" + job.getCompany().getHinhAnhCty();
                     Glide.with(itemView.getContext())
                         .load(logoUrl)
                         .placeholder(R.drawable.ic_boss)

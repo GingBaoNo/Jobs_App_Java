@@ -32,17 +32,18 @@ public class CompanyService {
     }
 
     public List<Company> getUnverifiedCompanies() {
-        // Companies with daXacThuc = false (chưa xác thực)
-        return companyRepository.findByDaXacThuc(false);
+        // Companies with trangThai = 'PENDING' (chưa xác thực)
+        return companyRepository.findByTrangThai("PENDING");
     }
 
     public List<Company> getVerifiedCompanies() {
-        return companyRepository.findByDaXacThuc(true);
+        // Companies with trangThai = 'APPROVED'
+        return companyRepository.findByTrangThai("APPROVED");
     }
 
     public List<Company> getRejectedCompanies() {
-        // For now, we'll consider all unverified companies as potentially "rejected"
-        return companyRepository.findByDaXacThuc(false);
+        // Companies with trangThai = 'REJECTED'
+        return companyRepository.findByTrangThai("REJECTED");
     }
 
     public Page<Company> getCompaniesWithPagination(Pageable pageable) {
@@ -50,7 +51,7 @@ public class CompanyService {
     }
 
     public Page<Company> getVerifiedCompaniesWithPagination(Pageable pageable) {
-        return companyRepository.findByDaXacThuc(true, pageable);
+        return companyRepository.findByTrangThai("APPROVED", pageable);
     }
 
     public Optional<Company> getCompanyById(Integer id) {
@@ -88,6 +89,7 @@ public class CompanyService {
         company.setDiaChi(diaChi);
         company.setLienHeCty(lienHeCty);
         company.setDaXacThuc(false); // Chưa xác thực khi mới đăng ký
+        company.setTrangThai("PENDING"); // Đặt trạng thái chờ duyệt
 
         return saveCompany(company);
     }
@@ -97,6 +99,7 @@ public class CompanyService {
         if (optionalCompany.isPresent()) {
             Company company = optionalCompany.get();
             company.setDaXacThuc(true);
+            company.setTrangThai("APPROVED");
             return companyRepository.save(company);
         }
         throw new RuntimeException("Company not found with id: " + companyId);
@@ -106,8 +109,9 @@ public class CompanyService {
         Optional<Company> optionalCompany = companyRepository.findById(companyId);
         if (optionalCompany.isPresent()) {
             Company company = optionalCompany.get();
-            // For rejection, we keep daXacThuc as false
+            // For rejection, we set daXacThuc to false and trangThai to REJECTED
             company.setDaXacThuc(false);
+            company.setTrangThai("REJECTED");
             return companyRepository.save(company);
         }
         throw new RuntimeException("Company not found with id: " + companyId);

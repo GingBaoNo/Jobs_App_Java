@@ -129,24 +129,19 @@ public class EmployerController {
             return "redirect:/login";
         }
 
-        Company company = companyService.getCompanyByUser(user).orElse(null);
-        if (company == null) {
-            // Nếu chưa có công ty, có thể chuyển hướng đến một trang khác hoặc hiển thị thông báo
-            model.addAttribute("errorMessage", "Bạn chưa đăng ký công ty nào.");
-            // Trả về trang có thể có nút để bắt đầu đăng ký, hoặc chuyển hướng
-            // Ví dụ: chuyển hướng đến đăng ký nếu chưa có
-            // return "redirect:/employer/company/register"; // Nếu có trang riêng cho đăng ký
-            // Hoặc trả về trang xem với thông báo
-            model.addAttribute("company", new Company()); // Để tránh lỗi nếu template cần
+        Optional<Company> companyOpt = companyService.getCompanyByUser(user);
+        if (companyOpt.isEmpty()) {
+            // Nếu chưa có công ty, chuyển hướng đến trang chỉnh sửa để đăng ký
+            return "redirect:/employer/company/edit";
         } else {
-            model.addAttribute("company", company);
+            model.addAttribute("company", companyOpt.get());
         }
 
         model.addAttribute("title", "Hồ sơ công ty");
         return "employer/company-profile";
     }
 
-    // Trang cập nhật thông tin công ty
+    // Trang cập nhật thông tin công ty hoặc đăng ký nếu chưa có
     @GetMapping("/employer/company/edit")
     public String editCompany(Authentication authentication, Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
@@ -154,23 +149,26 @@ public class EmployerController {
             return "redirect:/login";
         }
 
-        Company company = companyService.getCompanyByUser(user).orElse(null);
-        if (company == null) {
-            // Nếu chưa có công ty, không thể cập nhật, có thể chuyển hướng đăng ký
-            model.addAttribute("errorMessage", "Bạn chưa đăng ký công ty nào để cập nhật.");
-            // Có thể chuyển hướng đến đăng ký hoặc trang xem
-            return "redirect:/employer/company"; // Quay lại trang xem
+        Optional<Company> companyOpt = companyService.getCompanyByUser(user);
+        if (companyOpt.isEmpty()) {
+            // Nếu chưa có công ty, chuẩn bị form đăng ký
+            model.addAttribute("company", new Company()); // Một công ty trống cho form
+            model.addAttribute("isRegistration", true); // Biến để template biết đang trong chế độ đăng ký
+            model.addAttribute("title", "Đăng ký công ty");
+        } else {
+            model.addAttribute("company", companyOpt.get());
+            model.addAttribute("isRegistration", false); // Đang cập nhật
+            model.addAttribute("title", "Cập nhật thông tin công ty");
         }
 
-        model.addAttribute("company", company);
-        model.addAttribute("title", "Cập nhật thông tin công ty");
-        return "employer/company"; // Trang cập nhật
+        return "employer/company"; // Trang cập nhật hoặc đăng ký
     }
 
     // Xử lý đăng ký công ty
     @PostMapping("/employer/company/register")
     public String registerCompany(Authentication authentication,
                                  @ModelAttribute Company company,
+                                 @RequestParam(value = "logoFile", required = false) MultipartFile logoFile,
                                  Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
         if (user == null) {
@@ -195,6 +193,22 @@ public class EmployerController {
                 company.getDiaChi(),
                 company.getLienHeCty()
             );
+
+            // Nếu có logo được tải lên, cập nhật logo cho công ty mới
+            if (logoFile != null && !logoFile.isEmpty()) {
+                 try {
+                    // Phương thức updateCompanyLogo đã xử lý việc lưu file và cập nhật hinhAnhCty
+                    companyService.updateCompanyLogo(newCompany.getMaCongTy(), logoFile);
+                    // load lại company sau khi update logo để có URL mới, nếu cần để hiển thị ngay
+                    // newCompany = companyService.getCompanyById(newCompany.getMaCongTy()).orElse(newCompany); // Tùy chọn
+                } catch (Exception e) {
+                    // Nếu upload logo thất bại, ghi log và tiếp tục. Công ty vẫn được tạo.
+                    // Có thể thêm thông báo lỗi riêng cho logo nếu muốn.
+                    e.printStackTrace();
+                    model.addAttribute("errorMessage", "Đăng ký công ty thành công, nhưng có lỗi khi tải lên logo: " + e.getMessage());
+                    // Không return, tiếp tục với successMessage chung.
+                }
+            }
 
             model.addAttribute("successMessage", "Đăng ký công ty thành công!");
             model.addAttribute("company", newCompany);
@@ -303,7 +317,7 @@ public class EmployerController {
 
         // Load lại thông tin công ty để hiển thị trên view
         model.addAttribute("company", existingCompany);
-        // model.addAttribute("isRegistration", false); // Trang company.html nay chỉ là update, không cần biến này nữa nếu template được cập nhật
+        model.addAttribute("isRegistration", false); // Gán lại để đảm bảo template render đúng nếu có lỗi
         return "employer/company";
     }
 

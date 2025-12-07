@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,6 +74,7 @@ public class JobDetail {
     private String quyenLoi;
 
     @Column(name = "ngay_ket_thuc_tuyen_dung")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate ngayKetThucTuyenDung;
 
     @Column(name = "ngay_dang")

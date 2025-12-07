@@ -4,12 +4,14 @@ import com.example.demo.entity.Company;
 import com.example.demo.entity.JobDetail;
 import com.example.demo.service.CompanyService;
 import com.example.demo.service.JobDetailService;
+import com.example.demo.service.UserService;
 import com.example.demo.utils.ApiResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,9 @@ public class ApiCompanyController {
 
     @Autowired
     private JobDetailService jobDetailService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping
     public ResponseEntity<?> getAllCompanies() {

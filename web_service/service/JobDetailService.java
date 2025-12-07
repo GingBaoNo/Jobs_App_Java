@@ -56,7 +56,34 @@ public class JobDetailService {
     }
 
     public JobDetail updateJob(JobDetail jobDetail) {
-        return jobDetailRepository.save(jobDetail);
+        // Debug các trường chứa tiếng Việt
+        System.out.println("DEBUG Service - Before save - ChiTiet: [" + jobDetail.getChiTiet() + "]");
+        System.out.println("DEBUG Service - Before save - YeuCauCongViec: [" + jobDetail.getYeuCauCongViec() + "]");
+        System.out.println("DEBUG Service - Before save - QuyenLoi: [" + jobDetail.getQuyenLoi() + "]");
+
+        // Kiểm tra encoding của các trường trước khi lưu
+        if (jobDetail.getChiTiet() != null) {
+            System.out.println("DEBUG Service - ChiTiet length: " + jobDetail.getChiTiet().length());
+            System.out.println("DEBUG Service - ChiTiet bytes: " + java.util.Arrays.toString(jobDetail.getChiTiet().getBytes()));
+        }
+        if (jobDetail.getYeuCauCongViec() != null) {
+            System.out.println("DEBUG Service - YeuCauCongViec length: " + jobDetail.getYeuCauCongViec().length());
+            System.out.println("DEBUG Service - YeuCauCongViec bytes: " + java.util.Arrays.toString(jobDetail.getYeuCauCongViec().getBytes()));
+        }
+        if (jobDetail.getQuyenLoi() != null) {
+            System.out.println("DEBUG Service - QuyenLoi length: " + jobDetail.getQuyenLoi().length());
+            System.out.println("DEBUG Service - QuyenLoi bytes: " + java.util.Arrays.toString(jobDetail.getQuyenLoi().getBytes()));
+        }
+
+        JobDetail savedJob = jobDetailRepository.save(jobDetail);
+        System.out.println("DEBUG Service - After save - ID: " + savedJob.getMaCongViec()); // Ghi nhận ID để kiểm tra DB
+
+        // Kiểm tra lại sau khi lưu
+        System.out.println("DEBUG Service - After save - ChiTiet: [" + savedJob.getChiTiet() + "]");
+        System.out.println("DEBUG Service - After save - YeuCauCongViec: [" + savedJob.getYeuCauCongViec() + "]");
+        System.out.println("DEBUG Service - After save - QuyenLoi: [" + savedJob.getQuyenLoi() + "]");
+
+        return savedJob;
     }
 
     public void deleteJob(Integer id) {

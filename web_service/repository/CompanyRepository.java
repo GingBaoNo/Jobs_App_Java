@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company, Integer> {
     Optional<Company> findByUser(User user);
     List<Company> findByDaXacThuc(Boolean daXacThuc);
+    List<Company> findByTrangThai(String trangThai);
     Page<Company> findByDaXacThuc(Boolean daXacThuc, Pageable pageable);
+    Page<Company> findByTrangThai(String trangThai, Pageable pageable);
     boolean existsByTenCongTy(String tenCongTy);
 }

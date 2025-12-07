@@ -152,25 +152,25 @@ public class ApiProfileController {
                 Optional<Profile> existingProfile = profileService.getProfileByUser(user.get());
                 if (existingProfile.isPresent()) {
                     Profile updatedProfile = existingProfile.get();
-                    // Cập nhật các trường của hồ sơ
-                    updatedProfile.setHoTen(profile.getHoTen());
-                    updatedProfile.setGioiTinh(profile.getGioiTinh());
-                    updatedProfile.setUrlAnhDaiDien(profile.getUrlAnhDaiDien());
-                    updatedProfile.setNgaySinh(profile.getNgaySinh());
-                    updatedProfile.setSoDienThoai(profile.getSoDienThoai());
-                    updatedProfile.setTrinhDoHocVan(profile.getTrinhDoHocVan());
-                    updatedProfile.setTinhTrangHocVan(profile.getTinhTrangHocVan());
-                    updatedProfile.setKinhNghiem(profile.getKinhNghiem());
-                    updatedProfile.setTongNamKinhNghiem(profile.getTongNamKinhNghiem());
-                    updatedProfile.setGioiThieuBanThan(profile.getGioiThieuBanThan());
-                    updatedProfile.setUrlCv(profile.getUrlCv());
-                    updatedProfile.setCongKhai(profile.getCongKhai());
-                    updatedProfile.setViTriMongMuon(profile.getViTriMongMuon());
-                    updatedProfile.setThoiGianMongMuon(profile.getThoiGianMongMuon());
-                    updatedProfile.setLoaiThoiGianLamViec(profile.getLoaiThoiGianLamViec());
-                    updatedProfile.setHinhThucLamViec(profile.getHinhThucLamViec());
-                    updatedProfile.setLoaiLuongMongMuon(profile.getLoaiLuongMongMuon());
-                    updatedProfile.setMucLuongMongMuon(profile.getMucLuongMongMuon());
+                    // Cập nhật các trường của hồ sơ - chỉ cập nhật nếu giá trị không phải là null
+                    if (profile.getHoTen() != null) updatedProfile.setHoTen(profile.getHoTen());
+                    if (profile.getGioiTinh() != null) updatedProfile.setGioiTinh(profile.getGioiTinh());
+                    if (profile.getUrlAnhDaiDien() != null) updatedProfile.setUrlAnhDaiDien(profile.getUrlAnhDaiDien());
+                    if (profile.getNgaySinh() != null) updatedProfile.setNgaySinh(profile.getNgaySinh());
+                    if (profile.getSoDienThoai() != null) updatedProfile.setSoDienThoai(profile.getSoDienThoai());
+                    if (profile.getTrinhDoHocVan() != null) updatedProfile.setTrinhDoHocVan(profile.getTrinhDoHocVan());
+                    if (profile.getTinhTrangHocVan() != null) updatedProfile.setTinhTrangHocVan(profile.getTinhTrangHocVan());
+                    if (profile.getKinhNghiem() != null) updatedProfile.setKinhNghiem(profile.getKinhNghiem());
+                    if (profile.getTongNamKinhNghiem() != null) updatedProfile.setTongNamKinhNghiem(profile.getTongNamKinhNghiem());
+                    if (profile.getGioiThieuBanThan() != null) updatedProfile.setGioiThieuBanThan(profile.getGioiThieuBanThan());
+                    if (profile.getUrlCv() != null) updatedProfile.setUrlCv(profile.getUrlCv());
+                    if (profile.getCongKhai() != null) updatedProfile.setCongKhai(profile.getCongKhai());
+                    if (profile.getViTriMongMuon() != null) updatedProfile.setViTriMongMuon(profile.getViTriMongMuon());
+                    if (profile.getThoiGianMongMuon() != null) updatedProfile.setThoiGianMongMuon(profile.getThoiGianMongMuon());
+                    if (profile.getLoaiThoiGianLamViec() != null) updatedProfile.setLoaiThoiGianLamViec(profile.getLoaiThoiGianLamViec());
+                    if (profile.getHinhThucLamViec() != null) updatedProfile.setHinhThucLamViec(profile.getHinhThucLamViec());
+                    if (profile.getLoaiLuongMongMuon() != null) updatedProfile.setLoaiLuongMongMuon(profile.getLoaiLuongMongMuon());
+                    if (profile.getMucLuongMongMuon() != null) updatedProfile.setMucLuongMongMuon(profile.getMucLuongMongMuon());
                     updatedProfile.setNgayCapNhat(java.time.LocalDateTime.now());
 
                     Profile savedProfile = profileService.updateProfile(updatedProfile);

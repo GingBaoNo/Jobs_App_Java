@@ -150,29 +150,64 @@ public class UserProfileFragment extends Fragment {
         // Gán sự kiện click cho ảnh đại diện để chọn ảnh mới
         imgAvatar.setOnClickListener(v -> openImagePicker());
 
-        // Các nút chỉnh sửa có thể mở activity chỉnh sửa
         btnEditProfile.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Tính năng chỉnh sửa hồ sơ đang phát triển", Toast.LENGTH_SHORT).show();
+            // Replace current fragment with EditProfileFragment
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, new EditProfileFragment())
+                    .addToBackStack(null)
+                    .commit();
+            }
         });
 
         btnDownloadCv.setOnClickListener(v -> {
             openCvPicker(); // Thay vì chỉ hiện toast, gọi hàm chọn file CV
         });
 
+        // Chuyển các nút chỉnh sửa riêng lẻ sang EditProfileFragment
         btnEditBasicInfo.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Chỉnh sửa thông tin cơ bản", Toast.LENGTH_SHORT).show();
+            // Replace current fragment with EditProfileFragment
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, new EditProfileFragment())
+                    .addToBackStack(null)
+                    .commit();
+            }
         });
 
         btnEditCareerGoal.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Chỉnh sửa mục tiêu nghề nghiệp", Toast.LENGTH_SHORT).show();
+            // Replace current fragment with EditProfileFragment
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, new EditProfileFragment())
+                    .addToBackStack(null)
+                    .commit();
+            }
         });
 
         btnEditDesiredPosition.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Chỉnh sửa vị trí mong muốn", Toast.LENGTH_SHORT).show();
+            // Replace current fragment with EditProfileFragment
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, new EditProfileFragment())
+                    .addToBackStack(null)
+                    .commit();
+            }
         });
 
         btnEditWorkExperience.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Chỉnh sửa kinh nghiệm làm việc", Toast.LENGTH_SHORT).show();
+            // Replace current fragment with EditProfileFragment
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, new EditProfileFragment())
+                    .addToBackStack(null)
+                    .commit();
+            }
         });
 
         btnViewCv.setOnClickListener(v -> {
@@ -183,7 +218,7 @@ public class UserProfileFragment extends Fragment {
     private void viewCv() {
         // Mở URL CV trong trình duyệt hoặc hiển thị PDF nếu có thư viện hỗ trợ
         if (currentProfile != null && currentProfile.getUrlCv() != null && !currentProfile.getUrlCv().isEmpty()) {
-            String cvUrl = "http://192.168.102.19:8080" + currentProfile.getUrlCv();
+            String cvUrl = "http://172.24.134.32:8080" + currentProfile.getUrlCv();
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(cvUrl));
                 startActivity(intent);
@@ -235,20 +270,34 @@ public class UserProfileFragment extends Fragment {
                             // Xử lý trường hợp avatarUrl không bắt đầu bằng dấu /
                             String imageUrl;
                             if (avatarUrl.startsWith("/")) {
-                                imageUrl = "http://192.168.102.19:8080" + avatarUrl;
+                                imageUrl = "http://172.24.134.32:8080" + avatarUrl;
                             } else {
-                                imageUrl = "http://192.168.102.19:8080/" + avatarUrl;
+                                imageUrl = "http://172.24.134.32:8080/" + avatarUrl;
                             }
 
                             // Ghi log để kiểm tra URL sẽ dùng để load ảnh
                             System.out.println("Image URL sẽ load: " + imageUrl);
 
                             try {
-                                Glide.with(requireContext())
-                                        .load(imageUrl)
-                                        .placeholder(R.drawable.ic_default_avatar)
-                                        .error(R.drawable.ic_default_avatar)
-                                        .into(imgAvatar);
+                                // Đảm bảo rằng imgAvatar đã có kích thước hợp lệ trước khi load ảnh
+                                imgAvatar.post(() -> {
+                                    if (imgAvatar.getWidth() > 0 && imgAvatar.getHeight() > 0) {
+                                        Glide.with(requireContext())
+                                                .load(imageUrl)
+                                                .placeholder(R.drawable.ic_default_avatar)
+                                                .error(R.drawable.ic_default_avatar)
+                                                .into(imgAvatar);
+                                    } else {
+                                        // Nếu chưa có kích thước, đợi thêm một chút
+                                        imgAvatar.post(() -> {
+                                            Glide.with(requireContext())
+                                                    .load(imageUrl)
+                                                    .placeholder(R.drawable.ic_default_avatar)
+                                                    .error(R.drawable.ic_default_avatar)
+                                                    .into(imgAvatar);
+                                        });
+                                    }
+                                });
                             } catch (Exception e) {
                                 System.out.println("Lỗi load ảnh bằng Glide: " + e.getMessage());
                                 // Fallback: sử dụng ảnh mặc định nếu có lỗi
@@ -539,18 +588,32 @@ public class UserProfileFragment extends Fragment {
             // Xử lý trường hợp avatarUrl không bắt đầu bằng dấu /
             String imageUrl;
             if (avatarUrl.startsWith("/")) {
-                imageUrl = "http://192.168.102.19:8080" + avatarUrl;
+                imageUrl = "http://172.24.134.32:8080" + avatarUrl;
             } else {
-                imageUrl = "http://192.168.102.19:8080/" + avatarUrl;
+                imageUrl = "http://172.24.134.32:8080/" + avatarUrl;
             }
             System.out.println("Image URL sẽ load: " + imageUrl);
 
             try {
-                Glide.with(this)
-                        .load(imageUrl)
-                        .placeholder(R.drawable.ic_default_avatar)
-                        .error(R.drawable.ic_default_avatar)
-                        .into(imgAvatar);
+                // Đảm bảo rằng imgAvatar đã có kích thước hợp lệ trước khi load ảnh
+                imgAvatar.post(() -> {
+                    if (imgAvatar.getWidth() > 0 && imgAvatar.getHeight() > 0) {
+                        Glide.with(UserProfileFragment.this)
+                                .load(imageUrl)
+                                .placeholder(R.drawable.ic_default_avatar)
+                                .error(R.drawable.ic_default_avatar)
+                                .into(imgAvatar);
+                    } else {
+                        // Nếu chưa có kích thước, đợi thêm một chút
+                        imgAvatar.post(() -> {
+                            Glide.with(UserProfileFragment.this)
+                                    .load(imageUrl)
+                                    .placeholder(R.drawable.ic_default_avatar)
+                                    .error(R.drawable.ic_default_avatar)
+                                    .into(imgAvatar);
+                        });
+                    }
+                });
             } catch (Exception e) {
                 System.out.println("Lỗi load ảnh bằng Glide: " + e.getMessage());
                 // Fallback: sử dụng ảnh mặc định nếu có lỗi

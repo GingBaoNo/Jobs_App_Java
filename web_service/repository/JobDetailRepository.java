@@ -21,11 +21,11 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
 
     List<JobDetail> findTop10ByTrangThaiDuyetAndTrangThaiTinTuyenOrderByLuotXemDesc(String trangThaiDuyet, String trangThaiTinTuyen);
 
-    @Query("SELECT j FROM JobDetail j WHERE j.tieuDe LIKE %:keyword% OR j.chiTiet LIKE %:keyword%")
+    @Query("SELECT j FROM JobDetail j WHERE (UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:keyword), '%') OR j.chiTiet LIKE CONCAT('%', :keyword, '%'))")
     List<JobDetail> findByTieuDeContainingOrChiTietContaining(@Param("keyword") String keyword);
 
     // Các phương thức tìm kiếm nâng cao
-    @Query("SELECT j FROM JobDetail j WHERE (j.tieuDe LIKE %:keyword% OR j.chiTiet LIKE %:keyword% OR j.company.tenCongTy LIKE %:keyword%) " +
+    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:keyword), '%') OR j.chiTiet LIKE CONCAT('%', :keyword, '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:keyword), '%')) " +
            "AND (:workField IS NULL OR j.workField.maLinhVuc = :workField) " +
            "AND (:workType IS NULL OR j.workType.maHinhThuc = :workType) " +
            "AND (:minSalary IS NULL OR j.luong >= :minSalary) " +
@@ -40,7 +40,7 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
                                            @Param("maxSalary") Integer maxSalary);
 
     // Phương thức tìm kiếm không áp dụng điều kiện trạng thái duyệt để cho phép tìm kiếm công việc đang chờ
-    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR j.tieuDe LIKE %:keyword% OR j.chiTiet LIKE %:keyword% OR j.company.tenCongTy LIKE %:keyword%) " +
+    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:keyword), '%') OR j.chiTiet LIKE CONCAT('%', :keyword, '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:keyword), '%')) " +
            "AND (:workField IS NULL OR j.workField.maLinhVuc = :workField) " +
            "AND (:workType IS NULL OR j.workType.maHinhThuc = :workType) " +
            "AND (:minSalary IS NULL OR j.luong >= :minSalary) " +
@@ -53,13 +53,13 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
                                            @Param("minSalary") Integer minSalary,
                                            @Param("maxSalary") Integer maxSalary);
 
-    @Query("SELECT j FROM JobDetail j WHERE j.company.tenCongTy LIKE %:companyName% " +
+    @Query("SELECT j FROM JobDetail j WHERE UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:companyName), '%') " +
            "AND j.trangThaiDuyet = 'Đã duyệt' " +
            "AND j.trangThaiTinTuyen = 'Mở' " +
            "AND j.ngayKetThucTuyenDung >= CURRENT_DATE")
     List<JobDetail> findByCompanyContaining(@Param("companyName") String companyName);
 
-    @Query("SELECT j FROM JobDetail j WHERE (j.tieuDe LIKE %:keyword% OR j.chiTiet LIKE %:keyword% OR j.company.tenCongTy LIKE %:keyword%) " +
+    @Query("SELECT j FROM JobDetail j WHERE (UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:keyword), '%') OR j.chiTiet LIKE CONCAT('%', :keyword, '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:keyword), '%')) " +
            "AND (:workField IS NULL OR j.workField.maLinhVuc = :workField) " +
            "AND (:workType IS NULL OR j.workType.maHinhThuc = :workType) " +
            "AND (:minSalary IS NULL OR j.luong >= :minSalary) " +
@@ -75,7 +75,7 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
                                            org.springframework.data.domain.Pageable pageable);
 
     // Phương thức tìm kiếm có phân trang không áp dụng điều kiện trạng thái duyệt
-    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR j.tieuDe LIKE %:keyword% OR j.chiTiet LIKE %:keyword% OR j.company.tenCongTy LIKE %:keyword%) " +
+    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:keyword), '%') OR j.chiTiet LIKE CONCAT('%', :keyword, '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:keyword), '%')) " +
            "AND (:workField IS NULL OR j.workField.maLinhVuc = :workField) " +
            "AND (:workType IS NULL OR j.workType.maHinhThuc = :workType) " +
            "AND (:minSalary IS NULL OR j.luong >= :minSalary) " +
@@ -106,27 +106,27 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
     org.springframework.data.domain.Page<JobDetail> findByWorkFieldAndWorkTypeWithPaging(@Param("workField") Integer workField, @Param("workType") Integer workType, org.springframework.data.domain.Pageable pageable);
 
     // Phương thức tìm kiếm công việc theo tiêu đề (không phân biệt hoa thường)
-    @Query("SELECT j FROM JobDetail j WHERE j.tieuDe LIKE %:title%")
+    @Query("SELECT j FROM JobDetail j WHERE UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:title), '%')")
     List<JobDetail> findByTieuDeContainingIgnoreCase(@Param("title") String title);
 
     // Phương thức tìm kiếm công việc theo công ty và tiêu đề (không phân biệt hoa thường)
-    @Query("SELECT j FROM JobDetail j WHERE j.company = :company AND j.tieuDe LIKE %:title%")
+    @Query("SELECT j FROM JobDetail j WHERE j.company = :company AND UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:title), '%')")
     List<JobDetail> findByCompanyAndTieuDeContainingIgnoreCase(@Param("company") Company company, @Param("title") String title);
 
     // Phương thức tìm kiếm công việc theo trạng thái duyệt và tiêu đề công ty
-    @Query("SELECT j FROM JobDetail j WHERE j.trangThaiDuyet = :trangThaiDuyet AND (j.tieuDe LIKE %:search% OR j.company.tenCongTy LIKE %:search%)")
+    @Query("SELECT j FROM JobDetail j WHERE j.trangThaiDuyet = :trangThaiDuyet AND (UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:search), '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:search), '%'))")
     List<JobDetail> findByTrangThaiDuyetAndTieuDeContainingIgnoreCaseOrCompanyTenCongTyContainingIgnoreCase(@Param("trangThaiDuyet") String trangThaiDuyet, @Param("search") String search);
 
     // Phương thức tìm kiếm công việc theo tiêu đề hoặc tên công ty
-    @Query("SELECT j FROM JobDetail j WHERE (j.tieuDe LIKE %:search% OR j.company.tenCongTy LIKE %:search%)")
+    @Query("SELECT j FROM JobDetail j WHERE (UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:search), '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:search), '%'))")
     List<JobDetail> findByTieuDeContainingIgnoreCaseOrCompanyTenCongTyContainingIgnoreCase(@Param("search") String search);
 
     // Phương thức tìm kiếm mở (không áp dụng điều kiện trạng thái nghiêm ngặt, tương tự như tìm kiếm theo tiêu đề)
-    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR j.tieuDe LIKE %:keyword% OR j.chiTiet LIKE %:keyword% OR j.company.tenCongTy LIKE %:keyword%)")
+    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:keyword), '%') OR j.chiTiet LIKE CONCAT('%', :keyword, '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:keyword), '%'))")
     List<JobDetail> findByKeywordWithoutStatus(@Param("keyword") String keyword);
 
     // Phương thức tìm kiếm toàn diện (không áp dụng điều kiện trạng thái)
-    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR j.tieuDe LIKE %:keyword% OR j.chiTiet LIKE %:keyword% OR j.company.tenCongTy LIKE %:keyword%) " +
+    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:keyword), '%') OR j.chiTiet LIKE CONCAT('%', :keyword, '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:keyword), '%')) " +
            "AND (:workField IS NULL OR j.workField.maLinhVuc = :workField) " +
            "AND (:workType IS NULL OR j.workType.maHinhThuc = :workType) " +
            "AND (:minSalary IS NULL OR j.luong >= :minSalary) " +
