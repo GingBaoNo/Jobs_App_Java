@@ -16,18 +16,20 @@
             android:layout_height="wrap_content">
 
             <!-- Logo and Title -->
+
             <ImageView
                 android:id="@+id/iv_logo"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:src="@drawable/fjobs_logo"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="36dp"
                 android:background="@drawable/circle_background"
+                android:backgroundTint="@color/primary_500"
                 android:padding="12dp"
-                android:backgroundTint="@color/primary_500" />
+                android:src="@drawable/fjobs_logo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tv_app_name"
