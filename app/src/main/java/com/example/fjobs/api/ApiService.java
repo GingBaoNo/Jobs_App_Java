@@ -6,6 +6,7 @@ import com.example.fjobs.models.LoginRequest;
 import com.example.fjobs.models.RegisterRequest;
 import com.example.fjobs.models.User;
 
+import java.util.Map;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -116,6 +117,65 @@ public interface ApiService {
 
     @GET("v1/saved-jobs/check/{jobId}")
     Call<ApiResponse> checkIfJobSaved(@Path("jobId") int jobId);
+
+    // Chat APIs
+    @GET("v1/chat/admin/users")
+    Call<ApiResponse> getChatUsersForAdmin();
+
+    @GET("v1/chat/employer/admins")
+    Call<ApiResponse> getAdminsForEmployer();
+
+    @GET("v1/chat/employer/applicants")
+    Call<ApiResponse> getApplicantsForEmployer();
+
+    @GET("v1/chat/applicant/available-chats")
+    Call<ApiResponse> getAvailableChatsForApplicant();
+
+    // API kết hợp cho nhà tuyển dụng (lấy cả admin và ứng viên) - sẽ được thực hiện trong fragment
+    // Không cần endpoint riêng cho API này vì sẽ gọi cả hai endpoint riêng biệt
+
+    @GET("v1/chat/messages/{otherUserId}")
+    Call<ApiResponse> getConversation(@Path("otherUserId") int otherUserId);
+
+    @POST("v1/chat/send")
+    Call<ApiResponse> sendMessage(@Body Map<String, Object> messageData);
+
+    // Request classes cho chat
+    class MessageRequest {
+        private int senderId;
+        private int receiverId;
+        private String content;
+
+        public MessageRequest(int senderId, int receiverId, String content) {
+            this.senderId = senderId;
+            this.receiverId = receiverId;
+            this.content = content;
+        }
+
+        public int getSenderId() {
+            return senderId;
+        }
+
+        public void setSenderId(int senderId) {
+            this.senderId = senderId;
+        }
+
+        public int getReceiverId() {
+            return receiverId;
+        }
+
+        public void setReceiverId(int receiverId) {
+            this.receiverId = receiverId;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+    }
 
     // Request classes
     class AppliedJobRequest {

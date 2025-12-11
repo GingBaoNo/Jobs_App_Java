@@ -50,31 +50,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
-            // For web pages (existing functionality) - keep original configuration
             .authorizeHttpRequests(authz -> authz
+                // Public web pages and resources
                 .requestMatchers("/", "/register", "/login", "/css/**", "/js/**", "/images/**", "/webjars/**", "/uploads/**", "/uploads/cvs/**", "/uploads/avatars/**", "/uploads/profiles/**").permitAll()
-                // Allow public access to job and company pages
+                // Public access to job/company pages
                 .requestMatchers("/jobs/**", "/companies/**", "/job/**", "/company/**").permitAll()
-                // API authentication endpoints
+                // Public API endpoints
                 .requestMatchers("/api/auth/**").permitAll()
-                // API job detail endpoints for Android
                 .requestMatchers("/api/v1/job-details/**").permitAll()
-                // API company endpoints for Android
                 .requestMatchers("/api/v1/companies/**").permitAll()
-                // API profile endpoints - cần xác thực
-                .requestMatchers("/api/v1/profiles/**").authenticated()
-                // API applied jobs endpoints - cần xác thực
-                .requestMatchers("/api/v1/applied-jobs/**").authenticated()
-                // API saved jobs endpoints - cần xác thực
-                .requestMatchers("/api/v1/saved-jobs/**").authenticated()
-                // Admin endpoints
+                // All other API endpoints - need authentication via JWT
+                .requestMatchers("/api/v1/**").authenticated()
+                // Web pages with role-based access
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // Employer endpoints
                 .requestMatchers("/employer/**").hasRole("NTD")
-                // Employee endpoints
                 .requestMatchers("/employee/**").hasRole("NV")
                 .anyRequest().authenticated()
             )
+            // Configure form login for web pages only, and specify redirect behavior for non-web requests
             .formLogin(form -> form
                 .loginPage("/login")
                 .usernameParameter("taiKhoan")
@@ -82,13 +75,15 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/")
                 .failureUrl("/login?error=true")
                 .permitAll()
+                // Only apply form login redirect to web requests, not API requests
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/")
                 .permitAll()
             )
-            .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for development
+            .csrf(AbstractHttpConfigurer::disable)
+            // Add JWT filter before the authentication filter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

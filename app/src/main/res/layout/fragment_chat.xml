@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/design_default_color_surface">
+
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/design_default_color_primary"
+        android:elevation="4dp"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tv_toolbar_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:text="Trò chuyện"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Danh sách cuộc trò chuyện -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_chat_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:background="@color/white" />
+
+    <!-- Empty state -->
+    <LinearLayout
+        android:id="@+id/layout_empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/iv_empty"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_message"
+            android:layout_marginBottom="16dp"
+            android:tint="@color/design_default_color_secondary_variant" />
+
+        <TextView
+            android:id="@+id/tv_empty_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chưa có tin nhắn"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_empty_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Những cuộc trò chuyện của bạn sẽ xuất hiện ở đây"
+            android:textSize="14sp"
+            android:textColor="@color/design_default_color_secondary_variant"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <!-- Loading state -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:visibility="gone" />
+
+</LinearLayout>

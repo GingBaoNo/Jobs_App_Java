@@ -50,4 +50,7 @@ dependencies {
 
     // Thêm thư viện CircleImageView
     implementation("de.hdodenhof:circleimageview:3.1.0")
+
+    // Thêm thư viện Java-WebSocket cho kết nối realtime
+    implementation("org.java-websocket:Java-WebSocket:1.5.4")
 }

@@ -50,6 +50,30 @@ public class AdminDataController {
         return ResponseEntity.ok(users);
     }
 
+    // Lấy người dùng theo vai trò NTD
+    @GetMapping("/users/ntd")
+    public ResponseEntity<List<User>> getNTDUsers() {
+        Optional<Role> ntdRoleOpt = roleService.getRoleByTenVaiTro("NTD");
+        if (ntdRoleOpt.isPresent()) {
+            List<User> ntdUsers = userService.getUsersByRole(ntdRoleOpt.get());
+            return ResponseEntity.ok(ntdUsers);
+        } else {
+            return ResponseEntity.ok(List.of()); // Trả về danh sách rỗng nếu vai trò NTD không tồn tại
+        }
+    }
+
+    // Lấy người dùng theo vai trò NV
+    @GetMapping("/users/nv")
+    public ResponseEntity<List<User>> getNVUsers() {
+        Optional<Role> nvRoleOpt = roleService.getRoleByTenVaiTro("NV");
+        if (nvRoleOpt.isPresent()) {
+            List<User> nvUsers = userService.getUsersByRole(nvRoleOpt.get());
+            return ResponseEntity.ok(nvUsers);
+        } else {
+            return ResponseEntity.ok(List.of()); // Trả về danh sách rỗng nếu vai trò NV không tồn tại
+        }
+    }
+
     // Lấy thông tin người dùng theo ID
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Integer id) {

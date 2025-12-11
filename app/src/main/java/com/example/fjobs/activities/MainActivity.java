@@ -21,6 +21,7 @@ import com.example.fjobs.fragments.UserProfileFragment;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.fragments.AppliedJobsFragment;
+import com.example.fjobs.fragments.ChatFragment;
 import com.example.fjobs.fragments.CompaniesFragment;
 import com.example.fjobs.fragments.HomeFragment;
 import com.example.fjobs.fragments.JobsFragment;
@@ -258,10 +259,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 selectedFragment = new JobsFragment();
             } else if (itemId == R.id.nav_companies_bottom) {
                 selectedFragment = new CompaniesFragment();
-            } else if (itemId == R.id.nav_saved_jobs_bottom) {
-                // Kiểm tra đăng nhập trước khi mở danh sách công việc đã lưu
+            } else if (itemId == R.id.nav_chat_bottom) {
+                // Kiểm tra đăng nhập trước khi mở danh sách trò chuyện
                 if (isUserLoggedIn()) {
-                    selectedFragment = new SavedJobsFragment();
+                    selectedFragment = new ChatFragment();
                 } else {
                     redirectToLogin();
                     return true;
@@ -296,6 +297,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             selectedFragment = new JobsFragment();
         } else if (id == R.id.nav_companies) {
             selectedFragment = new CompaniesFragment();
+        } else if (id == R.id.nav_chat) {
+            // Kiểm tra đăng nhập trước khi mở danh sách trò chuyện
+            if (isUserLoggedIn()) {
+                loadFragment(new ChatFragment());
+            } else {
+                redirectToLogin();
+            }
         } else if (id == R.id.nav_profile) {
             // Kiểm tra đăng nhập trước khi mở hồ sơ
             if (isUserLoggedIn()) {

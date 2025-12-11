@@ -26,12 +26,31 @@ public class AuthInterceptor implements Interceptor {
             Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         String token = sharedPreferences.getString(Constants.KEY_TOKEN, null);
 
+        // Không thêm header cho các endpoint xác thực
+        String url = original.url().toString();
+        if (url.contains("/auth/login") || url.contains("/auth/register") ||
+            url.contains("/register") || url.contains("/login")) {
+            return chain.proceed(original);
+        }
+
         Request.Builder requestBuilder = original.newBuilder();
-        if (token != null) {
+
+        // Chỉ thêm header nếu có token và request chưa có header Authorization
+        if (token != null && original.header("Authorization") == null) {
             requestBuilder.addHeader("Authorization", "Bearer " + token);
         }
 
         Request request = requestBuilder.build();
-        return chain.proceed(request);
+
+        // Gọi chain.proceed một lần duy nhất và trả về kết quả
+        Response response = chain.proceed(request);
+
+        // Kiểm tra nếu response là lỗi xác thực
+        if (response.code() == 401) {
+            // Token có thể đã hết hạn, có thể xóa token nếu cần
+            // Nhưng không retry để tránh vòng lặp
+        }
+
+        return response;
     }
 }

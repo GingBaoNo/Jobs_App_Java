@@ -29,8 +29,9 @@ public class ApiClient {
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
                     .writeTimeout(30, TimeUnit.SECONDS)
-                    .retryOnConnectionFailure(true);
-                    // Mặc định OkHttpClient sẽ giới hạn số lần redirect
+                    .retryOnConnectionFailure(false)  // Tắt retry hoàn toàn
+                    .followRedirects(false)  // Tắt redirect để tránh vòng lặp
+                    .followSslRedirects(false);  // Tắt SSL redirect
 
             if (context != null) {
                 httpClient.addInterceptor(new AuthInterceptor(context));
@@ -47,16 +48,19 @@ public class ApiClient {
 
     // Thêm phương thức không tham số để giữ tính tương thích
     public static Retrofit getRetrofitInstance() {
-        // Trả về retrofit hiện có nếu đã được khởi tạo, nếu không sẽ cần Context
+        // Trả về retrofit hiện có nếu đã được khởi tạo, nếu không thì không thể tạo được
         if (retrofit != null) {
             return retrofit;
         }
-        // Nếu chưa có context, trả về null và các nơi sử dụng cần truyền context
-        return null; // Cần truyền context khi chưa được khởi tạo
+        throw new IllegalStateException("ApiClient chưa được khởi tạo với Context. Vui lòng gọi initialize(Context) trước.");
     }
 
     // Phương thức khởi tạo có context
     public static void initialize(Context ctx) {
         getRetrofitInstance(ctx);
+    }
+
+    public static ApiService getApiService() {
+        return getRetrofitInstance().create(ApiService.class);
     }
 }

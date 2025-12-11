@@ -47,6 +47,9 @@
         <activity
             android:name=".activities.SavedJobsActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.ChatDetailActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

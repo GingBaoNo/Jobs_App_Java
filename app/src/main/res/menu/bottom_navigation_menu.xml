@@ -13,9 +13,9 @@
         android:icon="@drawable/ic_business"
         android:title="Công ty" />
     <item
-        android:id="@+id/nav_saved_jobs_bottom"
-        android:icon="@drawable/ic_bookmark"
-        android:title="Đã lưu" />
+        android:id="@+id/nav_chat_bottom"
+        android:icon="@drawable/ic_message"
+        android:title="Trò chuyện" />
     <item
         android:id="@+id/nav_profile_bottom"
         android:icon="@drawable/ic_person"

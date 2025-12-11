@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/design_default_color_surface">
+
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/design_default_color_primary"
+        android:elevation="4dp"
+        android:padding="16dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:tint="@color/white" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_toolbar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tên người nhận"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đang hoạt động"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:alpha="0.8" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- RecyclerView hiển thị tin nhắn -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_messages"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:background="@color/white" />
+
+    <!-- Gửi tin nhắn -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="@color/white"
+        android:elevation="4dp">
+
+        <EditText
+            android:id="@+id/et_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Nhập tin nhắn..."
+            android:padding="12dp"
+            android:background="@drawable/message_input_background"
+            android:layout_marginEnd="8dp"
+            android:inputType="textMultiLine|textCapSentences"
+            android:maxLines="4"
+            android:scrollbars="vertical"
+            android:backgroundTint="@color/design_default_color_surface" />
+
+        <Button
+            android:id="@+id/btn_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:text="Gửi"
+            android:background="@drawable/send_button_background"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_gravity="bottom" />
+
+    </LinearLayout>
+
+</LinearLayout>

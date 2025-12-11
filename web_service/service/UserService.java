@@ -19,7 +19,7 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private com.example.demo.service.ProfileService profileService;
+    private ProfileService profileService;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -29,6 +29,10 @@ public class UserService {
         return userRepository.findAll();
     }
     
+    public User findById(Integer id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
     public Optional<User> getUserById(Integer id) {
         return userRepository.findById(id);
     }
@@ -65,9 +69,8 @@ public class UserService {
 
         User savedUser = saveUser(user);
 
-        // Tự động tạo hồ sơ mặc định cho người dùng mới
-        // Chỉ tạo hồ sơ mặc định nếu người dùng là NV (người tìm việc)
-        if (role.getTenVaiTro().equals("NV")) {
+        // Tự động tạo hồ sơ mặc định cho người dùng mới nếu là NV (người xin việc)
+        if ("NV".equals(role.getTenVaiTro())) {
             try {
                 profileService.createProfileForUser(savedUser, tenHienThi, "Nam"); // Mặc định giới tính là Nam, người dùng có thể cập nhật sau
             } catch (Exception e) {

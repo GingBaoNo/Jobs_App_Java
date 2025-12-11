@@ -122,7 +122,14 @@ public class LoginActivity extends AppCompatActivity {
                                     }
 
                                     Object userRoleObj = userMap.get("role");
-                                    if (userRoleObj != null) {
+                                    if (userRoleObj != null && userRoleObj instanceof java.util.Map) {
+                                        java.util.Map<String, Object> roleMap = (java.util.Map<String, Object>) userRoleObj;
+                                        Object roleName = roleMap.get("tenVaiTro");
+                                        if (roleName != null) {
+                                            editor.putString(Constants.KEY_USER_ROLE, roleName.toString());
+                                        }
+                                    } else if (userRoleObj != null) {
+                                        // Trường hợp fallback nếu userRoleObj là chuỗi trực tiếp
                                         editor.putString(Constants.KEY_USER_ROLE, userRoleObj.toString());
                                     }
 
