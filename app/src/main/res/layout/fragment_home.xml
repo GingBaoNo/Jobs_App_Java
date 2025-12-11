@@ -22,6 +22,36 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PHẦN MỀM TÌM KIẾM VIỆC"
+            android:textColor="@color/white"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@+id/header_background"
+            app:layout_constraintEnd_toEndOf="@+id/header_background"
+            app:layout_constraintHorizontal_bias="0.589"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/header_background"
+            app:layout_constraintVertical_bias="0.319" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dành cho các ứng viên tiềm năng"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="italic"
+            app:layout_constraintBottom_toBottomOf="@+id/header_background"
+            app:layout_constraintEnd_toEndOf="@+id/header_background"
+            app:layout_constraintHorizontal_bias="0.188"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/header_background"
+            app:layout_constraintVertical_bias="0.533" />
+
         <androidx.cardview.widget.CardView
             android:id="@+id/search_card"
             android:layout_width="0dp"
