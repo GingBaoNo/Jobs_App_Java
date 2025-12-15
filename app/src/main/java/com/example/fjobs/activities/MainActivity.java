@@ -26,6 +26,7 @@ import com.example.fjobs.fragments.CompaniesFragment;
 import com.example.fjobs.fragments.HomeFragment;
 import com.example.fjobs.fragments.JobsFragment;
 import com.example.fjobs.fragments.SavedJobsFragment;
+import com.example.fjobs.fragments.SearchResultFragment;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.utils.Constants;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -199,9 +200,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (avatarUrl != null && !avatarUrl.isEmpty()) {
                 String imageUrl;
                 if (avatarUrl.startsWith("/")) {
-                    imageUrl = "http://192.168.102.19:8080" + avatarUrl;
+                    imageUrl = "http://192.168.1.8:8080" + avatarUrl;
                 } else {
-                    imageUrl = "http://192.168.102.19:8080/" + avatarUrl;
+                    imageUrl = "http://192.168.1.8:8080/" + avatarUrl;
                 }
 
                 try {
@@ -297,6 +298,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             selectedFragment = new JobsFragment();
         } else if (id == R.id.nav_companies) {
             selectedFragment = new CompaniesFragment();
+        } else if (id == R.id.nav_search) {
+            // Mở fragment tìm kiếm
+            selectedFragment = new SearchResultFragment();
         } else if (id == R.id.nav_chat) {
             // Kiểm tra đăng nhập trước khi mở danh sách trò chuyện
             if (isUserLoggedIn()) {

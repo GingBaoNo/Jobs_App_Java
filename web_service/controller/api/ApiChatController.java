@@ -3,19 +3,21 @@ package com.example.demo.controller.api;
 import com.example.demo.entity.User;
 import com.example.demo.model.UserWithLastMessage;
 import com.example.demo.entity.Message;
+import com.example.demo.model.StandardChatMessage;
 import com.example.demo.service.ChatService;
 import com.example.demo.service.MessageService;
+import com.example.demo.service.NotificationService;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.ApiResponseUtil;
+import com.example.demo.utils.ChatMessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Optional;
 
 @RestController
@@ -31,6 +33,12 @@ public class ApiChatController {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     // Lấy danh sách người có thể nhắn tin cho admin (tất cả người dùng)
     @GetMapping("/admin/users")
@@ -156,9 +164,14 @@ public class ApiChatController {
         // Đánh dấu tin nhắn là đã đọc
         chatService.markMessagesAsRead(currentUser.get(), otherUser);
 
-        // Lấy lịch sử tin nhắn
-        var conversation = chatService.getConversation(currentUser.get(), otherUser);
-        return ApiResponseUtil.success("Lịch sử trò chuyện được tải thành công", conversation);
+        // Lấy lịch sử tin nhắn và chuyển đổi sang StandardChatMessage sử dụng tiện ích
+        List<Message> conversation = chatService.getConversation(currentUser.get(), otherUser);
+        List<StandardChatMessage> standardConversation = ChatMessageUtils.toStandardChatMessages(conversation);
+
+        // Ghi log để debug
+        System.out.println("Số lượng tin nhắn lấy được: " + conversation.size());
+
+        return ApiResponseUtil.success("Lịch sử trò chuyện được tải thành công", standardConversation);
     }
 
     // API dành cho người tìm việc (NVT) để lấy danh sách người có thể trò chuyện
@@ -187,7 +200,7 @@ public class ApiChatController {
 
     // API để gửi tin nhắn
     @PostMapping("/send")
-    public ResponseEntity<?> sendMessage(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> sendMessage(@RequestBody StandardChatMessage standardMsg) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             return ApiResponseUtil.error("Người dùng chưa xác thực");
@@ -200,17 +213,8 @@ public class ApiChatController {
         }
 
         try {
-            // Lấy thông tin từ payload
-            Integer receiverId = payload.get("receiverId") != null ?
-                Integer.parseInt(payload.get("receiverId").toString()) : null;
-            String content = payload.get("content") != null ?
-                payload.get("content").toString() : null;
-
-            if (receiverId == null || content == null || content.trim().isEmpty()) {
-                return ApiResponseUtil.error("Thiếu thông tin người nhận hoặc nội dung tin nhắn");
-            }
-
-            User receiver = userService.findById(receiverId);
+            // Xác thực thông tin người nhận
+            User receiver = userService.findById(standardMsg.getReceiverId());
             if (receiver == null) {
                 return ApiResponseUtil.error("Không tìm thấy người nhận");
             }
@@ -259,17 +263,35 @@ public class ApiChatController {
             }
 
             // Tạo và lưu tin nhắn
-            Message message = new Message(currentUser.get(), receiver, content);
+            Message message = new Message(currentUser.get(), receiver, standardMsg.getContent());
             Message savedMessage = messageService.saveMessage(message);
 
-            // Trả về thông tin tin nhắn đã lưu
-            Map<String, Object> response = new HashMap<>();
-            response.put("messageId", savedMessage.getMaTinNhan());
-            response.put("senderId", savedMessage.getSender().getMaNguoiDung());
-            response.put("receiverId", savedMessage.getReceiver().getMaNguoiDung());
-            response.put("content", savedMessage.getNoiDung());
-            response.put("sendTime", savedMessage.getThoiGianGui());
-            response.put("read", savedMessage.getDaDoc());
+            if (savedMessage == null) {
+                return ApiResponseUtil.error("Không thể lưu tin nhắn vào cơ sở dữ liệu");
+            }
+
+            // Chuyển đổi sang StandardChatMessage sử dụng tiện ích
+            StandardChatMessage response = ChatMessageUtils.toStandardChatMessage(savedMessage);
+
+            // Gửi tin nhắn qua WebSocket đến người nhận (nếu đang trực tuyến)
+            messagingTemplate.convertAndSendToUser(
+                    receiver.getTaiKhoan(),
+                    "/queue/messages",
+                    response
+            );
+
+            // Gửi tin nhắn qua WebSocket đến người gửi (để cập nhật giao diện)
+            messagingTemplate.convertAndSendToUser(
+                    currentUser.get().getTaiKhoan(),
+                    "/queue/messages",
+                    response
+            );
+
+            // Gửi thông báo reload cho cả người gửi và người nhận
+            notificationService.notifyUserReload(currentUser.get().getTaiKhoan(), "new_message");
+            notificationService.notifyUserReload(receiver.getTaiKhoan(), "new_message");
+
+            System.out.println("Tin nhắn đã được gửi từ API và gửi qua WebSocket thành công");
 
             return ApiResponseUtil.success("Tin nhắn đã được gửi thành công", response);
         } catch (Exception e) {

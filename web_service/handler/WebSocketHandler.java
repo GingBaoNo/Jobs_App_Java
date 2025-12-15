@@ -1,7 +1,7 @@
 package com.example.demo.handler;
 
 import com.example.demo.entity.User;
-import com.example.demo.model.ChatMessage;
+import com.example.demo.model.StandardChatMessage;
 import com.example.demo.service.MessageService;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,11 +43,12 @@ public class WebSocketHandler {
             System.out.println("User Disconnected: " + username);
             userSessions.remove(username);
             // Gửi tin nhắn đến các client khác về việc người dùng đã rời
-            ChatMessage chatMessage = new ChatMessage();
-            chatMessage.setType(ChatMessage.MessageType.LEAVE.toString());
-            chatMessage.setSender(username);
+            StandardChatMessage standardMsg = new StandardChatMessage();
+            standardMsg.setType("LEAVE");
+            standardMsg.setSenderUsername(username);
+            standardMsg.setSenderDisplayName(username);
 
-            messagingTemplate.convertAndSend("/topic/public", chatMessage);
+            messagingTemplate.convertAndSend("/topic/public", standardMsg);
         }
     }
 

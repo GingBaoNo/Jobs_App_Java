@@ -15,7 +15,7 @@ public class ApiClient {
     private static Context context;
     // Cập nhật URL để sử dụng localhost cho Android Emulator
     // Nếu bạn sử dụng thiết bị thật, thay 10.0.2.2 bằng IP địa phương của máy bạn
-    private static final String BASE_URL = "http://192.168.102.19:8080/api/";
+    private static final String BASE_URL = "http://192.168.1.8:8080/api/";
 
     public static Retrofit getRetrofitInstance(Context ctx) {
         if (retrofit == null) {

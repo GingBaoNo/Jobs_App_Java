@@ -4,6 +4,7 @@ import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.JobDetail;
 import com.example.fjobs.models.LoginRequest;
 import com.example.fjobs.models.RegisterRequest;
+import com.example.fjobs.models.StandardChatMessage;
 import com.example.fjobs.models.User;
 
 import java.util.Map;
@@ -139,6 +140,9 @@ public interface ApiService {
 
     @POST("v1/chat/send")
     Call<ApiResponse> sendMessage(@Body Map<String, Object> messageData);
+
+    @POST("v1/chat/send")
+    Call<ApiResponse> sendStandardMessage(@Body StandardChatMessage standardMessage);
 
     // Request classes cho chat
     class MessageRequest {

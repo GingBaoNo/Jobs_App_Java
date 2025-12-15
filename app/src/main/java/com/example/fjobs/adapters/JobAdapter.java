@@ -100,7 +100,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
                 // Hiển thị logo công ty nếu có
                 if (job.getCompany().getHinhAnhCty() != null) {
-                    String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
+                    String logoUrl = "http://192.168.1.8:8080" + job.getCompany().getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
                     Glide.with(itemView.getContext())
                         .load(logoUrl)
                         .placeholder(R.drawable.ic_boss) // Ảnh placeholder khi đang load

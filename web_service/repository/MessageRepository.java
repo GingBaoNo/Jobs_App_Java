@@ -23,4 +23,7 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
     
     @Query("SELECT m FROM Message m WHERE (m.sender = :user1 AND m.receiver = :user2) OR (m.sender = :user2 AND m.receiver = :user1) ORDER BY m.thoiGianGui ASC")
     List<Message> findConversationBetweenUsers(@Param("user1") User user1, @Param("user2") User user2);
+
+    @Query("UPDATE Message m SET m.daDoc = :daDoc WHERE m.maTinNhan = :id")
+    void updateMessageReadStatus(@Param("id") Integer id, @Param("daDoc") Boolean daDoc);
 }

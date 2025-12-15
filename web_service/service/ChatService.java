@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.entity.Message;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
+import com.example.demo.model.StandardChatMessage;
 import com.example.demo.model.UserWithLastMessage;
 import com.example.demo.repository.MessageRepository;
 import com.example.demo.repository.RoleRepository;
@@ -18,13 +19,13 @@ public class ChatService {
 
     @Autowired
     private MessageRepository messageRepository;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private RoleRepository roleRepository;
-    
+
     @Autowired
     private MessageService messageService;
 
@@ -32,7 +33,7 @@ public class ChatService {
     public List<UserWithLastMessage> getChatUsersForAdmin(User adminUser) {
         List<User> allUsers = userRepository.findAll();
         List<UserWithLastMessage> result = new ArrayList<>();
-        
+
         for (User user : allUsers) {
             if (!user.getMaNguoiDung().equals(adminUser.getMaNguoiDung())) {
                 // Lấy tin nhắn cuối cùng giữa hai người
@@ -46,7 +47,7 @@ public class ChatService {
                 }
             }
         }
-        
+
         // Sắp xếp theo thời gian tin nhắn cuối cùng
         result.sort((u1, u2) -> {
             if (u1.getLastMessageTime() == null && u2.getLastMessageTime() == null) return 0;
@@ -54,7 +55,7 @@ public class ChatService {
             if (u2.getLastMessageTime() == null) return -1;
             return u2.getLastMessageTime().compareTo(u1.getLastMessageTime());
         });
-        
+
         return result;
     }
 
@@ -97,7 +98,7 @@ public class ChatService {
         // Dựa trên bảng applied_jobs để tìm các ứng viên
         List<User> applicantUsers = userRepository.findApplicantsByEmployer(employerUser.getMaNguoiDung());
         List<UserWithLastMessage> result = new ArrayList<>();
-        
+
         for (User applicant : applicantUsers) {
             // Lấy tin nhắn cuối cùng giữa NTD và ứng viên
             List<Message> conversation = messageRepository.findConversationBetweenUsers(employerUser, applicant);
@@ -109,7 +110,7 @@ public class ChatService {
                 result.add(new UserWithLastMessage(applicant, "Bắt đầu cuộc trò chuyện", null, false));
             }
         }
-        
+
         // Sắp xếp theo thời gian tin nhắn cuối cùng
         result.sort((u1, u2) -> {
             if (u1.getLastMessageTime() == null && u2.getLastMessageTime() == null) return 0;
@@ -117,13 +118,23 @@ public class ChatService {
             if (u2.getLastMessageTime() == null) return -1;
             return u2.getLastMessageTime().compareTo(u1.getLastMessageTime());
         });
-        
+
         return result;
     }
 
     // Lấy tin nhắn giữa hai người dùng
     public List<Message> getConversation(User user1, User user2) {
-        return messageRepository.findConversationBetweenUsers(user1, user2);
+        List<Message> conversation = messageRepository.findConversationBetweenUsers(user1, user2);
+        System.out.println("Số lượng tin nhắn trong DB giữa " + user1.getTaiKhoan() + " và " + user2.getTaiKhoan() + ": " + conversation.size());
+        return conversation;
+    }
+
+    // Lấy tin nhắn giữa hai người dùng dưới dạng StandardChatMessage
+    public List<StandardChatMessage> getStandardConversation(User user1, User user2) {
+        List<Message> messages = messageRepository.findConversationBetweenUsers(user1, user2);
+        return messages.stream()
+                .map(this::convertToStandardChatMessage)
+                .collect(Collectors.toList());
     }
 
     // Đánh dấu tin nhắn là đã đọc
@@ -131,8 +142,7 @@ public class ChatService {
         List<Message> messages = messageRepository.findBySenderAndReceiver(sender, receiver);
         for (Message message : messages) {
             if (!message.getDaDoc()) {
-                message.setDaDoc(true);
-                messageService.saveMessage(message);
+                messageService.markAsRead(message.getMaTinNhan());
             }
         }
     }
@@ -188,5 +198,24 @@ public class ChatService {
         });
 
         return result;
+    }
+
+    // Hàm chuyển đổi từ Message sang StandardChatMessage
+    private StandardChatMessage convertToStandardChatMessage(Message message) {
+        StandardChatMessage standardMsg = new StandardChatMessage();
+        standardMsg.setMessageId(message.getMaTinNhan());
+        standardMsg.setSenderId(message.getSender().getMaNguoiDung());
+        standardMsg.setSenderUsername(message.getSender().getTaiKhoan());
+        standardMsg.setSenderDisplayName(message.getSender().getTenHienThi() != null ?
+            message.getSender().getTenHienThi() : message.getSender().getTaiKhoan());
+        standardMsg.setReceiverId(message.getReceiver().getMaNguoiDung());
+        standardMsg.setReceiverUsername(message.getReceiver().getTaiKhoan());
+        standardMsg.setReceiverDisplayName(message.getReceiver().getTenHienThi() != null ?
+            message.getReceiver().getTenHienThi() : message.getReceiver().getTaiKhoan());
+        standardMsg.setContent(message.getNoiDung());
+        standardMsg.setSendTime(message.getThoiGianGui());
+        standardMsg.setIsRead(message.getDaDoc());
+        standardMsg.setType("CHAT");
+        return standardMsg;
     }
 }

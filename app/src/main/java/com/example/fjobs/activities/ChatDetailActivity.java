@@ -1,6 +1,7 @@
 package com.example.fjobs.activities;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,12 +11,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.fjobs.R;
 import com.example.fjobs.adapters.MessageAdapter;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.Message;
+import com.example.fjobs.models.StandardChatMessage;
 import com.example.fjobs.utils.ChatUtils;
 import com.example.fjobs.utils.SessionManager;
 import com.example.fjobs.utils.WebSocketManager;
@@ -24,6 +27,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import java.util.ArrayList;
 import java.util.List;
+
+import android.os.Handler;
+import android.os.Looper;
 
 public class ChatDetailActivity extends AppCompatActivity implements WebSocketManager.WebSocketListener {
 
@@ -41,6 +47,12 @@ public class ChatDetailActivity extends AppCompatActivity implements WebSocketMa
     private int otherUserId;
     private String otherUserName;
 
+    // Thêm các trường cho việc kiểm tra tin nhắn mới định kỳ
+    private Handler handler;
+    private Runnable refreshRunnable;
+    private static final int REFRESH_INTERVAL = 5000; // 5 giây
+    private boolean isCheckingForNewMessages = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +64,7 @@ public class ChatDetailActivity extends AppCompatActivity implements WebSocketMa
         setupWebSocket();
         loadConversation();
         setupClickListeners();
+        setupMessageRefresh();
     }
 
     private void initViews() {
@@ -103,22 +116,37 @@ public class ChatDetailActivity extends AppCompatActivity implements WebSocketMa
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    // Deserialize dữ liệu từ JSON sang List<Message>
+                    // Deserialize dữ liệu từ JSON sang List<StandardChatMessage>
                     Object data = response.body().getData();
-                    List<Message> messages = null;
+                    List<StandardChatMessage> standardMessages = null;
                     if (data instanceof List) {
                         List<Object> rawList = (List<Object>) data;
-                        messages = new java.util.ArrayList<>();
+                        standardMessages = new java.util.ArrayList<>();
                         for (Object item : rawList) {
-                            // Chuyển đổi từng item trong list sang Message
+                            // Chuyển đổi từng item trong list sang StandardChatMessage
                             String jsonItem = new com.google.gson.Gson().toJson(item);
-                            Message message = new com.google.gson.Gson().fromJson(jsonItem, Message.class);
-                            messages.add(message);
+                            StandardChatMessage standardMessage = new com.google.gson.Gson().fromJson(jsonItem, StandardChatMessage.class);
+
+                            // Đảm bảo thông tin người gửi và người nhận được xử lý đúng
+                            if (standardMessage != null) {
+                                standardMessages.add(standardMessage);
+                            }
                         }
                     }
-                    if (messages != null) {
+                    if (standardMessages != null) {
                         messageList.clear();
-                        messageList.addAll(messages);
+                        // Chuyển đổi StandardChatMessage sang Message để hiển thị
+                        for (StandardChatMessage standardMsg : standardMessages) {
+                            Message message = new Message();
+                            message.setMessageId(standardMsg.getMessageId() != null ? standardMsg.getMessageId() : 0);
+                            message.setSenderId(standardMsg.getSenderId() != null ? standardMsg.getSenderId() : 0);
+                            message.setReceiverId(standardMsg.getReceiverId() != null ? standardMsg.getReceiverId() : 0);
+                            message.setContent(standardMsg.getContent());
+                            message.setRead(standardMsg.getIsRead() != null ? standardMsg.getIsRead() : false);
+                            message.setSendTimeString(standardMsg.getSendTimeString());
+
+                            messageList.add(message);
+                        }
                         messageAdapter.notifyDataSetChanged();
 
                         // Cuộn đến tin nhắn cuối cùng
@@ -158,42 +186,42 @@ public class ChatDetailActivity extends AppCompatActivity implements WebSocketMa
             return;
         }
 
-        // Tạo đối tượng tin nhắn để hiển thị ngay lập tức
         int currentUserId = sessionManager.getUserId();
-        Message newMessage = new Message(currentUserId, otherUserId, messageContent);
-
-        // Thêm vào danh sách và cập nhật giao diện
-        messageList.add(newMessage);
-        messageAdapter.addMessage(newMessage);
-
-        // Cuộn đến tin nhắn mới
-        recyclerMessages.scrollToPosition(messageList.size() - 1);
-
-        // Xóa nội dung ô nhập
-        etMessage.setText("");
 
         // Gửi tin nhắn qua WebSocket nếu kết nối
         if (webSocketManager.isConnected()) {
             String chatMessageJson = createChatMessageJson(currentUserId, otherUserId, messageContent);
             webSocketManager.sendMessage(chatMessageJson);
+
+            // Thêm tin nhắn vào giao diện ngay khi gửi qua WebSocket
+            // Không thêm vào giao diện ngay ở đây để tránh hiển thị kép
+            // Mà chỉ thêm khi nhận được phản hồi từ WebSocket hoặc sau khi gửi HTTP
         } else {
             // Nếu không có WebSocket, gửi qua HTTP API
             sendHttpMessage(currentUserId, otherUserId, messageContent);
         }
+
+        // Xóa nội dung ô nhập
+        etMessage.setText("");
     }
 
     private void sendHttpMessage(int senderId, int receiverId, String content) {
-        // Tạo Map để chứa dữ liệu tin nhắn
-        java.util.Map<String, Object> messageData = new java.util.HashMap<>();
-        messageData.put("receiverId", receiverId);
-        messageData.put("content", content);
+        // Tạo StandardChatMessage để gửi
+        StandardChatMessage standardMsg = new StandardChatMessage();
+        standardMsg.setSenderId(senderId);
+        standardMsg.setReceiverId(receiverId);
+        standardMsg.setContent(content);
+        standardMsg.setType("CHAT");
 
-        Call<ApiResponse> call = apiService.sendMessage(messageData);
+        Call<ApiResponse> call = apiService.sendStandardMessage(standardMsg);
         call.enqueue(new retrofit2.Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, retrofit2.Response<ApiResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(ChatDetailActivity.this, "Tin nhắn đã được gửi thành công", Toast.LENGTH_SHORT).show();
+                    // Sau khi gửi thành công, tải lại cuộc trò chuyện để cập nhật giao diện
+                    // Backend sẽ gửi thông báo reload qua WebSocket, nhưng cũng tải lại ngay để đảm bảo
+                    loadConversation();
                 } else {
                     Toast.makeText(ChatDetailActivity.this, "Không thể gửi tin nhắn qua API", Toast.LENGTH_SHORT).show();
                 }
@@ -225,23 +253,60 @@ public class ChatDetailActivity extends AppCompatActivity implements WebSocketMa
     public void onMessageReceived(String message) {
         // Xử lý tin nhắn nhận được từ WebSocket
         runOnUiThread(() -> {
-            // Parse tin nhắn JSON nhận được
-            Message parsedMessage = ChatUtils.parseChatMessage(message);
+            try {
+                // Parse tin nhắn JSON nhận được như StandardChatMessage
+                com.google.gson.Gson gson = new com.google.gson.Gson();
+                StandardChatMessage standardMsg = gson.fromJson(message, StandardChatMessage.class);
 
-            if (parsedMessage != null) {
-                // Kiểm tra xem tin nhắn có phải từ người đang trò chuyện không
-                if (parsedMessage.getSenderId() == otherUserId || parsedMessage.getReceiverId() == sessionManager.getUserId()) {
-                    // Reload lại cuộc trò chuyện để cập nhật tất cả tin nhắn mới
-                    // (cách này đơn giản và hiệu quả hơn là thêm từng tin nhắn riêng lẻ)
-                    loadConversation();
-                    Toast.makeText(this, "Nhận được tin nhắn mới", Toast.LENGTH_SHORT).show();
-                } else if (parsedMessage.getSenderId() == sessionManager.getUserId()) {
-                    // Đây là tin nhắn đã gửi thành công
-                    Toast.makeText(this, "Tin nhắn đã được gửi thành công", Toast.LENGTH_SHORT).show();
+                if (standardMsg != null) {
+                    // Kiểm tra xem tin nhắn có phải từ người đang trò chuyện hoặc là phản hồi cho tin nhắn đã gửi
+                    if (standardMsg.getSenderId() == otherUserId || standardMsg.getReceiverId() == otherUserId) {
+                        // Reload lại cuộc trò chuyện để cập nhật tất cả tin nhắn mới
+                        // (cách này đơn giản và hiệu quả hơn là thêm từng tin nhắn riêng lẻ)
+                        loadConversation();
+                    }
+
+                    // Thông báo người dùng tùy theo loại tin nhắn
+                    if (standardMsg.getSenderId() == sessionManager.getUserId()) {
+                        // Đây là tin nhắn đã gửi thành công
+                        Toast.makeText(this, "Tin nhắn đã được gửi thành công", Toast.LENGTH_SHORT).show();
+                    } else if (standardMsg.getSenderId() == otherUserId) {
+                        // Đây là tin nhắn nhận được từ người khác
+                        Toast.makeText(this, "Nhận được tin nhắn mới", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Nếu không parse được tin nhắn như StandardChatMessage, thử parse như Message cũ
+                    Message parsedMessage = ChatUtils.parseChatMessage(message);
+                    if (parsedMessage != null) {
+                        if (parsedMessage.getSenderId() == otherUserId || parsedMessage.getReceiverId() == otherUserId) {
+                            loadConversation();
+                        }
+
+                        if (parsedMessage.getSenderId() == sessionManager.getUserId()) {
+                            Toast.makeText(this, "Tin nhắn đã được gửi thành công", Toast.LENGTH_SHORT).show();
+                        } else if (parsedMessage.getSenderId() == otherUserId) {
+                            Toast.makeText(this, "Nhận được tin nhắn mới", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        // Nếu không parse được tin nhắn, vẫn reload để đảm bảo đồng bộ
+                        loadConversation();
+                    }
                 }
-            } else {
-                // Nếu không parse được tin nhắn, vẫn reload để đảm bảo đồng bộ
+            } catch (Exception e) {
+                // Nếu có lỗi parse, vẫn reload để đảm bảo đồng bộ
                 loadConversation();
+            }
+        });
+    }
+
+    @Override
+    public void onReloadNotification(String reason) {
+        // Xử lý thông báo reload từ server
+        runOnUiThread(() -> {
+            if ("new_message".equals(reason)) {
+                // Tải lại cuộc trò chuyện để cập nhật tin nhắn mới
+                loadConversation();
+                Log.d("ChatDetailActivity", "Đã nhận thông báo reload và tải lại cuộc trò chuyện");
             }
         });
     }
@@ -251,9 +316,60 @@ public class ChatDetailActivity extends AppCompatActivity implements WebSocketMa
         runOnUiThread(() -> Toast.makeText(this, "Lỗi kết nối chat: " + error, Toast.LENGTH_SHORT).show());
     }
 
+    private void setupMessageRefresh() {
+        handler = new Handler(Looper.getMainLooper());
+
+        refreshRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // Kiểm tra xem có nên tiếp tục kiểm tra không
+                if (isCheckingForNewMessages) {
+                    // Gọi lại API để tải cuộc trò chuyện mới
+                    // Chỉ thực hiện nếu không có kết nối WebSocket đang hoạt động
+                    // hoặc nếu có kết nối WebSocket nhưng không nhận được thông báo mới trong thời gian dài
+                    if (!webSocketManager.isConnected()) {
+                        loadConversation();
+                    }
+                    // Tiếp tục chu kỳ kiểm tra
+                    handler.postDelayed(this, REFRESH_INTERVAL);
+                }
+            }
+        };
+
+        // Bắt đầu kiểm tra
+        isCheckingForNewMessages = true;
+        handler.postDelayed(refreshRunnable, REFRESH_INTERVAL);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Dừng kiểm tra khi activity bị pause
+        isCheckingForNewMessages = false;
+        if (handler != null && refreshRunnable != null) {
+            handler.removeCallbacks(refreshRunnable);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Tiếp tục kiểm tra khi activity trở lại
+        if (!isCheckingForNewMessages) {
+            isCheckingForNewMessages = true;
+            if (handler != null && refreshRunnable != null) {
+                handler.postDelayed(refreshRunnable, REFRESH_INTERVAL);
+            }
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        isCheckingForNewMessages = false;
+        if (handler != null && refreshRunnable != null) {
+            handler.removeCallbacks(refreshRunnable);
+        }
         if (webSocketManager.isConnected()) {
             webSocketManager.disconnect();
         }

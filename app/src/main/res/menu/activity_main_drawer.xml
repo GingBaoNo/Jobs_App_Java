@@ -17,6 +17,10 @@
             android:icon="@drawable/ic_business"
             android:title="Công ty" />
         <item
+            android:id="@+id/nav_search"
+            android:icon="@drawable/ic_search"
+            android:title="Tìm kiếm" />
+        <item
             android:id="@+id/nav_chat"
             android:icon="@drawable/ic_message"
             android:title="Trò chuyện" />
