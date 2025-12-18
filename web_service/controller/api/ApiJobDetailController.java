@@ -260,6 +260,23 @@ public class ApiJobDetailController {
         return searchJobsCombinedCorrect(workField, workType, page, size, sortBy);
     }
 
+    // Endpoint tìm kiếm việc làm theo cấu trúc phân cấp mới (lĩnh vực, ngành, vị trí, cấp độ kinh nghiệm)
+    @GetMapping("/search-by-hierarchy")
+    public ResponseEntity<?> searchJobsByHierarchy(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workDiscipline,
+            @RequestParam(required = false) Integer jobPosition,
+            @RequestParam(required = false) Integer experienceLevel,
+            @RequestParam(required = false) Integer workType) {
+
+        List<JobDetail> jobs = jobDetailService.searchJobsByCombinedCriteriaWithNewHierarchy(
+                keyword, workField, workDiscipline, jobPosition, experienceLevel, workType);
+
+        List<Map<String, Object>> simplifiedJobs = jobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+        return ApiResponseUtil.success("Jobs searched successfully by hierarchy", simplifiedJobs);
+    }
+
     // Helper method để chuyển đổi JobDetail thành Map để tránh circular reference
     private Map<String, Object> convertJobDetailToMap(JobDetail job) {
         Map<String, Object> jobMap = new HashMap<>();
@@ -293,10 +310,29 @@ public class ApiJobDetailController {
             companyInfo.put("lienHeCty", company.getLienHeCty());
             companyInfo.put("hinhAnhCty", company.getHinhAnhCty()); // Đây là trường chứa logo công ty
             companyInfo.put("daXacThuc", company.getDaXacThuc());
+            companyInfo.put("moTaCongTy", company.getMoTaCongTy()); // Thêm trường mô tả công ty
             jobMap.put("company", companyInfo);
         }
         jobMap.put("workField", job.getWorkField());
         jobMap.put("workType", job.getWorkType());
+        // Thêm các trường mới: jobPosition và experienceLevel
+        if (job.getJobPosition() != null) {
+            Map<String, Object> jobPositionInfo = new HashMap<>();
+            jobPositionInfo.put("maViTri", job.getJobPosition().getMaViTri());
+            jobPositionInfo.put("tenViTri", job.getJobPosition().getTenViTri());
+            jobPositionInfo.put("workDiscipline", job.getJobPosition().getWorkDiscipline());
+            jobMap.put("jobPosition", jobPositionInfo);
+        } else {
+            jobMap.put("jobPosition", null);
+        }
+        if (job.getExperienceLevel() != null) {
+            Map<String, Object> experienceLevelInfo = new HashMap<>();
+            experienceLevelInfo.put("maCapDo", job.getExperienceLevel().getMaCapDo());
+            experienceLevelInfo.put("tenCapDo", job.getExperienceLevel().getTenCapDo());
+            jobMap.put("experienceLevel", experienceLevelInfo);
+        } else {
+            jobMap.put("experienceLevel", null);
+        }
         return jobMap;
     }
 }

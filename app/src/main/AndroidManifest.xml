@@ -50,6 +50,9 @@
         <activity
             android:name=".activities.ChatDetailActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.AdvancedSearchActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

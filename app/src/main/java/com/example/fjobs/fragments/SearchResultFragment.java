@@ -12,6 +12,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import android.content.Intent;
+import android.widget.Button;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,6 +37,7 @@ public class SearchResultFragment extends Fragment {
     private ImageButton buttonSearchResults;
     private RecyclerView rvSearchResults;
     private TextView tvSearchResultsTitle;
+    private Button btnAdvancedSearch;
     
     private HorizontalJobAdapter searchResultsAdapter;
     private List<JobDetail> searchResultsList;
@@ -72,6 +75,7 @@ public class SearchResultFragment extends Fragment {
         buttonSearchResults = view.findViewById(R.id.button_search_results);
         rvSearchResults = view.findViewById(R.id.rv_search_results);
         tvSearchResultsTitle = view.findViewById(R.id.tv_search_results_title);
+        btnAdvancedSearch = view.findViewById(R.id.btn_advanced_search);
     }
 
     private void setupRecyclerView() {
@@ -105,6 +109,13 @@ public class SearchResultFragment extends Fragment {
                 return true;
             }
             return false;
+        });
+
+        // Xử lý sự kiện click cho nút tìm kiếm nâng cao
+        btnAdvancedSearch.setOnClickListener(v -> {
+            // Chuyển sang AdvancedSearchActivity
+            Intent intent = new Intent(getActivity(), com.example.fjobs.activities.AdvancedSearchActivity.class);
+            startActivity(intent);
         });
     }
 
@@ -158,6 +169,80 @@ public class SearchResultFragment extends Fragment {
                             tvSearchResultsTitle.setText("Không tìm thấy kết quả cho: \"" + keyword + "\"");
                         } else {
                             tvSearchResultsTitle.setText("Kết quả tìm kiếm cho: \"" + keyword + "\" (" + searchResults.size() + " kết quả)");
+                        }
+                    } else {
+                        String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Tìm kiếm thất bại";
+                        System.out.println("Lỗi API: " + message);
+                        Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    System.out.println("Tìm kiếm thất bại, response code: " + response.code());
+                    Toast.makeText(getContext(), "Tìm kiếm thất bại, vui lòng thử lại", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                System.out.println("Lỗi kết nối: " + t.getMessage());
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Phương thức tìm kiếm theo cấu trúc phân cấp
+    public void performSearchByHierarchy(String keyword, Integer workField, Integer workDiscipline, Integer jobPosition, Integer experienceLevel, Integer workType) {
+        currentSearchKeyword = keyword != null ? keyword : "";
+        if (keyword != null && !keyword.isEmpty()) {
+            tvSearchResultsTitle.setText("Kết quả tìm kiếm cho: \"" + keyword + "\"");
+        } else {
+            tvSearchResultsTitle.setText("Kết quả tìm kiếm nâng cao");
+        }
+        System.out.println("Gọi API tìm kiếm theo cấu trúc phân cấp với từ khóa: " + keyword);
+
+        Call<ApiResponse> call = apiService.searchJobsByHierarchy(keyword, workField, workDiscipline, jobPosition, experienceLevel, workType);
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                System.out.println("Response code: " + response.code());
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    System.out.println("API Response isSuccess: " + apiResponse.isSuccess());
+                    System.out.println("API Response data: " + apiResponse.getData());
+
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Chuyển đổi dữ liệu từ API
+                        Object data = apiResponse.getData();
+                        List<JobDetail> searchResults = new ArrayList<>();
+
+                        if (data instanceof List) {
+                            List<?> rawData = (List<?>) data;
+                            System.out.println("Số lượng kết quả nhận được: " + rawData.size());
+
+                            for (Object item : rawData) {
+                                System.out.println("Xử lý item: " + item);
+                                if (item instanceof java.util.Map) {
+                                    JobDetail job = convertMapToJobDetail((java.util.Map<String, Object>) item);
+                                    if (job != null) {
+                                        System.out.println("Tìm thấy công việc: " + job.getTieuDe());
+                                        searchResults.add(job);
+                                    }
+                                } else if (item instanceof JobDetail) {
+                                    System.out.println("Tìm thấy công việc (JobDetail): " + ((JobDetail) item).getTieuDe());
+                                    searchResults.add((JobDetail) item);
+                                }
+                            }
+                        }
+
+                        // Cập nhật danh sách kết quả tìm kiếm
+                        searchResultsList.clear();
+                        searchResultsList.addAll(searchResults);
+                        searchResultsAdapter.notifyDataSetChanged();
+
+                        // Hiển thị thông báo nếu không có kết quả
+                        if (searchResults.isEmpty()) {
+                            tvSearchResultsTitle.setText("Không tìm thấy kết quả phù hợp");
+                        } else {
+                            tvSearchResultsTitle.setText("Kết quả tìm kiếm nâng cao (" + searchResults.size() + " kết quả)");
                         }
                     } else {
                         String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Tìm kiếm thất bại";
@@ -251,6 +336,24 @@ public class SearchResultFragment extends Fragment {
                 job.setCompany(company);
             }
 
+            // Xử lý vị trí công việc nếu có
+            if (map.containsKey("jobPosition") && map.get("jobPosition") != null) {
+                java.util.Map<String, Object> jobPositionMap = (java.util.Map<String, Object>) map.get("jobPosition");
+                if (jobPositionMap != null) {
+                    com.example.fjobs.models.JobPosition jobPosition = convertMapToJobPosition(jobPositionMap);
+                    job.setJobPosition(jobPosition);
+                }
+            }
+
+            // Xử lý cấp độ kinh nghiệm nếu có
+            if (map.containsKey("experienceLevel") && map.get("experienceLevel") != null) {
+                java.util.Map<String, Object> experienceLevelMap = (java.util.Map<String, Object>) map.get("experienceLevel");
+                if (experienceLevelMap != null) {
+                    com.example.fjobs.models.ExperienceLevel experienceLevel = convertMapToExperienceLevel(experienceLevelMap);
+                    job.setExperienceLevel(experienceLevel);
+                }
+            }
+
             return job;
         } catch (Exception e) {
             e.printStackTrace();
@@ -307,6 +410,128 @@ public class SearchResultFragment extends Fragment {
             }
 
             return company;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.JobPosition convertMapToJobPosition(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.JobPosition jobPosition = new com.example.fjobs.models.JobPosition();
+
+            if (map.containsKey("maViTri") && map.get("maViTri") != null) {
+                Object maViTriObj = map.get("maViTri");
+                if (maViTriObj instanceof Integer) {
+                    jobPosition.setMaViTri((Integer) maViTriObj);
+                } else if (maViTriObj instanceof Double) {
+                    jobPosition.setMaViTri(((Double) maViTriObj).intValue());
+                } else {
+                    jobPosition.setMaViTri(Integer.parseInt(maViTriObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenViTri") && map.get("tenViTri") != null) {
+                jobPosition.setTenViTri(map.get("tenViTri").toString());
+            }
+
+            // Xử lý workDiscipline nếu có
+            if (map.containsKey("workDiscipline") && map.get("workDiscipline") != null) {
+                java.util.Map<String, Object> workDisciplineMap = (java.util.Map<String, Object>) map.get("workDiscipline");
+                if (workDisciplineMap != null) {
+                    com.example.fjobs.models.WorkDiscipline workDiscipline = convertMapToWorkDiscipline(workDisciplineMap);
+                    jobPosition.setWorkDiscipline(workDiscipline);
+                }
+            }
+
+            return jobPosition;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.ExperienceLevel convertMapToExperienceLevel(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.ExperienceLevel experienceLevel = new com.example.fjobs.models.ExperienceLevel();
+
+            if (map.containsKey("maCapDo") && map.get("maCapDo") != null) {
+                Object maCapDoObj = map.get("maCapDo");
+                if (maCapDoObj instanceof Integer) {
+                    experienceLevel.setMaCapDo((Integer) maCapDoObj);
+                } else if (maCapDoObj instanceof Double) {
+                    experienceLevel.setMaCapDo(((Double) maCapDoObj).intValue());
+                } else {
+                    experienceLevel.setMaCapDo(Integer.parseInt(maCapDoObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenCapDo") && map.get("tenCapDo") != null) {
+                experienceLevel.setTenCapDo(map.get("tenCapDo").toString());
+            }
+
+            return experienceLevel;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.WorkDiscipline convertMapToWorkDiscipline(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.WorkDiscipline workDiscipline = new com.example.fjobs.models.WorkDiscipline();
+
+            if (map.containsKey("maNganh") && map.get("maNganh") != null) {
+                Object maNganhObj = map.get("maNganh");
+                if (maNganhObj instanceof Integer) {
+                    workDiscipline.setMaNganh((Integer) maNganhObj);
+                } else if (maNganhObj instanceof Double) {
+                    workDiscipline.setMaNganh(((Double) maNganhObj).intValue());
+                } else {
+                    workDiscipline.setMaNganh(Integer.parseInt(maNganhObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenNganh") && map.get("tenNganh") != null) {
+                workDiscipline.setTenNganh(map.get("tenNganh").toString());
+            }
+
+            // Xử lý workField nếu có
+            if (map.containsKey("workField") && map.get("workField") != null) {
+                java.util.Map<String, Object> workFieldMap = (java.util.Map<String, Object>) map.get("workField");
+                if (workFieldMap != null) {
+                    com.example.fjobs.models.WorkField workField = convertMapToWorkField(workFieldMap);
+                    workDiscipline.setWorkField(workField);
+                }
+            }
+
+            return workDiscipline;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.WorkField convertMapToWorkField(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.WorkField workField = new com.example.fjobs.models.WorkField();
+
+            if (map.containsKey("maLinhVuc") && map.get("maLinhVuc") != null) {
+                Object maLinhVucObj = map.get("maLinhVuc");
+                if (maLinhVucObj instanceof Integer) {
+                    workField.setMaLinhVuc((Integer) maLinhVucObj);
+                } else if (maLinhVucObj instanceof Double) {
+                    workField.setMaLinhVuc(((Double) maLinhVucObj).intValue());
+                } else {
+                    workField.setMaLinhVuc(Integer.parseInt(maLinhVucObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenLinhVuc") && map.get("tenLinhVuc") != null) {
+                workField.setTenLinhVuc(map.get("tenLinhVuc").toString());
+            }
+
+            return workField;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

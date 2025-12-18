@@ -191,7 +191,8 @@ public class EmployerController {
                 company.getTenNguoiDaiDien(),
                 company.getMaSoThue(),
                 company.getDiaChi(),
-                company.getLienHeCty()
+                company.getLienHeCty(),
+                company.getMoTaCongTy()
             );
 
             // Nếu có logo được tải lên, cập nhật logo cho công ty mới
@@ -264,6 +265,7 @@ public class EmployerController {
                                 @RequestParam("tenCongTy") String tenCongTy,
                                 @RequestParam("tenNguoiDaiDien") String tenNguoiDaiDien,
                                 @RequestParam("diaChi") String diaChi,
+                                @RequestParam("moTaCongTy") String moTaCongTy,
                                 @RequestParam("maSoThue") String maSoThue,
                                 @RequestParam("lienHeCty") String lienHeCty,
                                 @RequestParam(value = "logoFile", required = false) MultipartFile logoFile, // Thêm logo file, có thể không có
@@ -300,6 +302,7 @@ public class EmployerController {
         existingCompany.setTenCongTy(tenCongTy);
         existingCompany.setTenNguoiDaiDien(tenNguoiDaiDien);
         existingCompany.setDiaChi(diaChi);
+        existingCompany.setMoTaCongTy(moTaCongTy);
         existingCompany.setMaSoThue(maSoThue);
         existingCompany.setLienHeCty(lienHeCty);
 

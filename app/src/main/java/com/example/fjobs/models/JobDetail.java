@@ -69,6 +69,12 @@ public class JobDetail {
     @SerializedName("quyenLoi")
     private String quyenLoi; // Quyền lợi
 
+    @SerializedName("jobPosition")
+    private JobPosition jobPosition; // Vị trí công việc
+
+    @SerializedName("experienceLevel")
+    private ExperienceLevel experienceLevel; // Cấp độ kinh nghiệm
+
     // Constructors
     public JobDetail() {}
 
@@ -148,4 +154,10 @@ public class JobDetail {
 
     public String getQuyenLoi() { return quyenLoi; }
     public void setQuyenLoi(String quyenLoi) { this.quyenLoi = quyenLoi; }
+
+    public JobPosition getJobPosition() { return jobPosition; }
+    public void setJobPosition(JobPosition jobPosition) { this.jobPosition = jobPosition; }
+
+    public ExperienceLevel getExperienceLevel() { return experienceLevel; }
+    public void setExperienceLevel(ExperienceLevel experienceLevel) { this.experienceLevel = experienceLevel; }
 }

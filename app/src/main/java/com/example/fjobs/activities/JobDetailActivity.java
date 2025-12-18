@@ -36,6 +36,7 @@ public class JobDetailActivity extends AppCompatActivity {
     private TextView infoRowPositionTitle, infoRowPositionValue;
     private TextView infoRowSalaryTitle, infoRowSalaryValue;
     private TextView infoRowFormTitle, infoRowFormValue;
+    private TextView infoRowExperienceLevelTitle, infoRowExperienceLevelValue; // Thêm mới
     private TextView infoRowQuantityTitle, infoRowQuantityValue;
     private TextView infoRowGenderTitle, infoRowGenderValue;
     private TextView infoRowPostDateTitle, infoRowPostDateValue;
@@ -120,6 +121,10 @@ public class JobDetailActivity extends AppCompatActivity {
         LinearLayout infoRowForm = findViewById(R.id.info_row_form);
         infoRowFormTitle = infoRowForm.findViewById(R.id.text1);
         infoRowFormValue = infoRowForm.findViewById(R.id.text2);
+
+        LinearLayout infoRowExperienceLevel = findViewById(R.id.info_row_experience_level);
+        infoRowExperienceLevelTitle = infoRowExperienceLevel.findViewById(R.id.text1);
+        infoRowExperienceLevelValue = infoRowExperienceLevel.findViewById(R.id.text2);
 
         LinearLayout infoRowQuantity = findViewById(R.id.info_row_quantity);
         infoRowQuantityTitle = infoRowQuantity.findViewById(R.id.text1);
@@ -319,6 +324,24 @@ public class JobDetailActivity extends AppCompatActivity {
                 job.setCompany(company);
             }
 
+            // Xử lý vị trí công việc nếu có
+            if (map.containsKey("jobPosition") && map.get("jobPosition") != null) {
+                java.util.Map<String, Object> jobPositionMap = (java.util.Map<String, Object>) map.get("jobPosition");
+                if (jobPositionMap != null) {
+                    com.example.fjobs.models.JobPosition jobPosition = convertMapToJobPosition(jobPositionMap);
+                    job.setJobPosition(jobPosition);
+                }
+            }
+
+            // Xử lý cấp độ kinh nghiệm nếu có
+            if (map.containsKey("experienceLevel") && map.get("experienceLevel") != null) {
+                java.util.Map<String, Object> experienceLevelMap = (java.util.Map<String, Object>) map.get("experienceLevel");
+                if (experienceLevelMap != null) {
+                    com.example.fjobs.models.ExperienceLevel experienceLevel = convertMapToExperienceLevel(experienceLevelMap);
+                    job.setExperienceLevel(experienceLevel);
+                }
+            }
+
             return job;
         } catch (Exception e) {
             e.printStackTrace();
@@ -381,6 +404,128 @@ public class JobDetailActivity extends AppCompatActivity {
         }
     }
 
+    private com.example.fjobs.models.JobPosition convertMapToJobPosition(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.JobPosition jobPosition = new com.example.fjobs.models.JobPosition();
+
+            if (map.containsKey("maViTri") && map.get("maViTri") != null) {
+                Object maViTriObj = map.get("maViTri");
+                if (maViTriObj instanceof Integer) {
+                    jobPosition.setMaViTri((Integer) maViTriObj);
+                } else if (maViTriObj instanceof Double) {
+                    jobPosition.setMaViTri(((Double) maViTriObj).intValue());
+                } else {
+                    jobPosition.setMaViTri(Integer.parseInt(maViTriObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenViTri") && map.get("tenViTri") != null) {
+                jobPosition.setTenViTri(map.get("tenViTri").toString());
+            }
+
+            // Xử lý workDiscipline nếu có
+            if (map.containsKey("workDiscipline") && map.get("workDiscipline") != null) {
+                java.util.Map<String, Object> workDisciplineMap = (java.util.Map<String, Object>) map.get("workDiscipline");
+                if (workDisciplineMap != null) {
+                    com.example.fjobs.models.WorkDiscipline workDiscipline = convertMapToWorkDiscipline(workDisciplineMap);
+                    jobPosition.setWorkDiscipline(workDiscipline);
+                }
+            }
+
+            return jobPosition;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.ExperienceLevel convertMapToExperienceLevel(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.ExperienceLevel experienceLevel = new com.example.fjobs.models.ExperienceLevel();
+
+            if (map.containsKey("maCapDo") && map.get("maCapDo") != null) {
+                Object maCapDoObj = map.get("maCapDo");
+                if (maCapDoObj instanceof Integer) {
+                    experienceLevel.setMaCapDo((Integer) maCapDoObj);
+                } else if (maCapDoObj instanceof Double) {
+                    experienceLevel.setMaCapDo(((Double) maCapDoObj).intValue());
+                } else {
+                    experienceLevel.setMaCapDo(Integer.parseInt(maCapDoObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenCapDo") && map.get("tenCapDo") != null) {
+                experienceLevel.setTenCapDo(map.get("tenCapDo").toString());
+            }
+
+            return experienceLevel;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.WorkDiscipline convertMapToWorkDiscipline(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.WorkDiscipline workDiscipline = new com.example.fjobs.models.WorkDiscipline();
+
+            if (map.containsKey("maNganh") && map.get("maNganh") != null) {
+                Object maNganhObj = map.get("maNganh");
+                if (maNganhObj instanceof Integer) {
+                    workDiscipline.setMaNganh((Integer) maNganhObj);
+                } else if (maNganhObj instanceof Double) {
+                    workDiscipline.setMaNganh(((Double) maNganhObj).intValue());
+                } else {
+                    workDiscipline.setMaNganh(Integer.parseInt(maNganhObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenNganh") && map.get("tenNganh") != null) {
+                workDiscipline.setTenNganh(map.get("tenNganh").toString());
+            }
+
+            // Xử lý workField nếu có
+            if (map.containsKey("workField") && map.get("workField") != null) {
+                java.util.Map<String, Object> workFieldMap = (java.util.Map<String, Object>) map.get("workField");
+                if (workFieldMap != null) {
+                    com.example.fjobs.models.WorkField workField = convertMapToWorkField(workFieldMap);
+                    workDiscipline.setWorkField(workField);
+                }
+            }
+
+            return workDiscipline;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.WorkField convertMapToWorkField(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.WorkField workField = new com.example.fjobs.models.WorkField();
+
+            if (map.containsKey("maLinhVuc") && map.get("maLinhVuc") != null) {
+                Object maLinhVucObj = map.get("maLinhVuc");
+                if (maLinhVucObj instanceof Integer) {
+                    workField.setMaLinhVuc((Integer) maLinhVucObj);
+                } else if (maLinhVucObj instanceof Double) {
+                    workField.setMaLinhVuc(((Double) maLinhVucObj).intValue());
+                } else {
+                    workField.setMaLinhVuc(Integer.parseInt(maLinhVucObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenLinhVuc") && map.get("tenLinhVuc") != null) {
+                workField.setTenLinhVuc(map.get("tenLinhVuc").toString());
+            }
+
+            return workField;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private void displayJobDetails(JobDetail job) {
         // Hiển thị thông tin cơ bản
         tvJobTitleDetail.setText(job.getTieuDe());
@@ -404,14 +549,22 @@ public class JobDetailActivity extends AppCompatActivity {
         }
 
         // Hiển thị thông tin chi tiết công việc
-        infoRowPositionTitle.setText("Vị trí");
-        infoRowPositionValue.setText(job.getTieuDe());
+        infoRowPositionTitle.setText("Vị trí công việc");
+        infoRowPositionValue.setText(job.getJobPosition() != null && job.getJobPosition().getTenViTri() != null
+                ? job.getJobPosition().getTenViTri()
+                : job.getTieuDe());
 
         infoRowSalaryTitle.setText("Mức lương");
         infoRowSalaryValue.setText(String.format("%,d VNĐ", job.getLuong()));
 
         infoRowFormTitle.setText("Hình thức");
         infoRowFormValue.setText(job.getLoaiLuong() != null ? job.getLoaiLuong() : "Toàn thời gian");
+
+        // Hiển thị cấp độ kinh nghiệm
+        infoRowExperienceLevelTitle.setText("Kinh nghiệm");
+        infoRowExperienceLevelValue.setText(job.getExperienceLevel() != null && job.getExperienceLevel().getTenCapDo() != null
+                ? job.getExperienceLevel().getTenCapDo()
+                : "Kinh nghiệm linh hoạt");
 
         infoRowQuantityTitle.setText("Số lượng");
         infoRowQuantityValue.setText(job.getSoLuongTuyen() > 0 ? String.valueOf(job.getSoLuongTuyen()) + " người" : "N/A");

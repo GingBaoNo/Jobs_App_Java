@@ -182,12 +182,14 @@
                         android:layout_marginBottom="12dp"/>
 
                     <!-- SỬ DỤNG LAYOUT MỚI: item_title_value_row -->
-                    <!-- Vị trí -->
+                    <!-- Vị trí làm việc (thay đổi thành vị trí công việc cụ thể) -->
                     <include layout="@layout/item_title_value_row" android:id="@+id/info_row_position" />
                     <!-- Mức lương -->
                     <include layout="@layout/item_title_value_row" android:id="@+id/info_row_salary" />
                     <!-- Hình thức -->
                     <include layout="@layout/item_title_value_row" android:id="@+id/info_row_form" />
+                    <!-- Cấp độ kinh nghiệm (thêm mới) -->
+                    <include layout="@layout/item_title_value_row" android:id="@+id/info_row_experience_level" />
                     <!-- Số lượng -->
                     <include layout="@layout/item_title_value_row" android:id="@+id/info_row_quantity" />
                     <!-- Giới tính -->

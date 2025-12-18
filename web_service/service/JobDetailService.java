@@ -3,6 +3,8 @@ package com.example.demo.service;
 import com.example.demo.entity.Company;
 import com.example.demo.entity.JobDetail;
 import com.example.demo.entity.WorkField;
+import com.example.demo.entity.JobPosition;
+import com.example.demo.entity.ExperienceLevel;
 import com.example.demo.repository.JobDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -240,5 +242,31 @@ public class JobDetailService {
     // Phương thức tìm kiếm tất cả công việc theo từ khóa
     public List<JobDetail> getJobsBySearch(String search) {
         return jobDetailRepository.findByTieuDeContainingIgnoreCaseOrCompanyTenCongTyContainingIgnoreCase(search);
+    }
+
+    // Các phương thức mới cho cấu trúc phân cấp
+    public List<JobDetail> getJobsByWorkFieldAndDisciplineAndPositionAndExperience(
+            Integer workFieldId, Integer disciplineId, Integer positionId, Integer experienceLevelId) {
+        // This method is deprecated, use the one with all parameters instead
+        return jobDetailRepository.findByWorkFieldAndDisciplineAndPositionAndExperience(
+                null, workFieldId, disciplineId, positionId, experienceLevelId, null);
+    }
+
+    public List<JobDetail> getJobsByJobPosition(JobPosition jobPosition) {
+        return jobDetailRepository.findByJobPosition(jobPosition);
+    }
+
+    public List<JobDetail> getJobsByExperienceLevel(ExperienceLevel experienceLevel) {
+        return jobDetailRepository.findByExperienceLevel(experienceLevel);
+    }
+
+    // Phương thức tìm kiếm công việc với cấu trúc phân cấp mới
+    public List<JobDetail> searchJobsByCombinedCriteriaWithNewHierarchy(
+            String search, Integer fieldId, Integer disciplineId, Integer positionId,
+            Integer experienceId, Integer typeId) {
+
+        // Gọi phương thức trong repository để tìm kiếm theo tất cả tiêu chí
+        return jobDetailRepository.findByWorkFieldAndDisciplineAndPositionAndExperience(
+                search, fieldId, disciplineId, positionId, experienceId, typeId);
     }
 }

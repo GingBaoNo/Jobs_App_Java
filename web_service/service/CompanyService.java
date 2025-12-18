@@ -79,11 +79,15 @@ public class CompanyService {
     }
 
     public Company registerCompany(User user, String tenCongTy, String tenNguoiDaiDien, String maSoThue, String diaChi, String lienHeCty) {
+        return registerCompany(user, tenCongTy, tenNguoiDaiDien, maSoThue, diaChi, lienHeCty, null);
+    }
+
+    public Company registerCompany(User user, String tenCongTy, String tenNguoiDaiDien, String maSoThue, String diaChi, String lienHeCty, String moTaCongTy) {
         if (companyRepository.existsByTenCongTy(tenCongTy)) {
             throw new RuntimeException("Tên công ty đã tồn tại");
         }
 
-        Company company = new Company(user, tenCongTy);
+        Company company = new Company(user, tenCongTy, moTaCongTy);
         company.setTenNguoiDaiDien(tenNguoiDaiDien);
         company.setMaSoThue(maSoThue);
         company.setDiaChi(diaChi);

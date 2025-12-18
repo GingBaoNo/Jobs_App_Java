@@ -53,6 +53,8 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
         private TextView tvStatusBadge;
         private TextView tvSalary;
         private TextView tvShortDescription;
+        private TextView tvExperienceLevel; // Thêm mới
+        private TextView tvJobPosition;     // Thêm mới
         private TextView tvLocation;
         private TextView tvPostingDate;
         private TextView tvApplicationDeadline;
@@ -68,6 +70,8 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
             tvStatusBadge = itemView.findViewById(R.id.tv_status_badge);
             tvSalary = itemView.findViewById(R.id.tv_salary);
             tvShortDescription = itemView.findViewById(R.id.tv_short_description);
+            tvExperienceLevel = itemView.findViewById(R.id.tv_experience_level); // Ánh xạ mới
+            tvJobPosition = itemView.findViewById(R.id.tv_job_position);         // Ánh xạ mới
             tvLocation = itemView.findViewById(R.id.tv_location);
             tvPostingDate = itemView.findViewById(R.id.tv_posting_date);
             tvApplicationDeadline = itemView.findViewById(R.id.tv_application_deadline);
@@ -116,7 +120,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
             tvStatusBadge.setText(job.getTrangThaiTinTuyen());
 
             // Cập nhật mức lương
-            if (job.getLuong() > 0) {
+            if (job.getLuong() != null && job.getLuong() > 0) {
                 String salaryText = String.format("%,d", job.getLuong()) + " VNĐ";
                 if (job.getLoaiLuong() != null && !job.getLoaiLuong().isEmpty()) {
                     salaryText += " (" + job.getLoaiLuong() + ")";
@@ -136,6 +140,24 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
                 tvShortDescription.setText(shortDescription);
             } else {
                 tvShortDescription.setText("Không có mô tả");
+            }
+
+            // Cập nhật cấp độ kinh nghiệm
+            if (job.getExperienceLevel() != null && job.getExperienceLevel().getTenCapDo() != null) {
+                tvExperienceLevel.setText(job.getExperienceLevel().getTenCapDo());
+                tvExperienceLevel.setVisibility(View.VISIBLE);
+            } else {
+                tvExperienceLevel.setText("Kinh nghiệm linh hoạt");
+                tvExperienceLevel.setVisibility(View.VISIBLE); // Hoặc View.GONE nếu không muốn hiển thị
+            }
+
+            // Cập nhật vị trí công việc
+            if (job.getJobPosition() != null && job.getJobPosition().getTenViTri() != null) {
+                tvJobPosition.setText(job.getJobPosition().getTenViTri());
+                tvJobPosition.setVisibility(View.VISIBLE);
+            } else {
+                tvJobPosition.setText("Vị trí linh hoạt");
+                tvJobPosition.setVisibility(View.VISIBLE); // Hoặc View.GONE nếu không muốn hiển thị
             }
 
             // Cập nhật địa điểm (nếu có thông tin địa điểm trong tương lai có thể thêm)

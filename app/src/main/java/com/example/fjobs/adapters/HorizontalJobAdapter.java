@@ -54,6 +54,8 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
         private TextView tvStatusBadge;
         private TextView tvSalary;
         private TextView tvShortDescription;
+        private TextView tvExperienceLevel; // Thêm mới
+        private TextView tvJobPosition;     // Thêm mới
         private TextView tvLocation;
         private TextView tvApplicationDeadline;
         private TextView tvPostingDate;
@@ -69,6 +71,8 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
             tvStatusBadge = itemView.findViewById(R.id.tv_status_badge);
             tvSalary = itemView.findViewById(R.id.tv_salary);
             tvShortDescription = itemView.findViewById(R.id.tv_short_description);
+            tvExperienceLevel = itemView.findViewById(R.id.tv_experience_level); // Thêm mới
+            tvJobPosition = itemView.findViewById(R.id.tv_job_position);         // Thêm mới
             tvLocation = itemView.findViewById(R.id.tv_location);
             tvApplicationDeadline = itemView.findViewById(R.id.tv_application_deadline);
             tvPostingDate = itemView.findViewById(R.id.tv_posting_date);
@@ -80,9 +84,11 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     JobDetail job = jobList.get(position);
-                    Intent intent = new Intent(context, JobDetailActivity.class);
-                    intent.putExtra("job_id", job.getMaCongViec());
-                    context.startActivity(intent);
+                    if (job != null && job.getMaCongViec() != null) {
+                        Intent intent = new Intent(context, JobDetailActivity.class);
+                        intent.putExtra("job_id", job.getMaCongViec());
+                        context.startActivity(intent);
+                    }
                 }
             });
         }
@@ -113,7 +119,7 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
             tvStatusBadge.setText(status);
 
             // Set salary
-            if (job.getLuong() > 0) {
+            if (job.getLuong() != null && job.getLuong() > 0) {
                 String salaryText = String.format("%,d", job.getLuong()) + " VNĐ";
                 if (job.getLoaiLuong() != null && !job.getLoaiLuong().isEmpty()) {
                     salaryText += " (" + job.getLoaiLuong() + ")";
@@ -130,12 +136,30 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
                 tvShortDescription.setText(job.getChiTiet());
             }
 
+            // Set experience level if available
+            if (job.getExperienceLevel() != null && job.getExperienceLevel().getTenCapDo() != null) {
+                tvExperienceLevel.setText(job.getExperienceLevel().getTenCapDo());
+            } else {
+                tvExperienceLevel.setText("Kinh nghiệm linh hoạt");
+            }
+
+            // Set job position if available
+            if (job.getJobPosition() != null && job.getJobPosition().getTenViTri() != null) {
+                tvJobPosition.setText(job.getJobPosition().getTenViTri());
+            } else {
+                tvJobPosition.setText("Vị trí linh hoạt");
+            }
+
             // Set location (we might need to get this from another source)
             tvLocation.setText("Hà Nội"); // Temporary - should be retrieved from job location data
 
             // Set posting date
             if (job.getNgayDang() != null) {
-                tvPostingDate.setText(job.getNgayDang().substring(0, 10)); // Lấy phần ngày từ chuỗi datetime
+                try {
+                    tvPostingDate.setText(job.getNgayDang().substring(0, 10)); // Lấy phần ngày từ chuỗi datetime
+                } catch (Exception e) {
+                    tvPostingDate.setText(job.getNgayDang()); // Nếu chuỗi quá ngắn, hiển thị nguyên bản
+                }
             } else {
                 tvPostingDate.setText("N/A");
             }

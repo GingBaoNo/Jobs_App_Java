@@ -131,6 +131,24 @@ public class ApiCompanyController {
             // Don't include the company reference to avoid circular reference
             jobMap.put("workField", job.getWorkField());
             jobMap.put("workType", job.getWorkType());
+            // Thêm các trường mới: jobPosition và experienceLevel
+            if (job.getJobPosition() != null) {
+                Map<String, Object> jobPositionInfo = new HashMap<>();
+                jobPositionInfo.put("maViTri", job.getJobPosition().getMaViTri());
+                jobPositionInfo.put("tenViTri", job.getJobPosition().getTenViTri());
+                jobPositionInfo.put("workDiscipline", job.getJobPosition().getWorkDiscipline());
+                jobMap.put("jobPosition", jobPositionInfo);
+            } else {
+                jobMap.put("jobPosition", null);
+            }
+            if (job.getExperienceLevel() != null) {
+                Map<String, Object> experienceLevelInfo = new HashMap<>();
+                experienceLevelInfo.put("maCapDo", job.getExperienceLevel().getMaCapDo());
+                experienceLevelInfo.put("tenCapDo", job.getExperienceLevel().getTenCapDo());
+                jobMap.put("experienceLevel", experienceLevelInfo);
+            } else {
+                jobMap.put("experienceLevel", null);
+            }
             return jobMap;
         }).toList();
 

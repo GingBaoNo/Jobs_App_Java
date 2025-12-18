@@ -116,7 +116,7 @@ public class JobItemAdapter extends RecyclerView.Adapter<JobItemAdapter.JobItemV
             tvStatusBadge.setText(status);
 
             // Set salary
-            if (job.getLuong() > 0) {
+            if (job.getLuong() != null && job.getLuong() > 0) {
                 String salaryText = String.format("%,d", job.getLuong()) + " VNĐ";
                 if (job.getLoaiLuong() != null && !job.getLoaiLuong().isEmpty()) {
                     salaryText += " (" + job.getLoaiLuong() + ")";

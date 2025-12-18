@@ -28,6 +28,14 @@ public class JobDetail {
     @JoinColumn(name = "ma_hinh_thuc", nullable = false)
     private WorkType workType;
 
+    @ManyToOne
+    @JoinColumn(name = "ma_vi_tri_cong_viec")
+    private JobPosition jobPosition;
+
+    @ManyToOne
+    @JoinColumn(name = "ma_cap_do_kinh_nghiem")
+    private ExperienceLevel experienceLevel;
+
     @Column(name = "tieu_de", nullable = false)
     private String tieuDe;
 
@@ -96,6 +104,16 @@ public class JobDetail {
         this.company = company;
         this.workField = workField;
         this.workType = workType;
+        this.tieuDe = tieuDe;
+        this.ngayDang = LocalDateTime.now();
+    }
+
+    public JobDetail(Company company, WorkField workField, WorkType workType, JobPosition jobPosition, ExperienceLevel experienceLevel, String tieuDe) {
+        this.company = company;
+        this.workField = workField;
+        this.workType = workType;
+        this.jobPosition = jobPosition;
+        this.experienceLevel = experienceLevel;
         this.tieuDe = tieuDe;
         this.ngayDang = LocalDateTime.now();
     }
@@ -283,5 +301,21 @@ public class JobDetail {
 
     public void setQuyenLoi(String quyenLoi) {
         this.quyenLoi = quyenLoi;
+    }
+
+    public JobPosition getJobPosition() {
+        return jobPosition;
+    }
+
+    public void setJobPosition(JobPosition jobPosition) {
+        this.jobPosition = jobPosition;
+    }
+
+    public ExperienceLevel getExperienceLevel() {
+        return experienceLevel;
+    }
+
+    public void setExperienceLevel(ExperienceLevel experienceLevel) {
+        this.experienceLevel = experienceLevel;
     }
 }

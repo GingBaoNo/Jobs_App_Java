@@ -69,6 +69,33 @@ public interface ApiService {
     @GET("v1/job-details/search-no-status")
     Call<ApiResponse> searchJobsNoStatus(@Query("keyword") String keyword);
 
+    // Search by Hierarchy API (tìm kiếm theo cấu trúc phân cấp mới)
+    @GET("v1/job-details/search-by-hierarchy")
+    Call<ApiResponse> searchJobsByHierarchy(
+            @Query("keyword") String keyword,
+            @Query("workField") Integer workField,
+            @Query("workDiscipline") Integer workDiscipline,
+            @Query("jobPosition") Integer jobPosition,
+            @Query("experienceLevel") Integer experienceLevel,
+            @Query("workType") Integer workType
+    );
+
+    // APIs cho cấu trúc phân cấp
+    @GET("v1/work-fields")
+    Call<ApiResponse> getAllWorkFields();
+
+    @GET("v1/work-disciplines/by-field/{workFieldId}")
+    Call<ApiResponse> getWorkDisciplinesByField(@Path("workFieldId") Integer workFieldId);
+
+    @GET("v1/job-positions/by-discipline/{disciplineId}")
+    Call<ApiResponse> getJobPositionsByDiscipline(@Path("disciplineId") Integer disciplineId);
+
+    @GET("v1/experience-levels")
+    Call<ApiResponse> getAllExperienceLevels();
+
+    @GET("v1/work-types")
+    Call<ApiResponse> getAllWorkTypes();
+
     // Featured Jobs API
     @GET("v1/job-details/featured")
     Call<ApiResponse> getFeaturedJobs();

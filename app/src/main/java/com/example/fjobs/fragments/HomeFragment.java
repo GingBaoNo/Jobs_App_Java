@@ -344,6 +344,24 @@ public class HomeFragment extends Fragment {
                 job.setCompany(company);
             }
 
+            // Xử lý vị trí công việc nếu có
+            if (map.containsKey("jobPosition") && map.get("jobPosition") != null) {
+                java.util.Map<String, Object> jobPositionMap = (java.util.Map<String, Object>) map.get("jobPosition");
+                if (jobPositionMap != null) {
+                    com.example.fjobs.models.JobPosition jobPosition = convertMapToJobPosition(jobPositionMap);
+                    job.setJobPosition(jobPosition);
+                }
+            }
+
+            // Xử lý cấp độ kinh nghiệm nếu có
+            if (map.containsKey("experienceLevel") && map.get("experienceLevel") != null) {
+                java.util.Map<String, Object> experienceLevelMap = (java.util.Map<String, Object>) map.get("experienceLevel");
+                if (experienceLevelMap != null) {
+                    com.example.fjobs.models.ExperienceLevel experienceLevel = convertMapToExperienceLevel(experienceLevelMap);
+                    job.setExperienceLevel(experienceLevel);
+                }
+            }
+
             return job;
         } catch (Exception e) {
             e.printStackTrace();
@@ -406,6 +424,128 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    private com.example.fjobs.models.JobPosition convertMapToJobPosition(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.JobPosition jobPosition = new com.example.fjobs.models.JobPosition();
+
+            if (map.containsKey("maViTri") && map.get("maViTri") != null) {
+                Object maViTriObj = map.get("maViTri");
+                if (maViTriObj instanceof Integer) {
+                    jobPosition.setMaViTri((Integer) maViTriObj);
+                } else if (maViTriObj instanceof Double) {
+                    jobPosition.setMaViTri(((Double) maViTriObj).intValue());
+                } else {
+                    jobPosition.setMaViTri(Integer.parseInt(maViTriObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenViTri") && map.get("tenViTri") != null) {
+                jobPosition.setTenViTri(map.get("tenViTri").toString());
+            }
+
+            // Xử lý workDiscipline nếu có
+            if (map.containsKey("workDiscipline") && map.get("workDiscipline") != null) {
+                java.util.Map<String, Object> workDisciplineMap = (java.util.Map<String, Object>) map.get("workDiscipline");
+                if (workDisciplineMap != null) {
+                    com.example.fjobs.models.WorkDiscipline workDiscipline = convertMapToWorkDiscipline(workDisciplineMap);
+                    jobPosition.setWorkDiscipline(workDiscipline);
+                }
+            }
+
+            return jobPosition;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.ExperienceLevel convertMapToExperienceLevel(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.ExperienceLevel experienceLevel = new com.example.fjobs.models.ExperienceLevel();
+
+            if (map.containsKey("maCapDo") && map.get("maCapDo") != null) {
+                Object maCapDoObj = map.get("maCapDo");
+                if (maCapDoObj instanceof Integer) {
+                    experienceLevel.setMaCapDo((Integer) maCapDoObj);
+                } else if (maCapDoObj instanceof Double) {
+                    experienceLevel.setMaCapDo(((Double) maCapDoObj).intValue());
+                } else {
+                    experienceLevel.setMaCapDo(Integer.parseInt(maCapDoObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenCapDo") && map.get("tenCapDo") != null) {
+                experienceLevel.setTenCapDo(map.get("tenCapDo").toString());
+            }
+
+            return experienceLevel;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.WorkDiscipline convertMapToWorkDiscipline(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.WorkDiscipline workDiscipline = new com.example.fjobs.models.WorkDiscipline();
+
+            if (map.containsKey("maNganh") && map.get("maNganh") != null) {
+                Object maNganhObj = map.get("maNganh");
+                if (maNganhObj instanceof Integer) {
+                    workDiscipline.setMaNganh((Integer) maNganhObj);
+                } else if (maNganhObj instanceof Double) {
+                    workDiscipline.setMaNganh(((Double) maNganhObj).intValue());
+                } else {
+                    workDiscipline.setMaNganh(Integer.parseInt(maNganhObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenNganh") && map.get("tenNganh") != null) {
+                workDiscipline.setTenNganh(map.get("tenNganh").toString());
+            }
+
+            // Xử lý workField nếu có
+            if (map.containsKey("workField") && map.get("workField") != null) {
+                java.util.Map<String, Object> workFieldMap = (java.util.Map<String, Object>) map.get("workField");
+                if (workFieldMap != null) {
+                    com.example.fjobs.models.WorkField workField = convertMapToWorkField(workFieldMap);
+                    workDiscipline.setWorkField(workField);
+                }
+            }
+
+            return workDiscipline;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.WorkField convertMapToWorkField(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.WorkField workField = new com.example.fjobs.models.WorkField();
+
+            if (map.containsKey("maLinhVuc") && map.get("maLinhVuc") != null) {
+                Object maLinhVucObj = map.get("maLinhVuc");
+                if (maLinhVucObj instanceof Integer) {
+                    workField.setMaLinhVuc((Integer) maLinhVucObj);
+                } else if (maLinhVucObj instanceof Double) {
+                    workField.setMaLinhVuc(((Double) maLinhVucObj).intValue());
+                } else {
+                    workField.setMaLinhVuc(Integer.parseInt(maLinhVucObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenLinhVuc") && map.get("tenLinhVuc") != null) {
+                workField.setTenLinhVuc(map.get("tenLinhVuc").toString());
+            }
+
+            return workField;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private void loadSampleData() {
         // Dữ liệu mẫu cho mục đích demo
         JobDetail job1 = new JobDetail();
@@ -422,6 +562,15 @@ public class HomeFragment extends Fragment {
         company1.setTenCongTy("Công ty TNHH ABC");
         job1.setCompany(company1);
 
+        // Tạo vị trí công việc và cấp độ kinh nghiệm mẫu
+        com.example.fjobs.models.JobPosition jobPosition1 = new com.example.fjobs.models.JobPosition();
+        jobPosition1.setTenViTri("Senior Android Developer");
+        job1.setJobPosition(jobPosition1);
+
+        com.example.fjobs.models.ExperienceLevel expLevel1 = new com.example.fjobs.models.ExperienceLevel();
+        expLevel1.setTenCapDo("5 năm kinh nghiệm");
+        job1.setExperienceLevel(expLevel1);
+
         JobDetail job2 = new JobDetail();
         job2.setTieuDe("Lập trình viên Frontend");
         job2.setLuong(22000000);
@@ -435,6 +584,14 @@ public class HomeFragment extends Fragment {
         company2.setTenCongTy("Công ty XYZ");
         job2.setCompany(company2);
 
+        com.example.fjobs.models.JobPosition jobPosition2 = new com.example.fjobs.models.JobPosition();
+        jobPosition2.setTenViTri("Frontend Developer");
+        job2.setJobPosition(jobPosition2);
+
+        com.example.fjobs.models.ExperienceLevel expLevel2 = new com.example.fjobs.models.ExperienceLevel();
+        expLevel2.setTenCapDo("2 năm kinh nghiệm");
+        job2.setExperienceLevel(expLevel2);
+
         JobDetail job3 = new JobDetail();
         job3.setTieuDe("Kỹ sư DevOps");
         job3.setLuong(30000000);
@@ -447,6 +604,14 @@ public class HomeFragment extends Fragment {
         com.example.fjobs.models.Company company3 = new com.example.fjobs.models.Company();
         company3.setTenCongTy("Công ty Công nghệ 123");
         job3.setCompany(company3);
+
+        com.example.fjobs.models.JobPosition jobPosition3 = new com.example.fjobs.models.JobPosition();
+        jobPosition3.setTenViTri("Senior DevOps Engineer");
+        job3.setJobPosition(jobPosition3);
+
+        com.example.fjobs.models.ExperienceLevel expLevel3 = new com.example.fjobs.models.ExperienceLevel();
+        expLevel3.setTenCapDo("Trên 3 năm kinh nghiệm");
+        job3.setExperienceLevel(expLevel3);
 
         featuredJobList.clear();
         featuredJobList.add(job1);

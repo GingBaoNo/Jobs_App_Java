@@ -7,6 +7,9 @@ import com.example.demo.entity.WorkField;
 import com.example.demo.entity.WorkType;
 import com.example.demo.entity.JobDetail;
 import com.example.demo.entity.Message;
+import com.example.demo.entity.WorkDiscipline;
+import com.example.demo.entity.JobPosition;
+import com.example.demo.entity.ExperienceLevel;
 import com.example.demo.service.RoleService;
 import com.example.demo.service.UserService;
 import com.example.demo.service.CompanyService;
@@ -14,6 +17,9 @@ import com.example.demo.service.WorkFieldService;
 import com.example.demo.service.WorkTypeService;
 import com.example.demo.service.JobDetailService;
 import com.example.demo.service.MessageService;
+import com.example.demo.service.WorkDisciplineService;
+import com.example.demo.service.JobPositionService;
+import com.example.demo.service.ExperienceLevelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -52,6 +58,15 @@ public class AdminController {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private WorkDisciplineService workDisciplineService;
+
+    @Autowired
+    private JobPositionService jobPositionService;
+
+    @Autowired
+    private ExperienceLevelService experienceLevelService;
 
     // Trang dashboard của admin
     @GetMapping("/admin/dashboard")
@@ -336,5 +351,221 @@ public class AdminController {
             e.printStackTrace();
         }
         return "redirect:/admin/work-types";
+    }
+
+    // Trang quản lý ngành nghề (work_disciplines)
+    @GetMapping("/admin/work-disciplines")
+    public String manageWorkDisciplines(@RequestParam(value = "search", required = false) String search, Model model) {
+        try {
+            List<WorkDiscipline> workDisciplines;
+            if (search != null && !search.trim().isEmpty()) {
+                workDisciplines = workDisciplineService.getWorkDisciplinesBySearch(search);
+            } else {
+                workDisciplines = workDisciplineService.getAllWorkDisciplines();
+            }
+
+            // Lấy tất cả lĩnh vực để tạo dropdown
+            List<WorkField> workFields = workFieldService.getAllWorkFields();
+
+            model.addAttribute("workDisciplines", workDisciplines);
+            model.addAttribute("workFields", workFields);
+            model.addAttribute("title", "Quản lý ngành nghề");
+            model.addAttribute("searchQuery", search != null ? search : "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Lỗi khi tải danh sách ngành nghề");
+        }
+        return "admin/work-disciplines";
+    }
+
+    // Tạo ngành nghề mới
+    @PostMapping("/admin/work-disciplines/create")
+    public String createWorkDiscipline(@RequestParam String tenNganh, @RequestParam Integer maLinhVuc) {
+        try {
+            if (tenNganh != null && !tenNganh.trim().isEmpty() && maLinhVuc != null) {
+                WorkField workField = workFieldService.getWorkFieldById(maLinhVuc).orElse(null);
+                if (workField != null) {
+                    WorkDiscipline workDiscipline = new WorkDiscipline(tenNganh.trim(), workField);
+                    workDisciplineService.saveWorkDiscipline(workDiscipline);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/admin/work-disciplines";
+    }
+
+    // Cập nhật ngành nghề
+    @PostMapping("/admin/work-disciplines/{id}/update")
+    public String updateWorkDiscipline(@PathVariable Integer id, @RequestParam String tenNganh, @RequestParam Integer maLinhVuc) {
+        try {
+            if (id != null && tenNganh != null && !tenNganh.trim().isEmpty() && maLinhVuc != null) {
+                workDisciplineService.getWorkDisciplineById(id).ifPresent(workDiscipline -> {
+                    WorkField workField = workFieldService.getWorkFieldById(maLinhVuc).orElse(null);
+                    if (workField != null) {
+                        workDiscipline.setTenNganh(tenNganh.trim());
+                        workDiscipline.setWorkField(workField);
+                        workDisciplineService.updateWorkDiscipline(workDiscipline);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/admin/work-disciplines";
+    }
+
+    // Xóa ngành nghề
+    @PostMapping("/admin/work-disciplines/{id}/delete")
+    public String deleteWorkDiscipline(@PathVariable Integer id) {
+        try {
+            if (id != null) {
+                workDisciplineService.deleteWorkDiscipline(id);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/admin/work-disciplines";
+    }
+
+    // Trang quản lý vị trí công việc
+    @GetMapping("/admin/job-positions")
+    public String manageJobPositions(@RequestParam(value = "search", required = false) String search, Model model) {
+        try {
+            List<JobPosition> jobPositions;
+            if (search != null && !search.trim().isEmpty()) {
+                jobPositions = jobPositionService.getJobPositionsBySearch(search);
+            } else {
+                jobPositions = jobPositionService.getAllJobPositions();
+            }
+
+            // Lấy tất cả ngành và lĩnh vực để tạo dropdown
+            List<WorkDiscipline> workDisciplines = workDisciplineService.getAllWorkDisciplines();
+            List<WorkField> workFields = workFieldService.getAllWorkFields();
+
+            model.addAttribute("jobPositions", jobPositions);
+            model.addAttribute("workDisciplines", workDisciplines);
+            model.addAttribute("workFields", workFields);
+            model.addAttribute("title", "Quản lý vị trí công việc");
+            model.addAttribute("searchQuery", search != null ? search : "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Lỗi khi tải danh sách vị trí công việc");
+        }
+        return "admin/job-positions";
+    }
+
+    // Tạo vị trí công việc mới
+    @PostMapping("/admin/job-positions/create")
+    public String createJobPosition(@RequestParam String tenViTri, @RequestParam Integer maNganh) {
+        try {
+            if (tenViTri != null && !tenViTri.trim().isEmpty() && maNganh != null) {
+                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh).orElse(null);
+                if (workDiscipline != null) {
+                    JobPosition jobPosition = new JobPosition(tenViTri.trim(), workDiscipline);
+                    jobPositionService.saveJobPosition(jobPosition);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/admin/job-positions";
+    }
+
+    // Cập nhật vị trí công việc
+    @PostMapping("/admin/job-positions/{id}/update")
+    public String updateJobPosition(@PathVariable Integer id, @RequestParam String tenViTri, @RequestParam Integer maNganh) {
+        try {
+            if (id != null && tenViTri != null && !tenViTri.trim().isEmpty() && maNganh != null) {
+                jobPositionService.getJobPositionById(id).ifPresent(jobPosition -> {
+                    WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh).orElse(null);
+                    if (workDiscipline != null) {
+                        jobPosition.setTenViTri(tenViTri.trim());
+                        jobPosition.setWorkDiscipline(workDiscipline);
+                        jobPositionService.updateJobPosition(jobPosition);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/admin/job-positions";
+    }
+
+    // Xóa vị trí công việc
+    @PostMapping("/admin/job-positions/{id}/delete")
+    public String deleteJobPosition(@PathVariable Integer id) {
+        try {
+            if (id != null) {
+                jobPositionService.deleteJobPosition(id);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/admin/job-positions";
+    }
+
+    // Trang quản lý cấp độ kinh nghiệm
+    @GetMapping("/admin/experience-levels")
+    public String manageExperienceLevels(@RequestParam(value = "search", required = false) String search, Model model) {
+        try {
+            List<ExperienceLevel> experienceLevels;
+            if (search != null && !search.trim().isEmpty()) {
+                experienceLevels = experienceLevelService.getExperienceLevelsBySearch(search);
+            } else {
+                experienceLevels = experienceLevelService.getAllExperienceLevels();
+            }
+
+            model.addAttribute("experienceLevels", experienceLevels);
+            model.addAttribute("title", "Quản lý cấp độ kinh nghiệm");
+            model.addAttribute("searchQuery", search != null ? search : "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Lỗi khi tải danh sách cấp độ kinh nghiệm");
+        }
+        return "admin/experience-levels";
+    }
+
+    // Tạo cấp độ kinh nghiệm mới
+    @PostMapping("/admin/experience-levels/create")
+    public String createExperienceLevel(@RequestParam String tenCapDo) {
+        try {
+            if (tenCapDo != null && !tenCapDo.trim().isEmpty()) {
+                ExperienceLevel experienceLevel = new ExperienceLevel(tenCapDo.trim());
+                experienceLevelService.saveExperienceLevel(experienceLevel);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/admin/experience-levels";
+    }
+
+    // Cập nhật cấp độ kinh nghiệm
+    @PostMapping("/admin/experience-levels/{id}/update")
+    public String updateExperienceLevel(@PathVariable Integer id, @RequestParam String tenCapDo) {
+        try {
+            if (id != null && tenCapDo != null && !tenCapDo.trim().isEmpty()) {
+                experienceLevelService.getExperienceLevelById(id).ifPresent(experienceLevel -> {
+                    experienceLevel.setTenCapDo(tenCapDo.trim());
+                    experienceLevelService.updateExperienceLevel(experienceLevel);
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/admin/experience-levels";
+    }
+
+    // Xóa cấp độ kinh nghiệm
+    @PostMapping("/admin/experience-levels/{id}/delete")
+    public String deleteExperienceLevel(@PathVariable Integer id) {
+        try {
+            if (id != null) {
+                experienceLevelService.deleteExperienceLevel(id);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/admin/experience-levels";
     }
 }

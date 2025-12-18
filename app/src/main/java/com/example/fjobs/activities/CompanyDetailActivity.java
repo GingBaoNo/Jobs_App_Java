@@ -166,6 +166,12 @@ public class CompanyDetailActivity extends AppCompatActivity {
                                 if (companyData.get("daXacThuc") != null) {
                                     company.setDaXacThuc((Boolean) companyData.get("daXacThuc"));
                                 }
+                                if (companyData.get("moTaCongTy") != null) {
+                                    company.setMoTaCongTy((String) companyData.get("moTaCongTy"));
+                                }
+                                if (companyData.get("trangThai") != null) {
+                                    company.setTrangThai((String) companyData.get("trangThai"));
+                                }
 
                                 displayCompanyDetails(company);
                                 loadCompanyLogo(company.getHinhAnhCty());
@@ -292,8 +298,12 @@ public class CompanyDetailActivity extends AppCompatActivity {
             tvCompanyEmail.setText("Chưa cập nhật");
         }
 
-        // Giới thiệu công ty (có thể từ một trường cụ thể nếu có trong API)
-        tvCompanyInfo.setText("Chưa có thông tin giới thiệu chi tiết. Đây là phần mô tả công ty.");
+        // Giới thiệu công ty - sử dụng trường moTaCongTy nếu có
+        if (company.getMoTaCongTy() != null && !company.getMoTaCongTy().isEmpty()) {
+            tvCompanyInfo.setText(company.getMoTaCongTy());
+        } else {
+            tvCompanyInfo.setText("Chưa có thông tin giới thiệu chi tiết.");
+        }
 
         // Thông tin liên hệ chi tiết
         if (company.getTenNguoiDaiDien() != null && !company.getTenNguoiDaiDien().isEmpty()) {

@@ -3,6 +3,8 @@ package com.example.demo.repository;
 import com.example.demo.entity.Company;
 import com.example.demo.entity.JobDetail;
 import com.example.demo.entity.WorkField;
+import com.example.demo.entity.JobPosition;
+import com.example.demo.entity.ExperienceLevel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -136,4 +138,45 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
                                            @Param("workType") Integer workType,
                                            @Param("minSalary") Integer minSalary,
                                            @Param("maxSalary") Integer maxSalary);
+
+    // Thêm các phương thức tìm kiếm theo vị trí công việc và cấp độ kinh nghiệm
+    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:keyword), '%') OR j.chiTiet LIKE CONCAT('%', :keyword, '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:keyword), '%')) " +
+           "AND (:workField IS NULL OR j.workField.maLinhVuc = :workField) " +
+           "AND (:workDiscipline IS NULL OR j.jobPosition.workDiscipline.maNganh = :workDiscipline) " +
+           "AND (:jobPosition IS NULL OR j.jobPosition.maViTri = :jobPosition) " +
+           "AND (:experienceLevel IS NULL OR j.experienceLevel.maCapDo = :experienceLevel) " +
+           "AND (:workType IS NULL OR j.workType.maHinhThuc = :workType) " +
+           "AND j.trangThaiDuyet = 'Đã duyệt' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
+    List<JobDetail> findByWorkFieldAndDisciplineAndPositionAndExperience(@Param("keyword") String keyword,
+                                                                         @Param("workField") Integer workField,
+                                                                         @Param("workDiscipline") Integer workDiscipline,
+                                                                         @Param("jobPosition") Integer jobPosition,
+                                                                         @Param("experienceLevel") Integer experienceLevel,
+                                                                         @Param("workType") Integer workType);
+
+    // Tìm kiếm có phân trang theo vị trí công việc và cấp độ kinh nghiệm
+    @Query("SELECT j FROM JobDetail j WHERE (:keyword IS NULL OR UPPER(j.tieuDe) LIKE CONCAT('%', UPPER(:keyword), '%') OR j.chiTiet LIKE CONCAT('%', :keyword, '%') OR UPPER(j.company.tenCongTy) LIKE CONCAT('%', UPPER(:keyword), '%')) " +
+           "AND (:workField IS NULL OR j.workField.maLinhVuc = :workField) " +
+           "AND (:workDiscipline IS NULL OR j.jobPosition.workDiscipline.maNganh = :workDiscipline) " +
+           "AND (:jobPosition IS NULL OR j.jobPosition.maViTri = :jobPosition) " +
+           "AND (:experienceLevel IS NULL OR j.experienceLevel.maCapDo = :experienceLevel) " +
+           "AND (:workType IS NULL OR j.workType.maHinhThuc = :workType) " +
+           "AND j.trangThaiDuyet = 'Đã duyệt' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
+    org.springframework.data.domain.Page<JobDetail> findByWorkFieldAndDisciplineAndPositionAndExperienceWithPaging(@Param("keyword") String keyword,
+                                                                                                                 @Param("workField") Integer workField,
+                                                                                                                 @Param("workDiscipline") Integer workDiscipline,
+                                                                                                                 @Param("jobPosition") Integer jobPosition,
+                                                                                                                 @Param("experienceLevel") Integer experienceLevel,
+                                                                                                                 @Param("workType") Integer workType,
+                                                                                                                 org.springframework.data.domain.Pageable pageable);
+
+    // Tìm kiếm theo vị trí công việc
+    List<JobDetail> findByJobPosition(JobPosition jobPosition);
+
+    // Tìm kiếm theo cấp độ kinh nghiệm
+    List<JobDetail> findByExperienceLevel(ExperienceLevel experienceLevel);
 }

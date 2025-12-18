@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -28,6 +29,7 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
     private com.example.fjobs.adapters.JobAdapter jobAdapter;
     private List<JobDetail> jobList;
     private ApiService apiService;
+    private Button btnAdvancedSearch;
 
     @Nullable
     @Override
@@ -43,7 +45,15 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
 
     private void initViews(View view) {
         rvJobs = view.findViewById(R.id.rv_jobs);
+        btnAdvancedSearch = view.findViewById(R.id.btn_advanced_search);
         apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Xử lý sự kiện click cho nút tìm kiếm nâng cao
+        btnAdvancedSearch.setOnClickListener(v -> {
+            // Chuyển sang AdvancedSearchActivity
+            Intent intent = new Intent(getActivity(), com.example.fjobs.activities.AdvancedSearchActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void setupRecyclerView() {
@@ -222,6 +232,24 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
                 job.setCompany(company);
             }
 
+            // Xử lý vị trí công việc nếu có
+            if (map.containsKey("jobPosition") && map.get("jobPosition") != null) {
+                java.util.Map<String, Object> jobPositionMap = (java.util.Map<String, Object>) map.get("jobPosition");
+                if (jobPositionMap != null) {
+                    com.example.fjobs.models.JobPosition jobPosition = convertMapToJobPosition(jobPositionMap);
+                    job.setJobPosition(jobPosition);
+                }
+            }
+
+            // Xử lý cấp độ kinh nghiệm nếu có
+            if (map.containsKey("experienceLevel") && map.get("experienceLevel") != null) {
+                java.util.Map<String, Object> experienceLevelMap = (java.util.Map<String, Object>) map.get("experienceLevel");
+                if (experienceLevelMap != null) {
+                    com.example.fjobs.models.ExperienceLevel experienceLevel = convertMapToExperienceLevel(experienceLevelMap);
+                    job.setExperienceLevel(experienceLevel);
+                }
+            }
+
             return job;
         } catch (Exception e) {
             Log.e("JobsFragment", "Error converting map to JobDetail", e);
@@ -282,6 +310,136 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
             return company;
         } catch (Exception e) {
             Log.e("JobsFragment", "Error converting map to Company", e);
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.JobPosition convertMapToJobPosition(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.JobPosition jobPosition = new com.example.fjobs.models.JobPosition();
+
+            if (map.containsKey("maViTri") && map.get("maViTri") != null) {
+                Object maViTriObj = map.get("maViTri");
+                if (maViTriObj instanceof Integer) {
+                    jobPosition.setMaViTri((Integer) maViTriObj);
+                } else if (maViTriObj instanceof Double) {
+                    jobPosition.setMaViTri(((Double) maViTriObj).intValue());
+                } else if (maViTriObj instanceof Float) {
+                    jobPosition.setMaViTri(((Float) maViTriObj).intValue());
+                } else {
+                    jobPosition.setMaViTri(Integer.parseInt(maViTriObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenViTri") && map.get("tenViTri") != null) {
+                jobPosition.setTenViTri(map.get("tenViTri").toString());
+            }
+
+            // Xử lý workDiscipline nếu có
+            if (map.containsKey("workDiscipline") && map.get("workDiscipline") != null) {
+                java.util.Map<String, Object> workDisciplineMap = (java.util.Map<String, Object>) map.get("workDiscipline");
+                if (workDisciplineMap != null) {
+                    com.example.fjobs.models.WorkDiscipline workDiscipline = convertMapToWorkDiscipline(workDisciplineMap);
+                    jobPosition.setWorkDiscipline(workDiscipline);
+                }
+            }
+
+            return jobPosition;
+        } catch (Exception e) {
+            Log.e("JobsFragment", "Error converting map to JobPosition", e);
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.ExperienceLevel convertMapToExperienceLevel(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.ExperienceLevel experienceLevel = new com.example.fjobs.models.ExperienceLevel();
+
+            if (map.containsKey("maCapDo") && map.get("maCapDo") != null) {
+                Object maCapDoObj = map.get("maCapDo");
+                if (maCapDoObj instanceof Integer) {
+                    experienceLevel.setMaCapDo((Integer) maCapDoObj);
+                } else if (maCapDoObj instanceof Double) {
+                    experienceLevel.setMaCapDo(((Double) maCapDoObj).intValue());
+                } else if (maCapDoObj instanceof Float) {
+                    experienceLevel.setMaCapDo(((Float) maCapDoObj).intValue());
+                } else {
+                    experienceLevel.setMaCapDo(Integer.parseInt(maCapDoObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenCapDo") && map.get("tenCapDo") != null) {
+                experienceLevel.setTenCapDo(map.get("tenCapDo").toString());
+            }
+
+            return experienceLevel;
+        } catch (Exception e) {
+            Log.e("JobsFragment", "Error converting map to ExperienceLevel", e);
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.WorkDiscipline convertMapToWorkDiscipline(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.WorkDiscipline workDiscipline = new com.example.fjobs.models.WorkDiscipline();
+
+            if (map.containsKey("maNganh") && map.get("maNganh") != null) {
+                Object maNganhObj = map.get("maNganh");
+                if (maNganhObj instanceof Integer) {
+                    workDiscipline.setMaNganh((Integer) maNganhObj);
+                } else if (maNganhObj instanceof Double) {
+                    workDiscipline.setMaNganh(((Double) maNganhObj).intValue());
+                } else if (maNganhObj instanceof Float) {
+                    workDiscipline.setMaNganh(((Float) maNganhObj).intValue());
+                } else {
+                    workDiscipline.setMaNganh(Integer.parseInt(maNganhObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenNganh") && map.get("tenNganh") != null) {
+                workDiscipline.setTenNganh(map.get("tenNganh").toString());
+            }
+
+            // Xử lý workField nếu có
+            if (map.containsKey("workField") && map.get("workField") != null) {
+                java.util.Map<String, Object> workFieldMap = (java.util.Map<String, Object>) map.get("workField");
+                if (workFieldMap != null) {
+                    com.example.fjobs.models.WorkField workField = convertMapToWorkField(workFieldMap);
+                    workDiscipline.setWorkField(workField);
+                }
+            }
+
+            return workDiscipline;
+        } catch (Exception e) {
+            Log.e("JobsFragment", "Error converting map to WorkDiscipline", e);
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.WorkField convertMapToWorkField(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.WorkField workField = new com.example.fjobs.models.WorkField();
+
+            if (map.containsKey("maLinhVuc") && map.get("maLinhVuc") != null) {
+                Object maLinhVucObj = map.get("maLinhVuc");
+                if (maLinhVucObj instanceof Integer) {
+                    workField.setMaLinhVuc((Integer) maLinhVucObj);
+                } else if (maLinhVucObj instanceof Double) {
+                    workField.setMaLinhVuc(((Double) maLinhVucObj).intValue());
+                } else if (maLinhVucObj instanceof Float) {
+                    workField.setMaLinhVuc(((Float) maLinhVucObj).intValue());
+                } else {
+                    workField.setMaLinhVuc(Integer.parseInt(maLinhVucObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenLinhVuc") && map.get("tenLinhVuc") != null) {
+                workField.setTenLinhVuc(map.get("tenLinhVuc").toString());
+            }
+
+            return workField;
+        } catch (Exception e) {
+            Log.e("JobsFragment", "Error converting map to WorkField", e);
             return null;
         }
     }

@@ -27,6 +27,12 @@ public class Company {
     @SerializedName("daXacThuc")
     private boolean daXacThuc;
 
+    @SerializedName("moTaCongTy")
+    private String moTaCongTy; // Mô tả công ty
+
+    @SerializedName("trangThai")
+    private String trangThai; // Trạng thái công ty
+
     // Constructors
     public Company() {}
 
@@ -64,4 +70,10 @@ public class Company {
 
     public boolean isDaXacThuc() { return daXacThuc; }
     public void setDaXacThuc(boolean daXacThuc) { this.daXacThuc = daXacThuc; }
+
+    public String getMoTaCongTy() { return moTaCongTy; }
+    public void setMoTaCongTy(String moTaCongTy) { this.moTaCongTy = moTaCongTy; }
+
+    public String getTrangThai() { return trangThai; }
+    public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 }

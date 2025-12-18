@@ -41,6 +41,9 @@ public class Company {
     @Column(name = "trang_thai")
     private String trangThai = "PENDING"; // PENDING, APPROVED, REJECTED
 
+    @Column(name = "mo_ta_cong_ty", columnDefinition = "NVARCHAR(2000)")
+    private String moTaCongTy;
+
     @Column(name = "ngay_tao")
     private LocalDateTime ngayTao;
 
@@ -50,6 +53,12 @@ public class Company {
     public Company(User user, String tenCongTy) {
         this.user = user;
         this.tenCongTy = tenCongTy;
+    }
+
+    public Company(User user, String tenCongTy, String moTaCongTy) {
+        this.user = user;
+        this.tenCongTy = tenCongTy;
+        this.moTaCongTy = moTaCongTy;
     }
 
     // Getters and Setters
@@ -139,5 +148,13 @@ public class Company {
 
     public void setNgayTao(LocalDateTime ngayTao) {
         this.ngayTao = ngayTao;
+    }
+
+    public String getMoTaCongTy() {
+        return moTaCongTy;
+    }
+
+    public void setMoTaCongTy(String moTaCongTy) {
+        this.moTaCongTy = moTaCongTy;
     }
 }
