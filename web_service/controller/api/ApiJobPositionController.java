@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/job-positions")
@@ -26,24 +25,18 @@ public class ApiJobPositionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getJobPositionById(@PathVariable Integer id) {
-        return jobPositionService.getJobPositionById(id)
-            .map(jobPosition -> ApiResponseUtil.success("Job position retrieved successfully", jobPosition))
-            .orElse(ApiResponseUtil.error("Job position not found with id: " + id));
-    }
-
-    @GetMapping("/discipline/{id}")
-    public ResponseEntity<?> getJobPositionsByWorkDiscipline(@PathVariable Integer id) {
-        List<JobPosition> jobPositions = jobPositionService.getJobPositionsByWorkDisciplineId(id);
-        return ApiResponseUtil.success("Job positions retrieved successfully", jobPositions);
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<?> searchJobPositions(@RequestParam String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return ApiResponseUtil.error("Keyword parameter is required");
+        JobPosition jobPosition = jobPositionService.getJobPositionById(id);
+        if (jobPosition != null) {
+            return ApiResponseUtil.success("Job position retrieved successfully", jobPosition);
+        } else {
+            return ApiResponseUtil.error("Job position not found with id: " + id);
         }
-        List<JobPosition> jobPositions = jobPositionService.getJobPositionsBySearch(keyword);
-        return ApiResponseUtil.success("Job positions searched successfully", jobPositions);
+    }
+
+    @GetMapping("/discipline/{workDisciplineId}")
+    public ResponseEntity<?> getJobPositionsByWorkDiscipline(@PathVariable Integer workDisciplineId) {
+        List<JobPosition> jobPositions = jobPositionService.getJobPositionsByWorkDisciplineId(workDisciplineId);
+        return ApiResponseUtil.success("Job positions retrieved successfully", jobPositions);
     }
 
     @PostMapping
@@ -54,7 +47,8 @@ public class ApiJobPositionController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateJobPosition(@PathVariable Integer id, @RequestBody JobPosition jobPosition) {
-        if (!jobPositionService.getJobPositionById(id).isPresent()) {
+        JobPosition existingJobPosition = jobPositionService.getJobPositionById(id);
+        if (existingJobPosition == null) {
             return ApiResponseUtil.error("Job position not found with id: " + id);
         }
         jobPosition.setMaViTri(id);
@@ -64,7 +58,8 @@ public class ApiJobPositionController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteJobPosition(@PathVariable Integer id) {
-        if (!jobPositionService.getJobPositionById(id).isPresent()) {
+        JobPosition existingJobPosition = jobPositionService.getJobPositionById(id);
+        if (existingJobPosition == null) {
             return ApiResponseUtil.error("Job position not found with id: " + id);
         }
         jobPositionService.deleteJobPosition(id);

@@ -269,4 +269,33 @@ public class JobDetailService {
         return jobDetailRepository.findByWorkFieldAndDisciplineAndPositionAndExperience(
                 search, fieldId, disciplineId, positionId, experienceId, typeId);
     }
+
+    // Phương thức tìm kiếm nâng cao có phân trang
+    public Page<JobDetail> searchJobsAdvancedWithPaging(
+            String keyword, Integer workFieldId, Integer workDisciplineId, Integer jobPositionId,
+            Integer experienceLevelId, Integer workTypeId, Integer minSalary, Integer maxSalary,
+            Pageable pageable) {
+
+        return jobDetailRepository.findByKeywordAndFiltersAdvancedWithPaging(
+                keyword, workFieldId, workDisciplineId, jobPositionId,
+                experienceLevelId, workTypeId, minSalary, maxSalary,
+                pageable);
+    }
+
+    // Các phương thức tiện ích để tìm kiếm theo từng tiêu chí
+    public List<JobDetail> getJobsByWorkFieldId(Integer workFieldId) {
+        return jobDetailRepository.findByWorkField_MaLinhVuc(workFieldId);
+    }
+
+    public List<JobDetail> getJobsByWorkTypeId(Integer workTypeId) {
+        return jobDetailRepository.findByWorkType_MaHinhThuc(workTypeId);
+    }
+
+    public List<JobDetail> getJobsByJobPositionId(Integer jobPositionId) {
+        return jobDetailRepository.findByJobPosition_MaViTri(jobPositionId);
+    }
+
+    public List<JobDetail> getJobsByExperienceLevelId(Integer experienceLevelId) {
+        return jobDetailRepository.findByExperienceLevel_MaCapDo(experienceLevelId);
+    }
 }

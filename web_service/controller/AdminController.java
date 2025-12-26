@@ -260,10 +260,11 @@ public class AdminController {
     public String updateWorkField(@PathVariable Integer id, @RequestParam String tenLinhVuc) {
         try {
             if (id != null && tenLinhVuc != null && !tenLinhVuc.trim().isEmpty()) {
-                workFieldService.getWorkFieldById(id).ifPresent(workField -> {
+                WorkField workField = workFieldService.getWorkFieldById(id);
+                if (workField != null) {
                     workField.setTenLinhVuc(tenLinhVuc.trim());
                     workFieldService.updateWorkField(workField);
-                });
+                }
             }
         } catch (Exception e) {
             // Log the exception (in a real application, use proper logging)
@@ -327,10 +328,11 @@ public class AdminController {
     public String updateWorkType(@PathVariable Integer id, @RequestParam String tenHinhThuc) {
         try {
             if (id != null && tenHinhThuc != null && !tenHinhThuc.trim().isEmpty()) {
-                workTypeService.getWorkTypeById(id).ifPresent(workType -> {
+                WorkType workType = workTypeService.getWorkTypeById(id);
+                if (workType != null) {
                     workType.setTenHinhThuc(tenHinhThuc.trim());
                     workTypeService.updateWorkType(workType);
-                });
+                }
             }
         } catch (Exception e) {
             // Log the exception (in a real application, use proper logging)
@@ -383,7 +385,7 @@ public class AdminController {
     public String createWorkDiscipline(@RequestParam String tenNganh, @RequestParam Integer maLinhVuc) {
         try {
             if (tenNganh != null && !tenNganh.trim().isEmpty() && maLinhVuc != null) {
-                WorkField workField = workFieldService.getWorkFieldById(maLinhVuc).orElse(null);
+                WorkField workField = workFieldService.getWorkFieldById(maLinhVuc);
                 if (workField != null) {
                     WorkDiscipline workDiscipline = new WorkDiscipline(tenNganh.trim(), workField);
                     workDisciplineService.saveWorkDiscipline(workDiscipline);
@@ -400,14 +402,15 @@ public class AdminController {
     public String updateWorkDiscipline(@PathVariable Integer id, @RequestParam String tenNganh, @RequestParam Integer maLinhVuc) {
         try {
             if (id != null && tenNganh != null && !tenNganh.trim().isEmpty() && maLinhVuc != null) {
-                workDisciplineService.getWorkDisciplineById(id).ifPresent(workDiscipline -> {
-                    WorkField workField = workFieldService.getWorkFieldById(maLinhVuc).orElse(null);
+                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(id);
+                if (workDiscipline != null) {
+                    WorkField workField = workFieldService.getWorkFieldById(maLinhVuc);
                     if (workField != null) {
                         workDiscipline.setTenNganh(tenNganh.trim());
                         workDiscipline.setWorkField(workField);
                         workDisciplineService.updateWorkDiscipline(workDiscipline);
                     }
-                });
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -460,7 +463,7 @@ public class AdminController {
     public String createJobPosition(@RequestParam String tenViTri, @RequestParam Integer maNganh) {
         try {
             if (tenViTri != null && !tenViTri.trim().isEmpty() && maNganh != null) {
-                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh).orElse(null);
+                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh);
                 if (workDiscipline != null) {
                     JobPosition jobPosition = new JobPosition(tenViTri.trim(), workDiscipline);
                     jobPositionService.saveJobPosition(jobPosition);
@@ -477,14 +480,15 @@ public class AdminController {
     public String updateJobPosition(@PathVariable Integer id, @RequestParam String tenViTri, @RequestParam Integer maNganh) {
         try {
             if (id != null && tenViTri != null && !tenViTri.trim().isEmpty() && maNganh != null) {
-                jobPositionService.getJobPositionById(id).ifPresent(jobPosition -> {
-                    WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh).orElse(null);
+                JobPosition jobPosition = jobPositionService.getJobPositionById(id);
+                if (jobPosition != null) {
+                    WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh);
                     if (workDiscipline != null) {
                         jobPosition.setTenViTri(tenViTri.trim());
                         jobPosition.setWorkDiscipline(workDiscipline);
                         jobPositionService.updateJobPosition(jobPosition);
                     }
-                });
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

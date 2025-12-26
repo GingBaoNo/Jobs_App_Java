@@ -18,8 +18,8 @@ public class WorkDisciplineService {
         return workDisciplineRepository.findAll();
     }
 
-    public Optional<WorkDiscipline> getWorkDisciplineById(Integer id) {
-        return workDisciplineRepository.findById(id);
+    public WorkDiscipline getWorkDisciplineById(Integer id) {
+        return workDisciplineRepository.findById(id).orElse(null);
     }
 
     public WorkDiscipline saveWorkDiscipline(WorkDiscipline workDiscipline) {

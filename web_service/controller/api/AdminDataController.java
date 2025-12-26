@@ -208,9 +208,9 @@ public class AdminDataController {
     // Lấy lĩnh vực nghề nghiệp theo ID
     @GetMapping("/work-fields/{id}")
     public ResponseEntity<WorkField> getWorkFieldById(@PathVariable Integer id) {
-        Optional<WorkField> workFieldOpt = workFieldService.getWorkFieldById(id);
-        if (workFieldOpt.isPresent()) {
-            return ResponseEntity.ok(workFieldOpt.get());
+        WorkField workField = workFieldService.getWorkFieldById(id);
+        if (workField != null) {
+            return ResponseEntity.ok(workField);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -239,9 +239,8 @@ public class AdminDataController {
              return ResponseEntity.badRequest().body("Tên lĩnh vực không được để trống.");
         }
         try {
-            Optional<WorkField> workFieldOpt = workFieldService.getWorkFieldById(id);
-            if (workFieldOpt.isPresent()) {
-                WorkField workField = workFieldOpt.get();
+            WorkField workField = workFieldService.getWorkFieldById(id);
+            if (workField != null) {
                 workField.setTenLinhVuc(tenLinhVuc.trim());
                 workFieldService.updateWorkField(workField);
                 return ResponseEntity.ok("Lĩnh vực nghề nghiệp có ID " + id + " đã được cập nhật.");
@@ -278,9 +277,9 @@ public class AdminDataController {
     // Lấy hình thức làm việc theo ID
     @GetMapping("/work-types/{id}")
     public ResponseEntity<WorkType> getWorkTypeById(@PathVariable Integer id) {
-        Optional<WorkType> workTypeOpt = workTypeService.getWorkTypeById(id);
-        if (workTypeOpt.isPresent()) {
-            return ResponseEntity.ok(workTypeOpt.get());
+        WorkType workType = workTypeService.getWorkTypeById(id);
+        if (workType != null) {
+            return ResponseEntity.ok(workType);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -309,9 +308,8 @@ public class AdminDataController {
              return ResponseEntity.badRequest().body("Tên hình thức không được để trống.");
         }
         try {
-            Optional<WorkType> workTypeOpt = workTypeService.getWorkTypeById(id);
-            if (workTypeOpt.isPresent()) {
-                WorkType workType = workTypeOpt.get();
+            WorkType workType = workTypeService.getWorkTypeById(id);
+            if (workType != null) {
                 workType.setTenHinhThuc(tenHinhThuc.trim());
                 workTypeService.updateWorkType(workType);
                 return ResponseEntity.ok("Hình thức làm việc có ID " + id + " đã được cập nhật.");

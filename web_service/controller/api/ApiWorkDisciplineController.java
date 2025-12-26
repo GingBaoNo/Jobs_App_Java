@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/work-disciplines")
@@ -26,24 +25,18 @@ public class ApiWorkDisciplineController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getWorkDisciplineById(@PathVariable Integer id) {
-        return workDisciplineService.getWorkDisciplineById(id)
-            .map(workDiscipline -> ApiResponseUtil.success("Work discipline retrieved successfully", workDiscipline))
-            .orElse(ApiResponseUtil.error("Work discipline not found with id: " + id));
-    }
-
-    @GetMapping("/field/{id}")
-    public ResponseEntity<?> getWorkDisciplinesByWorkField(@PathVariable Integer id) {
-        List<WorkDiscipline> workDisciplines = workDisciplineService.getWorkDisciplinesByWorkFieldId(id);
-        return ApiResponseUtil.success("Work disciplines retrieved successfully", workDisciplines);
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<?> searchWorkDisciplines(@RequestParam String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return ApiResponseUtil.error("Keyword parameter is required");
+        WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(id);
+        if (workDiscipline != null) {
+            return ApiResponseUtil.success("Work discipline retrieved successfully", workDiscipline);
+        } else {
+            return ApiResponseUtil.error("Work discipline not found with id: " + id);
         }
-        List<WorkDiscipline> workDisciplines = workDisciplineService.getWorkDisciplinesBySearch(keyword);
-        return ApiResponseUtil.success("Work disciplines searched successfully", workDisciplines);
+    }
+
+    @GetMapping("/field/{workFieldId}")
+    public ResponseEntity<?> getWorkDisciplinesByWorkField(@PathVariable Integer workFieldId) {
+        List<WorkDiscipline> workDisciplines = workDisciplineService.getWorkDisciplinesByWorkFieldId(workFieldId);
+        return ApiResponseUtil.success("Work disciplines retrieved successfully", workDisciplines);
     }
 
     @PostMapping
@@ -54,7 +47,8 @@ public class ApiWorkDisciplineController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateWorkDiscipline(@PathVariable Integer id, @RequestBody WorkDiscipline workDiscipline) {
-        if (!workDisciplineService.getWorkDisciplineById(id).isPresent()) {
+        WorkDiscipline existingWorkDiscipline = workDisciplineService.getWorkDisciplineById(id);
+        if (existingWorkDiscipline == null) {
             return ApiResponseUtil.error("Work discipline not found with id: " + id);
         }
         workDiscipline.setMaNganh(id);
@@ -64,7 +58,8 @@ public class ApiWorkDisciplineController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteWorkDiscipline(@PathVariable Integer id) {
-        if (!workDisciplineService.getWorkDisciplineById(id).isPresent()) {
+        WorkDiscipline existingWorkDiscipline = workDisciplineService.getWorkDisciplineById(id);
+        if (existingWorkDiscipline == null) {
             return ApiResponseUtil.error("Work discipline not found with id: " + id);
         }
         workDisciplineService.deleteWorkDiscipline(id);

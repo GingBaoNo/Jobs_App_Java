@@ -119,14 +119,14 @@ public class JobController {
 
             // Gán các trường phân cấp nếu được cung cấp
             if (maNganh != null) {
-                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh).orElse(null);
+                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh);
                 if (workDiscipline != null) {
                     job.setJobPosition(null); // Clear any existing position that might not match the discipline
                 }
             }
 
             if (maViTri != null) {
-                JobPosition jobPosition = jobPositionService.getJobPositionById(maViTri).orElse(null);
+                JobPosition jobPosition = jobPositionService.getJobPositionById(maViTri);
                 if (jobPosition != null) {
                     job.setJobPosition(jobPosition);
                 }
@@ -258,7 +258,7 @@ public class JobController {
 
             // Cập nhật các trường phân cấp
             if (maNganh != null) {
-                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh).orElse(null);
+                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh);
                 if (workDiscipline != null) {
                     existingJob.setJobPosition(null); // Clear any existing position that might not match the discipline
                 } else {
@@ -269,7 +269,7 @@ public class JobController {
             }
 
             if (maViTri != null) {
-                JobPosition jobPosition = jobPositionService.getJobPositionById(maViTri).orElse(null);
+                JobPosition jobPosition = jobPositionService.getJobPositionById(maViTri);
                 if (jobPosition != null) {
                     // Make sure the position belongs to the selected discipline
                     if (maNganh == null || jobPosition.getWorkDiscipline().getMaNganh().equals(maNganh)) {

@@ -18,8 +18,8 @@ public class JobPositionService {
         return jobPositionRepository.findAll();
     }
 
-    public Optional<JobPosition> getJobPositionById(Integer id) {
-        return jobPositionRepository.findById(id);
+    public JobPosition getJobPositionById(Integer id) {
+        return jobPositionRepository.findById(id).orElse(null);
     }
 
     public JobPosition saveJobPosition(JobPosition jobPosition) {

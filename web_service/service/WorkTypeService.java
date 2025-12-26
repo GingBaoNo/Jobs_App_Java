@@ -18,8 +18,8 @@ public class WorkTypeService {
         return workTypeRepository.findAll();
     }
     
-    public Optional<WorkType> getWorkTypeById(Integer id) {
-        return workTypeRepository.findById(id);
+    public WorkType getWorkTypeById(Integer id) {
+        return workTypeRepository.findById(id).orElse(null);
     }
     
     public WorkType saveWorkType(WorkType workType) {

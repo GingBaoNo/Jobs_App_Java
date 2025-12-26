@@ -18,8 +18,8 @@ public class WorkFieldService {
         return workFieldRepository.findAll();
     }
     
-    public Optional<WorkField> getWorkFieldById(Integer id) {
-        return workFieldRepository.findById(id);
+    public WorkField getWorkFieldById(Integer id) {
+        return workFieldRepository.findById(id).orElse(null);
     }
     
     public WorkField saveWorkField(WorkField workField) {

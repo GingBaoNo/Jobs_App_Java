@@ -277,6 +277,71 @@ public class ApiJobDetailController {
         return ApiResponseUtil.success("Jobs searched successfully by hierarchy", simplifiedJobs);
     }
 
+    // Endpoint tìm kiếm việc làm nâng cao có phân trang
+    @GetMapping("/search-advanced")
+    public ResponseEntity<?> searchJobsAdvanced(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer workField,
+            @RequestParam(required = false) Integer workDiscipline,
+            @RequestParam(required = false) Integer jobPosition,
+            @RequestParam(required = false) Integer experienceLevel,
+            @RequestParam(required = false) Integer workType,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) Integer maxSalary,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "maCongViec") String sortBy) {
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(sortBy));
+        org.springframework.data.domain.Page<JobDetail> jobPage = jobDetailService.searchJobsAdvancedWithPaging(
+                keyword, workField, workDiscipline, jobPosition, experienceLevel, workType, minSalary, maxSalary, pageable);
+
+        List<Map<String, Object>> simplifiedJobs = jobPage.getContent().stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", simplifiedJobs);
+        response.put("page", jobPage.getNumber());
+        response.put("size", jobPage.getSize());
+        response.put("totalElements", jobPage.getTotalElements());
+        response.put("totalPages", jobPage.getTotalPages());
+        response.put("first", jobPage.isFirst());
+        response.put("last", jobPage.isLast());
+
+        return ApiResponseUtil.success("Advanced search completed successfully", response);
+    }
+
+    // Endpoint tìm kiếm việc làm theo lĩnh vực
+    @GetMapping("/by-field/{fieldId}")
+    public ResponseEntity<?> searchJobsByField(@PathVariable Integer fieldId) {
+        List<JobDetail> jobs = jobDetailService.getJobsByWorkFieldId(fieldId);
+        List<Map<String, Object>> simplifiedJobs = jobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+        return ApiResponseUtil.success("Jobs retrieved by field successfully", simplifiedJobs);
+    }
+
+    // Endpoint tìm kiếm việc làm theo hình thức
+    @GetMapping("/by-type/{typeId}")
+    public ResponseEntity<?> searchJobsByType(@PathVariable Integer typeId) {
+        List<JobDetail> jobs = jobDetailService.getJobsByWorkTypeId(typeId);
+        List<Map<String, Object>> simplifiedJobs = jobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+        return ApiResponseUtil.success("Jobs retrieved by type successfully", simplifiedJobs);
+    }
+
+    // Endpoint tìm kiếm việc làm theo vị trí
+    @GetMapping("/by-position/{positionId}")
+    public ResponseEntity<?> searchJobsByPosition(@PathVariable Integer positionId) {
+        List<JobDetail> jobs = jobDetailService.getJobsByJobPositionId(positionId);
+        List<Map<String, Object>> simplifiedJobs = jobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+        return ApiResponseUtil.success("Jobs retrieved by position successfully", simplifiedJobs);
+    }
+
+    // Endpoint tìm kiếm việc làm theo cấp độ kinh nghiệm
+    @GetMapping("/by-experience/{experienceId}")
+    public ResponseEntity<?> searchJobsByExperience(@PathVariable Integer experienceId) {
+        List<JobDetail> jobs = jobDetailService.getJobsByExperienceLevelId(experienceId);
+        List<Map<String, Object>> simplifiedJobs = jobs.stream().map(this::convertJobDetailToMap).collect(Collectors.toList());
+        return ApiResponseUtil.success("Jobs retrieved by experience successfully", simplifiedJobs);
+    }
+
     // Helper method để chuyển đổi JobDetail thành Map để tránh circular reference
     private Map<String, Object> convertJobDetailToMap(JobDetail job) {
         Map<String, Object> jobMap = new HashMap<>();

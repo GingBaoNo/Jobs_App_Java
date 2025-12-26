@@ -6,6 +6,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -74,6 +75,9 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         setupSpinners();
         setupClickListeners();
 
+        // Khởi tạo dữ liệu mặc định cho các spinner
+        initDefaultSpinnerData();
+
         // Load dữ liệu từ API cho các dropdown
         loadDropdownDataFromApi();
     }
@@ -104,6 +108,38 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
     }
 
+    private void initDefaultSpinnerData() {
+        // Khởi tạo các danh sách nếu chưa có để đảm bảo spinner có thể hiển thị ít nhất tùy chọn "Tất cả"
+        if (workFields == null) {
+            workFields = new ArrayList<>();
+        }
+
+        if (workDisciplines == null) {
+            workDisciplines = new ArrayList<>();
+            workDisciplines.add(new WorkDiscipline(0, "Tất cả ngành nghề", null));
+        }
+
+        if (jobPositions == null) {
+            jobPositions = new ArrayList<>();
+            jobPositions.add(new JobPosition(0, "Tất cả vị trí", null));
+        }
+
+        if (experienceLevels == null) {
+            experienceLevels = new ArrayList<>();
+        }
+
+        if (workTypes == null) {
+            workTypes = new ArrayList<>();
+        }
+
+        // Cập nhật các spinner với tùy chọn mặc định
+        updateWorkFieldSpinner();
+        updateWorkDisciplineSpinner();
+        updateJobPositionSpinner();
+        updateExperienceLevelSpinner();
+        updateWorkTypeSpinner();
+    }
+
     private void setupSpinners() {
         // Thiết lập listeners cho các spinner
         spinnerWorkField.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -116,9 +152,7 @@ public class AdvancedSearchActivity extends AppCompatActivity {
                     updateWorkDisciplinesSpinner(null);
                 } else {
                     // Các lĩnh vực cụ thể được chọn
-                    // Nếu workFields bao gồm cả mục "Tất cả lĩnh vực" ở vị trí 0,
-                    // thì lĩnh vực thực sự sẽ ở vị trí "position - 1" trong danh sách không bao gồm "Tất cả"
-                    if (workFields != null && workFields.size() >= position) {
+                    if (workFields != null && position > 0 && workFields.size() >= position) {
                         selectedWorkFieldId = workFields.get(position - 1).getMaLinhVuc(); // Lấy ID lĩnh vực thực tế
                         updateWorkDisciplinesSpinner(selectedWorkFieldId);
                     }
@@ -141,9 +175,8 @@ public class AdvancedSearchActivity extends AppCompatActivity {
                     updateJobPositionsSpinner(null);
                 } else {
                     // Các ngành nghề cụ thể được chọn
-                    // Nếu workDisciplines bao gồm cả mục "Tất cả ngành nghề" ở vị trí 0,
-                    // thì ngành nghề thực sự sẽ ở vị trí "position - 1" trong danh sách không bao gồm "Tất cả"
-                    if (workDisciplines != null && workDisciplines.size() > position) {
+                    // workDisciplines bao gồm mục "Tất cả ngành nghề" ở vị trí 0, nên cần lấy phần tử tại vị trí position
+                    if (workDisciplines != null && position > 0 && position < workDisciplines.size()) {
                         selectedWorkDisciplineId = workDisciplines.get(position).getMaNganh(); // Lấy ID ngành nghề thực tế
                         updateJobPositionsSpinner(selectedWorkDisciplineId);
                     }
@@ -159,10 +192,14 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         spinnerJobPosition.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position > 0) {
-                    selectedJobPositionId = jobPositions.get(position - 1).getMaViTri();
-                } else {
+                if (position == 0) {
+                    // Trường hợp "Tất cả vị trí" được chọn
                     selectedJobPositionId = null;
+                } else {
+                    // Các vị trí công việc cụ thể được chọn
+                    if (jobPositions != null && position < jobPositions.size()) {
+                        selectedJobPositionId = jobPositions.get(position).getMaViTri(); // Lấy ID vị trí thực tế
+                    }
                 }
             }
 
@@ -175,10 +212,12 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         spinnerExperienceLevel.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position > 0) {
-                    selectedExperienceLevelId = experienceLevels.get(position - 1).getMaCapDo();
-                } else {
+                if (position == 0) {
                     selectedExperienceLevelId = null;
+                } else {
+                    if (experienceLevels != null && position < experienceLevels.size()) {
+                        selectedExperienceLevelId = experienceLevels.get(position).getMaCapDo(); // Lấy ID cấp độ thực tế
+                    }
                 }
             }
 
@@ -191,10 +230,12 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         spinnerWorkType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position > 0) {
-                    selectedWorkTypeId = workTypes.get(position - 1).getMaHinhThuc();
-                } else {
+                if (position == 0) {
                     selectedWorkTypeId = null;
+                } else {
+                    if (workTypes != null && position < workTypes.size()) {
+                        selectedWorkTypeId = workTypes.get(position).getMaHinhThuc(); // Lấy ID hình thức thực tế
+                    }
                 }
             }
 
@@ -212,24 +253,42 @@ public class AdvancedSearchActivity extends AppCompatActivity {
     }
 
     private void performAdvancedSearch() {
+        // Hiển thị ProgressBar và ẩn RecyclerView
+        ProgressBar progressBar = findViewById(R.id.progress_bar_search);
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        if (recyclerView != null) {
+            recyclerView.setVisibility(View.GONE);
+        }
+
         // Lấy từ khóa từ EditText
         if (editTextKeyword != null) {
             selectedKeyword = editTextKeyword.getText().toString().trim();
         }
 
-        // Gọi API tìm kiếm theo cấu trúc phân cấp
-        Call<ApiResponse> call = apiService.searchJobsByHierarchy(
+        // Gọi API tìm kiếm nâng cao mới (truyền null cho các tham số mức lương theo yêu cầu)
+        Call<ApiResponse> call = apiService.searchJobsAdvanced(
                 selectedKeyword.isEmpty() ? null : selectedKeyword,
                 selectedWorkFieldId,
                 selectedWorkDisciplineId,
                 selectedJobPositionId,
                 selectedExperienceLevelId,
-                selectedWorkTypeId
+                selectedWorkTypeId,
+                null, // minSalary - không sử dụng theo yêu cầu
+                null, // maxSalary - không sử dụng theo yêu cầu
+                0, // page mặc định
+                10 // size mặc định
         );
 
         call.enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                // Ẩn ProgressBar
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.GONE);
+                }
+
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
@@ -279,6 +338,10 @@ public class AdvancedSearchActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Ẩn ProgressBar
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.GONE);
+                }
                 Toast.makeText(AdvancedSearchActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -566,29 +629,28 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         if (spinnerWorkField.getAdapter() != null && spinnerWorkField.getAdapter().getCount() > 0) {
             spinnerWorkField.setSelection(0);
         }
-        
+
         if (spinnerWorkDiscipline.getAdapter() != null && spinnerWorkDiscipline.getAdapter().getCount() > 0) {
             spinnerWorkDiscipline.setSelection(0);
         }
-        
+
         if (spinnerJobPosition.getAdapter() != null && spinnerJobPosition.getAdapter().getCount() > 0) {
             spinnerJobPosition.setSelection(0);
         }
-        
+
         if (spinnerExperienceLevel.getAdapter() != null && spinnerExperienceLevel.getAdapter().getCount() > 0) {
             spinnerExperienceLevel.setSelection(0);
         }
-        
+
         if (spinnerWorkType.getAdapter() != null && spinnerWorkType.getAdapter().getCount() > 0) {
             spinnerWorkType.setSelection(0);
         }
-        
+
         // Xóa từ khóa tìm kiếm
-        com.google.android.material.textfield.TextInputEditText keywordEditText = findViewById(R.id.edit_text_keyword);
-        if (keywordEditText != null) {
-            keywordEditText.setText("");
+        if (editTextKeyword != null) {
+            editTextKeyword.setText("");
         }
-        
+
         // Reset các biến lưu trữ lựa chọn
         selectedWorkFieldId = null;
         selectedWorkDisciplineId = null;
@@ -596,7 +658,20 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         selectedExperienceLevelId = null;
         selectedWorkTypeId = null;
         selectedKeyword = "";
-        
+
+        // Xóa danh sách kết quả
+        if (jobList != null) {
+            jobList.clear();
+            if (jobAdapter != null) {
+                jobAdapter.notifyDataSetChanged();
+            }
+        }
+
+        // Ẩn RecyclerView
+        if (recyclerView != null) {
+            recyclerView.setVisibility(View.GONE);
+        }
+
         Toast.makeText(this, "Đã xóa bộ lọc", Toast.LENGTH_SHORT).show();
     }
 
@@ -609,6 +684,11 @@ public class AdvancedSearchActivity extends AppCompatActivity {
 
         // Load danh sách hình thức làm việc
         loadWorkTypes();
+
+        // Cập nhật các spinner con với tùy chọn "Tất cả" ngay từ đầu
+        // để người dùng có thể thấy các tùy chọn mặc định
+        updateWorkDisciplineSpinner();
+        updateJobPositionSpinner();
     }
 
     private void loadWorkFields() {
@@ -632,7 +712,13 @@ public class AdvancedSearchActivity extends AppCompatActivity {
                         }
                         workFields = fields;
                         updateWorkFieldSpinner();
+                    } else {
+                        // Nếu API trả về thành công nhưng không có dữ liệu, sử dụng dữ liệu mẫu
+                        loadSampleData();
                     }
+                } else {
+                    // Nếu phản hồi không thành công, sử dụng dữ liệu mẫu
+                    loadSampleData();
                 }
             }
 
@@ -671,7 +757,10 @@ public class AdvancedSearchActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                // Không làm gì cả vì dữ liệu mẫu đã được load trong onFailure của workFields
+                // Nếu không thể load từ API, sử dụng dữ liệu mẫu nếu chưa có
+                if (workFields == null || workFields.isEmpty()) {
+                    loadSampleData();
+                }
             }
         });
     }
@@ -703,7 +792,10 @@ public class AdvancedSearchActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                // Không làm gì cả vì dữ liệu mẫu đã được load trong onFailure của workFields
+                // Nếu không thể load từ API, sử dụng dữ liệu mẫu nếu chưa có
+                if (workFields == null || workFields.isEmpty()) {
+                    loadSampleData();
+                }
             }
         });
     }
@@ -722,7 +814,10 @@ public class AdvancedSearchActivity extends AppCompatActivity {
     }
 
     private void updateWorkDisciplinesSpinner(Integer workFieldId) {
-        // Nếu có ID lĩnh vực, gọi API để lấy ngành nghề tương ứng
+        // Xóa lựa chọn ở các spinner phụ thuộc
+        selectedWorkDisciplineId = null;
+        selectedJobPositionId = null;
+
         if (workFieldId != null) {
             Call<ApiResponse> call = apiService.getWorkDisciplinesByField(workFieldId);
             call.enqueue(new Callback<ApiResponse>() {
@@ -743,13 +838,18 @@ public class AdvancedSearchActivity extends AppCompatActivity {
                                 }
                             }
 
-                            // Thêm vào danh sách ngành nghề và cập nhật spinner
+                            // Cập nhật danh sách ngành nghề và spinner
                             workDisciplines = new ArrayList<>();
                             workDisciplines.add(new WorkDiscipline(0, "Tất cả ngành nghề", null)); // Thêm tùy chọn tất cả
                             workDisciplines.addAll(disciplines);
 
                             updateWorkDisciplineSpinner();
+                            updateJobPositionSpinner(); // Cập nhật spinner vị trí công việc sau khi cập nhật ngành nghề
                         }
+                    } else {
+                        // Nếu không thể load từ API, sử dụng danh sách hiện tại
+                        updateWorkDisciplineSpinner();
+                        updateJobPositionSpinner();
                     }
                 }
 
@@ -757,11 +857,15 @@ public class AdvancedSearchActivity extends AppCompatActivity {
                 public void onFailure(Call<ApiResponse> call, Throwable t) {
                     // Nếu không thể load từ API, sử dụng danh sách hiện tại
                     updateWorkDisciplineSpinner();
+                    updateJobPositionSpinner();
                 }
             });
         } else {
-            // Nếu không có ID lĩnh vực, hiển thị tất cả ngành nghề
+            // Nếu không có ID lĩnh vực (tức là chọn "Tất cả lĩnh vực"), hiển thị tất cả ngành nghề
+            workDisciplines = new ArrayList<>();
+            workDisciplines.add(new WorkDiscipline(0, "Tất cả ngành nghề", null));
             updateWorkDisciplineSpinner();
+            updateJobPositionSpinner();
         }
     }
 
@@ -782,7 +886,21 @@ public class AdvancedSearchActivity extends AppCompatActivity {
     }
 
     private void updateJobPositionsSpinner(Integer disciplineId) {
-        // Nếu có ID ngành nghề, gọi API để lấy vị trí công việc tương ứng
+        // Xóa lựa chọn ở spinner vị trí công việc
+        selectedJobPositionId = null;
+
+        // Hiển thị "Đang tải..." hoặc làm trống spinner để người dùng biết đang cập nhật
+        List<String> positionNames = new ArrayList<>();
+        positionNames.add("Tất cả vị trí");
+        // Nếu đang tải dữ liệu theo ngành cụ thể, có thể thêm thông báo
+        if (disciplineId != null && disciplineId != 0) {
+            positionNames.add("Đang tải...");
+        }
+
+        ArrayAdapter<String> positionAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, positionNames);
+        positionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerJobPosition.setAdapter(positionAdapter);
+
         if (disciplineId != null && disciplineId != 0) { // Không cập nhật nếu là tùy chọn "Tất cả ngành nghề"
             Call<ApiResponse> call = apiService.getJobPositionsByDiscipline(disciplineId);
             call.enqueue(new Callback<ApiResponse>() {
@@ -808,19 +926,34 @@ public class AdvancedSearchActivity extends AppCompatActivity {
                             jobPositions.add(new JobPosition(0, "Tất cả vị trí", null)); // Thêm tùy chọn tất cả
                             jobPositions.addAll(positions);
 
+                            // Cập nhật lại spinner với dữ liệu mới
+                            updateJobPositionSpinner();
+                        } else {
+                            // Nếu không có dữ liệu, vẫn cập nhật với danh sách rỗng
+                            jobPositions = new ArrayList<>();
+                            jobPositions.add(new JobPosition(0, "Tất cả vị trí", null));
                             updateJobPositionSpinner();
                         }
+                    } else {
+                        // Nếu phản hồi không thành công, vẫn cập nhật với danh sách rỗng
+                        jobPositions = new ArrayList<>();
+                        jobPositions.add(new JobPosition(0, "Tất cả vị trí", null));
+                        updateJobPositionSpinner();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    // Nếu không thể load từ API, sử dụng danh sách hiện tại
+                    // Nếu gọi API thất bại, vẫn cập nhật với danh sách rỗng
+                    jobPositions = new ArrayList<>();
+                    jobPositions.add(new JobPosition(0, "Tất cả vị trí", null));
                     updateJobPositionSpinner();
                 }
             });
         } else {
             // Nếu không có ID ngành nghề hoặc là tùy chọn "Tất cả ngành nghề", hiển thị tất cả vị trí
+            jobPositions = new ArrayList<>();
+            jobPositions.add(new JobPosition(0, "Tất cả vị trí", null));
             updateJobPositionSpinner();
         }
     }

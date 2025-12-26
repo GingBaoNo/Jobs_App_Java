@@ -87,14 +87,14 @@ public class EmployerJobController {
 
             // Gán các trường phân cấp nếu được cung cấp
             if (maNganh != null) {
-                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh).orElse(null);
+                WorkDiscipline workDiscipline = workDisciplineService.getWorkDisciplineById(maNganh);
                 if (workDiscipline != null) {
                     job.setJobPosition(null); // Clear any existing position that might not match the discipline
                 }
             }
 
             if (maViTri != null) {
-                JobPosition jobPosition = jobPositionService.getJobPositionById(maViTri).orElse(null);
+                JobPosition jobPosition = jobPositionService.getJobPositionById(maViTri);
                 if (jobPosition != null) {
                     job.setJobPosition(jobPosition);
                 }

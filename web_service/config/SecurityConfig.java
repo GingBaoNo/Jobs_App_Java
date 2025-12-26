@@ -59,6 +59,16 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/v1/job-details/**").permitAll()
                 .requestMatchers("/api/v1/companies/**").permitAll()
+                .requestMatchers("/api/v1/work-fields").permitAll()
+                .requestMatchers("/api/v1/work-fields/**").permitAll()
+                .requestMatchers("/api/v1/work-disciplines").permitAll()
+                .requestMatchers("/api/v1/work-disciplines/**").permitAll()
+                .requestMatchers("/api/v1/job-positions").permitAll()
+                .requestMatchers("/api/v1/job-positions/**").permitAll()
+                .requestMatchers("/api/v1/experience-levels").permitAll()
+                .requestMatchers("/api/v1/experience-levels/**").permitAll()
+                .requestMatchers("/api/v1/work-types").permitAll()
+                .requestMatchers("/api/v1/work-types/**").permitAll()
                 // All other API endpoints - need authentication via JWT
                 .requestMatchers("/api/v1/**").authenticated()
                 // Web pages with role-based access

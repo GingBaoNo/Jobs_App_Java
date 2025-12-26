@@ -69,8 +69,8 @@ public interface ApiService {
     @GET("v1/job-details/search-no-status")
     Call<ApiResponse> searchJobsNoStatus(@Query("keyword") String keyword);
 
-    // Search by Hierarchy API (tìm kiếm theo cấu trúc phân cấp mới)
-    @GET("v1/job-details/search-by-hierarchy")
+    // Search by Hierarchy API (tìm kiếm theo cấu trúc phân cấp mới) - sử dụng API mới
+    @GET("v1/job-details/search-advanced")
     Call<ApiResponse> searchJobsByHierarchy(
             @Query("keyword") String keyword,
             @Query("workField") Integer workField,
@@ -84,10 +84,10 @@ public interface ApiService {
     @GET("v1/work-fields")
     Call<ApiResponse> getAllWorkFields();
 
-    @GET("v1/work-disciplines/by-field/{workFieldId}")
+    @GET("v1/work-disciplines/field/{workFieldId}")
     Call<ApiResponse> getWorkDisciplinesByField(@Path("workFieldId") Integer workFieldId);
 
-    @GET("v1/job-positions/by-discipline/{disciplineId}")
+    @GET("v1/job-positions/discipline/{disciplineId}")
     Call<ApiResponse> getJobPositionsByDiscipline(@Path("disciplineId") Integer disciplineId);
 
     @GET("v1/experience-levels")
@@ -99,6 +99,49 @@ public interface ApiService {
     // Featured Jobs API
     @GET("v1/job-details/featured")
     Call<ApiResponse> getFeaturedJobs();
+
+    // APIs cho tìm kiếm nâng cao theo từng tiêu chí
+    @GET("v1/job-details/by-field/{fieldId}")
+    Call<ApiResponse> searchJobsByField(@Path("fieldId") Integer fieldId);
+
+    @GET("v1/job-details/by-type/{typeId}")
+    Call<ApiResponse> searchJobsByType(@Path("typeId") Integer typeId);
+
+    @GET("v1/job-details/by-position/{positionId}")
+    Call<ApiResponse> searchJobsByPosition(@Path("positionId") Integer positionId);
+
+    @GET("v1/job-details/by-experience/{experienceId}")
+    Call<ApiResponse> searchJobsByExperience(@Path("experienceId") Integer experienceId);
+
+    // API tìm kiếm nâng cao với phân trang
+    @GET("v1/job-details/search-advanced")
+    Call<ApiResponse> searchJobsAdvancedWithPaging(
+            @Query("keyword") String keyword,
+            @Query("workField") Integer workField,
+            @Query("workDiscipline") Integer workDiscipline,
+            @Query("jobPosition") Integer jobPosition,
+            @Query("experienceLevel") Integer experienceLevel,
+            @Query("workType") Integer workType,
+            @Query("minSalary") Integer minSalary,
+            @Query("maxSalary") Integer maxSalary,
+            @Query("page") int page,
+            @Query("size") int size
+    );
+
+    // API tìm kiếm nâng cao theo mô tả yêu cầu (bao gồm cả mức lương nhưng sẽ truyền null nếu không dùng)
+    @GET("v1/advanced-search/jobs")
+    Call<ApiResponse> searchJobsAdvanced(
+            @Query("keyword") String keyword,
+            @Query("fieldId") Integer fieldId,
+            @Query("disciplineId") Integer disciplineId,
+            @Query("positionId") Integer positionId,
+            @Query("experienceId") Integer experienceId,
+            @Query("typeId") Integer typeId,
+            @Query("minSalary") Integer minSalary,
+            @Query("maxSalary") Integer maxSalary,
+            @Query("page") int page,
+            @Query("size") int size
+    );
 
     // Featured Companies API
     @GET("v1/companies/featured")
