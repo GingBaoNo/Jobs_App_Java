@@ -97,6 +97,12 @@ public class JobDetail {
     @Column(name = "trang_thai_tin_tuyen", nullable = false)
     private String trangThaiTinTuyen = "Mở";
 
+    @Column(name = "kinh_do", precision = 10, scale = 8)
+    private BigDecimal kinhDo;
+
+    @Column(name = "vi_do", precision = 11, scale = 8)
+    private BigDecimal viDo;
+
     // Constructors
     public JobDetail() {}
 
@@ -317,5 +323,21 @@ public class JobDetail {
 
     public void setExperienceLevel(ExperienceLevel experienceLevel) {
         this.experienceLevel = experienceLevel;
+    }
+
+    public BigDecimal getKinhDo() {
+        return kinhDo;
+    }
+
+    public void setKinhDo(BigDecimal kinhDo) {
+        this.kinhDo = kinhDo;
+    }
+
+    public BigDecimal getViDo() {
+        return viDo;
+    }
+
+    public void setViDo(BigDecimal viDo) {
+        this.viDo = viDo;
     }
 }

@@ -34,13 +34,14 @@ public class CompanyDetailActivity extends AppCompatActivity {
     private TextView tvCompanyPhone, tvCompanyEmail;
     private TextView tvCompanyInfo;
     private TextView tvContactPerson, tvCompanyContact, tvTaxCode, tvCompanyAddress;
-    private Button btnViewJobs;
+    private Button btnViewJobs, btnViewOnMap;
 
     // RecyclerView và Adapter cho danh sách công việc
     private RecyclerView rvCompanyJobs;
     private JobItemAdapter jobAdapter;
     private List<JobDetail> jobList;
     private int companyId;
+    private Company currentCompany; // Biến để lưu trữ thông tin công ty hiện tại
     private ApiService apiService;
 
     @Override
@@ -89,6 +90,9 @@ public class CompanyDetailActivity extends AppCompatActivity {
         // Footer button
         btnViewJobs = findViewById(R.id.sticky_footer);
 
+        // View on map button
+        btnViewOnMap = findViewById(R.id.btn_view_on_map);
+
         // RecyclerView for jobs
         rvCompanyJobs = findViewById(R.id.rv_company_jobs);
 
@@ -119,6 +123,21 @@ public class CompanyDetailActivity extends AppCompatActivity {
         btnViewJobs.setOnClickListener(v -> {
             Toast.makeText(this, "Hiển thị danh sách công việc đang tuyển", Toast.LENGTH_SHORT).show();
             // Có thể chuyển sang một activity mới để hiển thị danh sách công việc của công ty
+        });
+
+        // View on map button
+        btnViewOnMap.setOnClickListener(v -> {
+            // Kiểm tra xem công ty có tọa độ không trước khi mở bản đồ
+            if (currentCompany != null && currentCompany.getKinhDo() != null && currentCompany.getViDo() != null) {
+                Intent intent = new Intent(this, MapActivity.class);
+                intent.putExtra("company_id", currentCompany.getMaCongTy());
+                intent.putExtra("company_name", currentCompany.getTenCongTy());
+                intent.putExtra("latitude", currentCompany.getViDo().doubleValue());
+                intent.putExtra("longitude", currentCompany.getKinhDo().doubleValue());
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Không có thông tin vị trí cho công ty này", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -171,6 +190,33 @@ public class CompanyDetailActivity extends AppCompatActivity {
                                 }
                                 if (companyData.get("trangThai") != null) {
                                     company.setTrangThai((String) companyData.get("trangThai"));
+                                }
+
+                                // Ánh xạ tọa độ
+                                if (companyData.get("kinhDo") != null) {
+                                    Object kinhDoObj = companyData.get("kinhDo");
+                                    if (kinhDoObj instanceof Double) {
+                                        company.setKinhDo(java.math.BigDecimal.valueOf((Double) kinhDoObj));
+                                    } else if (kinhDoObj instanceof Integer) {
+                                        company.setKinhDo(java.math.BigDecimal.valueOf((Integer) kinhDoObj));
+                                    } else if (kinhDoObj instanceof String) {
+                                        company.setKinhDo(new java.math.BigDecimal((String) kinhDoObj));
+                                    } else {
+                                        company.setKinhDo(java.math.BigDecimal.valueOf(Double.parseDouble(kinhDoObj.toString())));
+                                    }
+                                }
+
+                                if (companyData.get("viDo") != null) {
+                                    Object viDoObj = companyData.get("viDo");
+                                    if (viDoObj instanceof Double) {
+                                        company.setViDo(java.math.BigDecimal.valueOf((Double) viDoObj));
+                                    } else if (viDoObj instanceof Integer) {
+                                        company.setViDo(java.math.BigDecimal.valueOf((Integer) viDoObj));
+                                    } else if (viDoObj instanceof String) {
+                                        company.setViDo(new java.math.BigDecimal((String) viDoObj));
+                                    } else {
+                                        company.setViDo(java.math.BigDecimal.valueOf(Double.parseDouble(viDoObj.toString())));
+                                    }
                                 }
 
                                 displayCompanyDetails(company);
@@ -256,6 +302,9 @@ public class CompanyDetailActivity extends AppCompatActivity {
     }
 
     private void displayCompanyDetails(Company company) {
+        // Cập nhật biến currentCompany
+        this.currentCompany = company;
+
         // Company Hero Section
         tvCompanyName.setText(company.getTenCongTy());
 

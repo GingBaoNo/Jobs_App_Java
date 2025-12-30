@@ -39,6 +39,8 @@ CREATE TABLE locations (
     ma_cha INT NULL,
     ten_dia_diem NVARCHAR(100) NOT NULL,
     cap_do NVARCHAR(20) NOT NULL CHECK (cap_do IN (N'Tỉnh/Thành phố', N'Quận/Huyện')),
+    kinh_do DECIMAL(12, 8) NULL,  -- >> TRƯỜNG MỚI: Kinh độ (điều chỉnh độ chính xác)
+    vi_do DECIMAL(11, 8) NULL,   -- >> TRƯỜNG MỚI: Vĩ độ
     CONSTRAINT fk_location_parent FOREIGN KEY (ma_cha) REFERENCES locations (ma_dia_diem)
 );
 
@@ -112,6 +114,8 @@ CREATE TABLE company (
     ngay_tao DATETIME NULL DEFAULT GETDATE(),
     mo_ta_cong_ty NVARCHAR(MAX) NULL, -- Trường nâng cấp 1
     trang_thai NVARCHAR(20) NOT NULL DEFAULT N'Đang hoạt động', -- >> TRƯỜNG MỚI ĐÃ THÊM ĐỂ KHẮC PHỤC LỖI
+    kinh_do DECIMAL(12, 8) NULL,  -- >> TRƯỜNG MỚI: Kinh độ (điều chỉnh độ chính xác)
+    vi_do DECIMAL(11, 8) NULL,   -- >> TRƯỜNG MỚI: Vĩ độ
     CONSTRAINT fk_company_employer FOREIGN KEY (ma_nha_tuyen_dung) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE
 );
 
@@ -142,6 +146,9 @@ CREATE TABLE jobdetails (
     luot_xem INT NOT NULL DEFAULT 0,
     trang_thai_duyet NVARCHAR(20) NOT NULL DEFAULT N'Chờ duyệt' CHECK (trang_thai_duyet IN (N'Chờ duyệt', N'Đã duyệt', N'Từ chối')),
     trang_thai_tin_tuyen NVARCHAR(10) NOT NULL DEFAULT N'Mở' CHECK (trang_thai_tin_tuyen IN (N'Mở', N'Đã đóng', N'Tạm dừng')),
+
+    kinh_do DECIMAL(12, 8) NULL,  -- >> TRƯỜNG MỚI: Kinh độ (điều chỉnh độ chính xác)
+    vi_do DECIMAL(11, 8) NULL,   -- >> TRƯỜNG MỚI: Vĩ độ
 
     CONSTRAINT fk_job_company FOREIGN KEY (ma_cong_ty) REFERENCES company (ma_cong_ty) ON DELETE CASCADE,
     CONSTRAINT fk_job_field FOREIGN KEY (ma_linh_vuc) REFERENCES work_fields (ma_linh_vuc) ON DELETE NO ACTION,

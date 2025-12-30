@@ -168,6 +168,8 @@ public class EmployerController {
     @PostMapping("/employer/company/register")
     public String registerCompany(Authentication authentication,
                                  @ModelAttribute Company company,
+                                 @RequestParam(value = "kinhDo", required = false) Double kinhDo,
+                                 @RequestParam(value = "viDo", required = false) Double viDo,
                                  @RequestParam(value = "logoFile", required = false) MultipartFile logoFile,
                                  Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
@@ -184,15 +186,17 @@ public class EmployerController {
                 return "employer/company";
             }
 
-            // Tạo công ty mới
-            Company newCompany = companyService.registerCompany(
+            // Tạo công ty mới với tọa độ
+            Company newCompany = companyService.updateCompanyWithCoordinates(
                 user,
                 company.getTenCongTy(),
                 company.getTenNguoiDaiDien(),
                 company.getMaSoThue(),
                 company.getDiaChi(),
                 company.getLienHeCty(),
-                company.getMoTaCongTy()
+                company.getMoTaCongTy(),
+                kinhDo != null ? java.math.BigDecimal.valueOf(kinhDo) : null,
+                viDo != null ? java.math.BigDecimal.valueOf(viDo) : null
             );
 
             // Nếu có logo được tải lên, cập nhật logo cho công ty mới
@@ -268,6 +272,8 @@ public class EmployerController {
                                 @RequestParam("moTaCongTy") String moTaCongTy,
                                 @RequestParam("maSoThue") String maSoThue,
                                 @RequestParam("lienHeCty") String lienHeCty,
+                                @RequestParam(value = "kinhDo", required = false) Double kinhDo,
+                                @RequestParam(value = "viDo", required = false) Double viDo,
                                 @RequestParam(value = "logoFile", required = false) MultipartFile logoFile, // Thêm logo file, có thể không có
                                 Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
@@ -305,6 +311,12 @@ public class EmployerController {
         existingCompany.setMoTaCongTy(moTaCongTy);
         existingCompany.setMaSoThue(maSoThue);
         existingCompany.setLienHeCty(lienHeCty);
+
+        // Cập nhật tọa độ nếu có
+        if (kinhDo != null && viDo != null) {
+            existingCompany.setKinhDo(java.math.BigDecimal.valueOf(kinhDo));
+            existingCompany.setViDo(java.math.BigDecimal.valueOf(viDo));
+        }
 
         // Lưu lại thông tin chung vào DB
         try {

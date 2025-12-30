@@ -2,6 +2,8 @@ package com.example.fjobs.models;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.math.BigDecimal;
+
 public class Company {
     @SerializedName("maCongTy")
     private int maCongTy;
@@ -32,6 +34,12 @@ public class Company {
 
     @SerializedName("trangThai")
     private String trangThai; // Trạng thái công ty
+
+    @SerializedName("kinhDo")
+    private BigDecimal kinhDo; // Kinh độ
+
+    @SerializedName("viDo")
+    private BigDecimal viDo; // Vĩ độ
 
     // Constructors
     public Company() {}
@@ -76,4 +84,10 @@ public class Company {
 
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+
+    public BigDecimal getKinhDo() { return kinhDo; }
+    public void setKinhDo(BigDecimal kinhDo) { this.kinhDo = kinhDo; }
+
+    public BigDecimal getViDo() { return viDo; }
+    public void setViDo(BigDecimal viDo) { this.viDo = viDo; }
 }

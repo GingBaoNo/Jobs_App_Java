@@ -53,4 +53,7 @@ dependencies {
 
     // Thêm thư viện Java-WebSocket cho kết nối realtime
     implementation("org.java-websocket:Java-WebSocket:1.5.4")
+
+    // Thêm thư viện OpenStreetMap (OSM)
+    implementation("org.osmdroid:osmdroid-android:6.1.17")
 }

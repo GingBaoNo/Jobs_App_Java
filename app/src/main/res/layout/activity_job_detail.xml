@@ -118,6 +118,17 @@
 
                     </LinearLayout>
 
+                    <!-- Nút xem trên bản đồ -->
+                    <Button
+                        android:id="@+id/btn_view_on_map"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Xem trên bản đồ"
+                        android:textSize="16sp"
+                        android:backgroundTint="@color/primary_500"
+                        app:cornerRadius="8dp" />
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

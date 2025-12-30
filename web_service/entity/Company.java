@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -46,6 +47,12 @@ public class Company {
 
     @Column(name = "ngay_tao")
     private LocalDateTime ngayTao;
+
+    @Column(name = "kinh_do", precision = 10, scale = 8)
+    private BigDecimal kinhDo;
+
+    @Column(name = "vi_do", precision = 11, scale = 8)
+    private BigDecimal viDo;
 
     // Constructors
     public Company() {}
@@ -156,5 +163,21 @@ public class Company {
 
     public void setMoTaCongTy(String moTaCongTy) {
         this.moTaCongTy = moTaCongTy;
+    }
+
+    public BigDecimal getKinhDo() {
+        return kinhDo;
+    }
+
+    public void setKinhDo(BigDecimal kinhDo) {
+        this.kinhDo = kinhDo;
+    }
+
+    public BigDecimal getViDo() {
+        return viDo;
+    }
+
+    public void setViDo(BigDecimal viDo) {
+        this.viDo = viDo;
     }
 }

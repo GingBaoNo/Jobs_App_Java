@@ -37,20 +37,77 @@ public class ApiCompanyController {
     @GetMapping
     public ResponseEntity<?> getAllCompanies() {
         List<Company> companies = companyService.getAllCompanies();
-        return ApiResponseUtil.success("Companies retrieved successfully", companies);
+        // Chuyển đổi danh sách công ty để bao gồm tọa độ
+        List<Map<String, Object>> companyList = companies.stream().map(company -> {
+            Map<String, Object> companyMap = new HashMap<>();
+            companyMap.put("maCongTy", company.getMaCongTy());
+            companyMap.put("tenCongTy", company.getTenCongTy());
+            companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
+            companyMap.put("maSoThue", company.getMaSoThue());
+            companyMap.put("diaChi", company.getDiaChi());
+            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("hinhAnhCty", company.getHinhAnhCty());
+            companyMap.put("daXacThuc", company.getDaXacThuc());
+            companyMap.put("trangThai", company.getTrangThai());
+            companyMap.put("ngayTao", company.getNgayTao());
+            companyMap.put("moTaCongTy", company.getMoTaCongTy());
+            // Thêm tọa độ công ty
+            companyMap.put("kinhDo", company.getKinhDo());
+            companyMap.put("viDo", company.getViDo());
+            return companyMap;
+        }).toList();
+        return ApiResponseUtil.success("Companies retrieved successfully", companyList);
     }
 
     @GetMapping("/verified")
     public ResponseEntity<?> getVerifiedCompanies() {
         List<Company> companies = companyService.getVerifiedCompanies();
-        return ApiResponseUtil.success("Verified companies retrieved successfully", companies);
+        // Chuyển đổi danh sách công ty để bao gồm tọa độ
+        List<Map<String, Object>> companyList = companies.stream().map(company -> {
+            Map<String, Object> companyMap = new HashMap<>();
+            companyMap.put("maCongTy", company.getMaCongTy());
+            companyMap.put("tenCongTy", company.getTenCongTy());
+            companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
+            companyMap.put("maSoThue", company.getMaSoThue());
+            companyMap.put("diaChi", company.getDiaChi());
+            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("hinhAnhCty", company.getHinhAnhCty());
+            companyMap.put("daXacThuc", company.getDaXacThuc());
+            companyMap.put("trangThai", company.getTrangThai());
+            companyMap.put("ngayTao", company.getNgayTao());
+            companyMap.put("moTaCongTy", company.getMoTaCongTy());
+            // Thêm tọa độ công ty
+            companyMap.put("kinhDo", company.getKinhDo());
+            companyMap.put("viDo", company.getViDo());
+            return companyMap;
+        }).toList();
+        return ApiResponseUtil.success("Verified companies retrieved successfully", companyList);
     }
 
     @GetMapping("/featured")
     public ResponseEntity<?> getFeaturedCompanies() {
         // Lấy các công ty nổi bật - các công ty đã xác thực và có nhiều việc làm
         List<Company> featuredCompanies = companyService.getFeaturedCompanies();
-        return ApiResponseUtil.success("Featured companies retrieved successfully", featuredCompanies);
+        // Chuyển đổi danh sách công ty để bao gồm tọa độ
+        List<Map<String, Object>> companyList = featuredCompanies.stream().map(company -> {
+            Map<String, Object> companyMap = new HashMap<>();
+            companyMap.put("maCongTy", company.getMaCongTy());
+            companyMap.put("tenCongTy", company.getTenCongTy());
+            companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
+            companyMap.put("maSoThue", company.getMaSoThue());
+            companyMap.put("diaChi", company.getDiaChi());
+            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("hinhAnhCty", company.getHinhAnhCty());
+            companyMap.put("daXacThuc", company.getDaXacThuc());
+            companyMap.put("trangThai", company.getTrangThai());
+            companyMap.put("ngayTao", company.getNgayTao());
+            companyMap.put("moTaCongTy", company.getMoTaCongTy());
+            // Thêm tọa độ công ty
+            companyMap.put("kinhDo", company.getKinhDo());
+            companyMap.put("viDo", company.getViDo());
+            return companyMap;
+        }).toList();
+        return ApiResponseUtil.success("Featured companies retrieved successfully", companyList);
     }
 
     @GetMapping("/search")
@@ -61,7 +118,26 @@ public class ApiCompanyController {
         List<Company> companies = companyService.getAllCompanies().stream()
             .filter(company -> company.getTenCongTy().toLowerCase().contains(keyword.toLowerCase()))
             .toList();
-        return ApiResponseUtil.success("Companies searched successfully", companies);
+        // Chuyển đổi danh sách công ty để bao gồm tọa độ
+        List<Map<String, Object>> companyList = companies.stream().map(company -> {
+            Map<String, Object> companyMap = new HashMap<>();
+            companyMap.put("maCongTy", company.getMaCongTy());
+            companyMap.put("tenCongTy", company.getTenCongTy());
+            companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
+            companyMap.put("maSoThue", company.getMaSoThue());
+            companyMap.put("diaChi", company.getDiaChi());
+            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("hinhAnhCty", company.getHinhAnhCty());
+            companyMap.put("daXacThuc", company.getDaXacThuc());
+            companyMap.put("trangThai", company.getTrangThai());
+            companyMap.put("ngayTao", company.getNgayTao());
+            companyMap.put("moTaCongTy", company.getMoTaCongTy());
+            // Thêm tọa độ công ty
+            companyMap.put("kinhDo", company.getKinhDo());
+            companyMap.put("viDo", company.getViDo());
+            return companyMap;
+        }).toList();
+        return ApiResponseUtil.success("Companies searched successfully", companyList);
     }
 
     @GetMapping("/page")
@@ -73,7 +149,40 @@ public class ApiCompanyController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         Page<Company> companyPage = companyService.getCompaniesWithPagination(pageable);
 
-        return ApiResponseUtil.success("Companies retrieved successfully with pagination", companyPage);
+        // Chuyển đổi danh sách công ty để bao gồm tọa độ
+        List<Map<String, Object>> companyList = companyPage.getContent().stream().map(company -> {
+            Map<String, Object> companyMap = new HashMap<>();
+            companyMap.put("maCongTy", company.getMaCongTy());
+            companyMap.put("tenCongTy", company.getTenCongTy());
+            companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
+            companyMap.put("maSoThue", company.getMaSoThue());
+            companyMap.put("diaChi", company.getDiaChi());
+            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("hinhAnhCty", company.getHinhAnhCty());
+            companyMap.put("daXacThuc", company.getDaXacThuc());
+            companyMap.put("trangThai", company.getTrangThai());
+            companyMap.put("ngayTao", company.getNgayTao());
+            companyMap.put("moTaCongTy", company.getMoTaCongTy());
+            // Thêm tọa độ công ty
+            companyMap.put("kinhDo", company.getKinhDo());
+            companyMap.put("viDo", company.getViDo());
+            return companyMap;
+        }).toList();
+
+        // Tạo một bản sao của Page với danh sách đã chuyển đổi
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", companyList);
+        response.put("pageable", companyPage.getPageable());
+        response.put("totalElements", companyPage.getTotalElements());
+        response.put("totalPages", companyPage.getTotalPages());
+        response.put("last", companyPage.isLast());
+        response.put("first", companyPage.isFirst());
+        response.put("number", companyPage.getNumber());
+        response.put("size", companyPage.getSize());
+        response.put("numberOfElements", companyPage.getNumberOfElements());
+        response.put("empty", companyPage.isEmpty());
+
+        return ApiResponseUtil.success("Companies retrieved successfully with pagination", response);
     }
 
     @GetMapping("/verified/page")
@@ -85,14 +194,68 @@ public class ApiCompanyController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         Page<Company> companyPage = companyService.getVerifiedCompaniesWithPagination(pageable);
 
-        return ApiResponseUtil.success("Verified companies retrieved successfully with pagination", companyPage);
+        // Chuyển đổi danh sách công ty để bao gồm tọa độ
+        List<Map<String, Object>> companyList = companyPage.getContent().stream().map(company -> {
+            Map<String, Object> companyMap = new HashMap<>();
+            companyMap.put("maCongTy", company.getMaCongTy());
+            companyMap.put("tenCongTy", company.getTenCongTy());
+            companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
+            companyMap.put("maSoThue", company.getMaSoThue());
+            companyMap.put("diaChi", company.getDiaChi());
+            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("hinhAnhCty", company.getHinhAnhCty());
+            companyMap.put("daXacThuc", company.getDaXacThuc());
+            companyMap.put("trangThai", company.getTrangThai());
+            companyMap.put("ngayTao", company.getNgayTao());
+            companyMap.put("moTaCongTy", company.getMoTaCongTy());
+            // Thêm tọa độ công ty
+            companyMap.put("kinhDo", company.getKinhDo());
+            companyMap.put("viDo", company.getViDo());
+            return companyMap;
+        }).toList();
+
+        // Tạo một bản sao của Page với danh sách đã chuyển đổi
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", companyList);
+        response.put("pageable", companyPage.getPageable());
+        response.put("totalElements", companyPage.getTotalElements());
+        response.put("totalPages", companyPage.getTotalPages());
+        response.put("last", companyPage.isLast());
+        response.put("first", companyPage.isFirst());
+        response.put("number", companyPage.getNumber());
+        response.put("size", companyPage.getSize());
+        response.put("numberOfElements", companyPage.getNumberOfElements());
+        response.put("empty", companyPage.isEmpty());
+
+        return ApiResponseUtil.success("Verified companies retrieved successfully with pagination", response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getCompanyById(@PathVariable Integer id) {
-        return companyService.getCompanyById(id)
-            .map(company -> ApiResponseUtil.success("Company retrieved successfully", company))
-            .orElse(ApiResponseUtil.error("Company not found with id: " + id));
+        Optional<Company> companyOpt = companyService.getCompanyById(id);
+        if (companyOpt.isPresent()) {
+            Company company = companyOpt.get();
+            // Tạo một map để trả về thông tin công ty với tọa độ
+            Map<String, Object> companyInfo = new HashMap<>();
+            companyInfo.put("maCongTy", company.getMaCongTy());
+            companyInfo.put("tenCongTy", company.getTenCongTy());
+            companyInfo.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
+            companyInfo.put("maSoThue", company.getMaSoThue());
+            companyInfo.put("diaChi", company.getDiaChi());
+            companyInfo.put("lienHeCty", company.getLienHeCty());
+            companyInfo.put("hinhAnhCty", company.getHinhAnhCty());
+            companyInfo.put("daXacThuc", company.getDaXacThuc());
+            companyInfo.put("trangThai", company.getTrangThai());
+            companyInfo.put("ngayTao", company.getNgayTao());
+            companyInfo.put("moTaCongTy", company.getMoTaCongTy());
+            // Thêm tọa độ công ty
+            companyInfo.put("kinhDo", company.getKinhDo());
+            companyInfo.put("viDo", company.getViDo());
+
+            return ApiResponseUtil.success("Company retrieved successfully", companyInfo);
+        } else {
+            return ApiResponseUtil.error("Company not found with id: " + id);
+        }
     }
 
     @GetMapping("/{id}/jobs")
@@ -128,6 +291,9 @@ public class ApiCompanyController {
             jobMap.put("luotXem", job.getLuotXem());
             jobMap.put("trangThaiDuyet", job.getTrangThaiDuyet());
             jobMap.put("trangThaiTinTuyen", job.getTrangThaiTinTuyen());
+            // Thêm thông tin tọa độ cho công việc
+            jobMap.put("kinhDo", job.getKinhDo());
+            jobMap.put("viDo", job.getViDo());
             // Don't include the company reference to avoid circular reference
             jobMap.put("workField", job.getWorkField());
             jobMap.put("workType", job.getWorkType());
@@ -154,7 +320,24 @@ public class ApiCompanyController {
 
         // Create a custom response that includes both company info and simplified jobs
         Map<String, Object> response = new HashMap<>();
-        response.put("company", company);
+        // Include company info with coordinates
+        Map<String, Object> companyInfo = new HashMap<>();
+        companyInfo.put("maCongTy", company.getMaCongTy());
+        companyInfo.put("tenCongTy", company.getTenCongTy());
+        companyInfo.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
+        companyInfo.put("maSoThue", company.getMaSoThue());
+        companyInfo.put("diaChi", company.getDiaChi());
+        companyInfo.put("lienHeCty", company.getLienHeCty());
+        companyInfo.put("hinhAnhCty", company.getHinhAnhCty());
+        companyInfo.put("daXacThuc", company.getDaXacThuc());
+        companyInfo.put("trangThai", company.getTrangThai());
+        companyInfo.put("ngayTao", company.getNgayTao());
+        companyInfo.put("moTaCongTy", company.getMoTaCongTy());
+        // Thêm tọa độ công ty
+        companyInfo.put("kinhDo", company.getKinhDo());
+        companyInfo.put("viDo", company.getViDo());
+
+        response.put("company", companyInfo);
         response.put("jobs", simplifiedJobs);
         response.put("jobCount", simplifiedJobs.size());
 

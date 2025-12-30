@@ -101,6 +101,8 @@ public class JobController {
                            @RequestParam(required = false) Integer maNganh,
                            @RequestParam(required = false) Integer maViTri,
                            @RequestParam(required = false) Integer maCapDoKinhNghiem,
+                           @RequestParam(required = false) Double kinhDo,
+                           @RequestParam(required = false) Double viDo,
                            Authentication authentication, Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
         if (user == null) {
@@ -136,6 +138,18 @@ public class JobController {
                 ExperienceLevel experienceLevel = experienceLevelService.getExperienceLevelById(maCapDoKinhNghiem).orElse(null);
                 if (experienceLevel != null) {
                     job.setExperienceLevel(experienceLevel);
+                }
+            }
+
+            // Gán tọa độ nếu được cung cấp
+            if (kinhDo != null && viDo != null) {
+                job.setKinhDo(java.math.BigDecimal.valueOf(kinhDo));
+                job.setViDo(java.math.BigDecimal.valueOf(viDo));
+            } else {
+                // Nếu không có tọa độ cho công việc cụ thể, sử dụng tọa độ từ công ty
+                if (company.getKinhDo() != null && company.getViDo() != null) {
+                    job.setKinhDo(company.getKinhDo());
+                    job.setViDo(company.getViDo());
                 }
             }
 
@@ -218,6 +232,8 @@ public class JobController {
                            @RequestParam(required = false) Integer maNganh,
                            @RequestParam(required = false) Integer maViTri,
                            @RequestParam(required = false) Integer maCapDoKinhNghiem,
+                           @RequestParam(required = false) Double kinhDo,
+                           @RequestParam(required = false) Double viDo,
                            Authentication authentication, Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
         if (user == null) {
@@ -287,6 +303,22 @@ public class JobController {
                 }
             } else {
                 existingJob.setExperienceLevel(null);
+            }
+
+            // Cập nhật tọa độ nếu được cung cấp
+            if (kinhDo != null && viDo != null) {
+                existingJob.setKinhDo(java.math.BigDecimal.valueOf(kinhDo));
+                existingJob.setViDo(java.math.BigDecimal.valueOf(viDo));
+            } else {
+                // Nếu không có tọa độ mới, giữ nguyên tọa độ hiện tại hoặc lấy từ công ty
+                if (existingJob.getKinhDo() == null && existingJob.getViDo() == null) {
+                    // Nếu công việc chưa có tọa độ, lấy từ công ty
+                    if (company.getKinhDo() != null && company.getViDo() != null) {
+                        existingJob.setKinhDo(company.getKinhDo());
+                        existingJob.setViDo(company.getViDo());
+                    }
+                }
+                // Nếu công việc đã có tọa độ, giữ nguyên (không thay đổi)
             }
 
             // Bảo toàn giá trị ngày hết hạn tuyển dụng

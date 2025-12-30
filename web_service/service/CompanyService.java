@@ -181,4 +181,33 @@ public class CompanyService {
             .limit(10) // Giới hạn lại 10 công ty nổi bật
             .toList();
     }
+
+    public Company updateCompanyCoordinates(Integer companyId, java.math.BigDecimal kinhDo, java.math.BigDecimal viDo) {
+        Optional<Company> optionalCompany = companyRepository.findById(companyId);
+        if (optionalCompany.isPresent()) {
+            Company company = optionalCompany.get();
+            company.setKinhDo(kinhDo);
+            company.setViDo(viDo);
+            return companyRepository.save(company);
+        }
+        throw new RuntimeException("Company not found with id: " + companyId);
+    }
+
+    public Company updateCompanyWithCoordinates(User user, String tenCongTy, String tenNguoiDaiDien, String maSoThue, String diaChi, String lienHeCty, String moTaCongTy, java.math.BigDecimal kinhDo, java.math.BigDecimal viDo) {
+        if (companyRepository.existsByTenCongTy(tenCongTy)) {
+            throw new RuntimeException("Tên công ty đã tồn tại");
+        }
+
+        Company company = new Company(user, tenCongTy, moTaCongTy);
+        company.setTenNguoiDaiDien(tenNguoiDaiDien);
+        company.setMaSoThue(maSoThue);
+        company.setDiaChi(diaChi);
+        company.setLienHeCty(lienHeCty);
+        company.setDaXacThuc(false); // Chưa xác thực khi mới đăng ký
+        company.setTrangThai("PENDING"); // Đặt trạng thái chờ duyệt
+        company.setKinhDo(kinhDo);
+        company.setViDo(viDo);
+
+        return saveCompany(company);
+    }
 }

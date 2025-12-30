@@ -44,10 +44,12 @@ public class JobDetailActivity extends AppCompatActivity {
 
     // Thêm nút lưu công việc
     private Button btnSaveJob;
+    private Button btnViewOnMap; // Nút xem trên bản đồ
     private boolean isJobSaved = false;
     private int savedJobId = -1;
 
     private int jobId;
+    private JobDetail currentJob; // Biến để lưu trữ thông tin công việc hiện tại
     private ApiService apiService;
 
     @Override
@@ -102,6 +104,7 @@ public class JobDetailActivity extends AppCompatActivity {
         tvJobDescriptionDetail = findViewById(R.id.tv_job_description_detail);
         btnApplyJob = findViewById(R.id.btn_apply_job);
         btnSaveJob = findViewById(R.id.btn_save_job); // Thêm nút lưu công việc
+        btnViewOnMap = findViewById(R.id.btn_view_on_map); // Thêm nút xem trên bản đồ
 
         // Các view mới
         ivCompanyLogoDetail = findViewById(R.id.iv_company_logo_detail);
@@ -161,6 +164,32 @@ public class JobDetailActivity extends AppCompatActivity {
                 }
             } else {
                 redirectToLogin();
+            }
+        });
+
+        // View on map button
+        btnViewOnMap.setOnClickListener(v -> {
+            // Kiểm tra xem công việc có tọa độ không trước khi mở bản đồ
+            if (currentJob != null && currentJob.getKinhDo() != null && currentJob.getViDo() != null) {
+                Intent intent = new Intent(this, MapActivity.class);
+                intent.putExtra("job_id", currentJob.getMaCongViec());
+                intent.putExtra("job_title", currentJob.getTieuDe());
+                intent.putExtra("latitude", currentJob.getViDo().doubleValue());
+                intent.putExtra("longitude", currentJob.getKinhDo().doubleValue());
+                startActivity(intent);
+            } else {
+                // Nếu công việc không có tọa độ, thử lấy tọa độ từ công ty
+                if (currentJob != null && currentJob.getCompany() != null &&
+                    currentJob.getCompany().getKinhDo() != null && currentJob.getCompany().getViDo() != null) {
+                    Intent intent = new Intent(this, MapActivity.class);
+                    intent.putExtra("job_id", currentJob.getMaCongViec());
+                    intent.putExtra("job_title", currentJob.getTieuDe());
+                    intent.putExtra("latitude", currentJob.getCompany().getViDo().doubleValue());
+                    intent.putExtra("longitude", currentJob.getCompany().getKinhDo().doubleValue());
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Không có thông tin vị trí cho công việc này", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -342,6 +371,33 @@ public class JobDetailActivity extends AppCompatActivity {
                 }
             }
 
+            // Xử lý tọa độ công việc nếu có
+            if (map.containsKey("kinhDo") && map.get("kinhDo") != null) {
+                Object kinhDoObj = map.get("kinhDo");
+                if (kinhDoObj instanceof Double) {
+                    job.setKinhDo(java.math.BigDecimal.valueOf((Double) kinhDoObj));
+                } else if (kinhDoObj instanceof Integer) {
+                    job.setKinhDo(java.math.BigDecimal.valueOf((Integer) kinhDoObj));
+                } else if (kinhDoObj instanceof String) {
+                    job.setKinhDo(new java.math.BigDecimal((String) kinhDoObj));
+                } else {
+                    job.setKinhDo(java.math.BigDecimal.valueOf(Double.parseDouble(kinhDoObj.toString())));
+                }
+            }
+
+            if (map.containsKey("viDo") && map.get("viDo") != null) {
+                Object viDoObj = map.get("viDo");
+                if (viDoObj instanceof Double) {
+                    job.setViDo(java.math.BigDecimal.valueOf((Double) viDoObj));
+                } else if (viDoObj instanceof Integer) {
+                    job.setViDo(java.math.BigDecimal.valueOf((Integer) viDoObj));
+                } else if (viDoObj instanceof String) {
+                    job.setViDo(new java.math.BigDecimal((String) viDoObj));
+                } else {
+                    job.setViDo(java.math.BigDecimal.valueOf(Double.parseDouble(viDoObj.toString())));
+                }
+            }
+
             return job;
         } catch (Exception e) {
             e.printStackTrace();
@@ -394,6 +450,33 @@ public class JobDetailActivity extends AppCompatActivity {
                     company.setDaXacThuc((Boolean) daXacThucObj);
                 } else {
                     company.setDaXacThuc(Boolean.parseBoolean(daXacThucObj.toString()));
+                }
+            }
+
+            // Xử lý tọa độ công ty nếu có
+            if (map.containsKey("kinhDo") && map.get("kinhDo") != null) {
+                Object kinhDoObj = map.get("kinhDo");
+                if (kinhDoObj instanceof Double) {
+                    company.setKinhDo(java.math.BigDecimal.valueOf((Double) kinhDoObj));
+                } else if (kinhDoObj instanceof Integer) {
+                    company.setKinhDo(java.math.BigDecimal.valueOf((Integer) kinhDoObj));
+                } else if (kinhDoObj instanceof String) {
+                    company.setKinhDo(new java.math.BigDecimal((String) kinhDoObj));
+                } else {
+                    company.setKinhDo(java.math.BigDecimal.valueOf(Double.parseDouble(kinhDoObj.toString())));
+                }
+            }
+
+            if (map.containsKey("viDo") && map.get("viDo") != null) {
+                Object viDoObj = map.get("viDo");
+                if (viDoObj instanceof Double) {
+                    company.setViDo(java.math.BigDecimal.valueOf((Double) viDoObj));
+                } else if (viDoObj instanceof Integer) {
+                    company.setViDo(java.math.BigDecimal.valueOf((Integer) viDoObj));
+                } else if (viDoObj instanceof String) {
+                    company.setViDo(new java.math.BigDecimal((String) viDoObj));
+                } else {
+                    company.setViDo(java.math.BigDecimal.valueOf(Double.parseDouble(viDoObj.toString())));
                 }
             }
 
@@ -527,6 +610,9 @@ public class JobDetailActivity extends AppCompatActivity {
     }
 
     private void displayJobDetails(JobDetail job) {
+        // Cập nhật biến currentJob
+        this.currentJob = job;
+
         // Hiển thị thông tin cơ bản
         tvJobTitleDetail.setText(job.getTieuDe());
         tvJobSalaryDetail.setText(String.format("%,d VNĐ", job.getLuong()));

@@ -2,6 +2,8 @@ package com.example.fjobs.models;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.math.BigDecimal;
+
 public class JobDetail {
     @SerializedName("maCongViec")
     private Integer maCongViec;
@@ -74,6 +76,12 @@ public class JobDetail {
 
     @SerializedName("experienceLevel")
     private ExperienceLevel experienceLevel; // Cấp độ kinh nghiệm
+
+    @SerializedName("kinhDo")
+    private BigDecimal kinhDo; // Kinh độ
+
+    @SerializedName("viDo")
+    private BigDecimal viDo; // Vĩ độ
 
     // Constructors
     public JobDetail() {}
@@ -160,4 +168,10 @@ public class JobDetail {
 
     public ExperienceLevel getExperienceLevel() { return experienceLevel; }
     public void setExperienceLevel(ExperienceLevel experienceLevel) { this.experienceLevel = experienceLevel; }
+
+    public BigDecimal getKinhDo() { return kinhDo; }
+    public void setKinhDo(BigDecimal kinhDo) { this.kinhDo = kinhDo; }
+
+    public BigDecimal getViDo() { return viDo; }
+    public void setViDo(BigDecimal viDo) { this.viDo = viDo; }
 }
