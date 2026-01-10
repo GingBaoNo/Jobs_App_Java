@@ -4,7 +4,6 @@ import com.example.demo.entity.Company;
 import com.example.demo.entity.JobDetail;
 import com.example.demo.service.CompanyService;
 import com.example.demo.service.JobDetailService;
-import com.example.demo.service.UserService;
 import com.example.demo.utils.ApiResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,8 +30,6 @@ public class ApiCompanyController {
     @Autowired
     private JobDetailService jobDetailService;
 
-    @Autowired
-    private UserService userService;
 
     @GetMapping
     public ResponseEntity<?> getAllCompanies() {
@@ -45,7 +42,8 @@ public class ApiCompanyController {
             companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
             companyMap.put("maSoThue", company.getMaSoThue());
             companyMap.put("diaChi", company.getDiaChi());
-            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("emailCty", company.getEmailCty());
+            companyMap.put("soDienThoaiCty", company.getSoDienThoaiCty());
             companyMap.put("hinhAnhCty", company.getHinhAnhCty());
             companyMap.put("daXacThuc", company.getDaXacThuc());
             companyMap.put("trangThai", company.getTrangThai());
@@ -70,7 +68,8 @@ public class ApiCompanyController {
             companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
             companyMap.put("maSoThue", company.getMaSoThue());
             companyMap.put("diaChi", company.getDiaChi());
-            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("emailCty", company.getEmailCty());
+            companyMap.put("soDienThoaiCty", company.getSoDienThoaiCty());
             companyMap.put("hinhAnhCty", company.getHinhAnhCty());
             companyMap.put("daXacThuc", company.getDaXacThuc());
             companyMap.put("trangThai", company.getTrangThai());
@@ -96,7 +95,8 @@ public class ApiCompanyController {
             companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
             companyMap.put("maSoThue", company.getMaSoThue());
             companyMap.put("diaChi", company.getDiaChi());
-            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("emailCty", company.getEmailCty());
+            companyMap.put("soDienThoaiCty", company.getSoDienThoaiCty());
             companyMap.put("hinhAnhCty", company.getHinhAnhCty());
             companyMap.put("daXacThuc", company.getDaXacThuc());
             companyMap.put("trangThai", company.getTrangThai());
@@ -126,7 +126,8 @@ public class ApiCompanyController {
             companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
             companyMap.put("maSoThue", company.getMaSoThue());
             companyMap.put("diaChi", company.getDiaChi());
-            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("emailCty", company.getEmailCty());
+            companyMap.put("soDienThoaiCty", company.getSoDienThoaiCty());
             companyMap.put("hinhAnhCty", company.getHinhAnhCty());
             companyMap.put("daXacThuc", company.getDaXacThuc());
             companyMap.put("trangThai", company.getTrangThai());
@@ -157,7 +158,8 @@ public class ApiCompanyController {
             companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
             companyMap.put("maSoThue", company.getMaSoThue());
             companyMap.put("diaChi", company.getDiaChi());
-            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("emailCty", company.getEmailCty());
+            companyMap.put("soDienThoaiCty", company.getSoDienThoaiCty());
             companyMap.put("hinhAnhCty", company.getHinhAnhCty());
             companyMap.put("daXacThuc", company.getDaXacThuc());
             companyMap.put("trangThai", company.getTrangThai());
@@ -202,7 +204,8 @@ public class ApiCompanyController {
             companyMap.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
             companyMap.put("maSoThue", company.getMaSoThue());
             companyMap.put("diaChi", company.getDiaChi());
-            companyMap.put("lienHeCty", company.getLienHeCty());
+            companyMap.put("emailCty", company.getEmailCty());
+            companyMap.put("soDienThoaiCty", company.getSoDienThoaiCty());
             companyMap.put("hinhAnhCty", company.getHinhAnhCty());
             companyMap.put("daXacThuc", company.getDaXacThuc());
             companyMap.put("trangThai", company.getTrangThai());
@@ -242,7 +245,8 @@ public class ApiCompanyController {
             companyInfo.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
             companyInfo.put("maSoThue", company.getMaSoThue());
             companyInfo.put("diaChi", company.getDiaChi());
-            companyInfo.put("lienHeCty", company.getLienHeCty());
+            companyInfo.put("emailCty", company.getEmailCty());
+            companyInfo.put("soDienThoaiCty", company.getSoDienThoaiCty());
             companyInfo.put("hinhAnhCty", company.getHinhAnhCty());
             companyInfo.put("daXacThuc", company.getDaXacThuc());
             companyInfo.put("trangThai", company.getTrangThai());
@@ -327,7 +331,7 @@ public class ApiCompanyController {
         companyInfo.put("tenNguoiDaiDien", company.getTenNguoiDaiDien());
         companyInfo.put("maSoThue", company.getMaSoThue());
         companyInfo.put("diaChi", company.getDiaChi());
-        companyInfo.put("lienHeCty", company.getLienHeCty());
+        companyInfo.put("emailCty", company.getEmailCty());
         companyInfo.put("hinhAnhCty", company.getHinhAnhCty());
         companyInfo.put("daXacThuc", company.getDaXacThuc());
         companyInfo.put("trangThai", company.getTrangThai());

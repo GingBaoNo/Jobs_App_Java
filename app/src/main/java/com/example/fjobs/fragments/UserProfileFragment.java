@@ -218,7 +218,7 @@ public class UserProfileFragment extends Fragment {
     private void viewCv() {
         // Mở URL CV trong trình duyệt hoặc hiển thị PDF nếu có thư viện hỗ trợ
         if (currentProfile != null && currentProfile.getUrlCv() != null && !currentProfile.getUrlCv().isEmpty()) {
-            String cvUrl = "http://192.168.1.8:8080" + currentProfile.getUrlCv();
+            String cvUrl = "http://192.168.102.19:8080" + currentProfile.getUrlCv();
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(cvUrl));
                 startActivity(intent);
@@ -270,9 +270,9 @@ public class UserProfileFragment extends Fragment {
                             // Xử lý trường hợp avatarUrl không bắt đầu bằng dấu /
                             String imageUrl;
                             if (avatarUrl.startsWith("/")) {
-                                imageUrl = "http://192.168.1.8:8080" + avatarUrl;
+                                imageUrl = "http://192.168.102.19:8080" + avatarUrl;
                             } else {
-                                imageUrl = "http://192.168.1.8:8080/" + avatarUrl;
+                                imageUrl = "http://192.168.102.19:8080/" + avatarUrl;
                             }
 
                             // Ghi log để kiểm tra URL sẽ dùng để load ảnh
@@ -469,8 +469,27 @@ public class UserProfileFragment extends Fragment {
                 }
             }
 
-            // Không xử lý thông tin user nữa do API đã được cập nhật để tránh circular reference
-            // Không có thông tin user trong response mới
+            // Xử lý thông tin người dùng nếu có trong phản hồi (để cập nhật email và số điện thoại vào SharedPreferences)
+            if (map.containsKey("user") && map.get("user") instanceof java.util.Map) {
+                java.util.Map<String, Object> userMap = (java.util.Map<String, Object>) map.get("user");
+
+                // Cập nhật email và số điện thoại vào SharedPreferences nếu có
+                SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(Constants.SHARED_PREF_NAME, 0);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                if (userMap.containsKey("email") && userMap.get("email") != null) {
+                    editor.putString(Constants.KEY_EMAIL, userMap.get("email").toString());
+                }
+
+                if (userMap.containsKey("soDienThoai") && userMap.get("soDienThoai") != null) {
+                    // Nếu số điện thoại không có trong profile, sử dụng từ user
+                    if (profile.getSoDienThoai() == null || profile.getSoDienThoai().isEmpty()) {
+                        profile.setSoDienThoai(userMap.get("soDienThoai").toString());
+                    }
+                }
+
+                editor.apply();
+            }
 
             if (map.containsKey("urlAnhDaiDien") && map.get("urlAnhDaiDien") != null) {
                 profile.setUrlAnhDaiDien(map.get("urlAnhDaiDien").toString());
@@ -488,6 +507,7 @@ public class UserProfileFragment extends Fragment {
                 profile.setNgaySinh(map.get("ngaySinh").toString());
             }
 
+            // Ưu tiên sử dụng số điện thoại từ phản hồi trực tiếp nếu có, nếu không thì từ user
             if (map.containsKey("soDienThoai") && map.get("soDienThoai") != null) {
                 profile.setSoDienThoai(map.get("soDienThoai").toString());
             }
@@ -588,9 +608,9 @@ public class UserProfileFragment extends Fragment {
             // Xử lý trường hợp avatarUrl không bắt đầu bằng dấu /
             String imageUrl;
             if (avatarUrl.startsWith("/")) {
-                imageUrl = "http://192.168.1.8:8080" + avatarUrl;
+                imageUrl = "http://192.168.102.19:8080" + avatarUrl;
             } else {
-                imageUrl = "http://192.168.1.8:8080/" + avatarUrl;
+                imageUrl = "http://192.168.102.19:8080/" + avatarUrl;
             }
             System.out.println("Image URL sẽ load: " + imageUrl);
 
@@ -622,11 +642,15 @@ public class UserProfileFragment extends Fragment {
         }
 
         // Hiển thị các thông tin khác
-        // Lấy email/tài khoản từ SharedPreferences vì API không trả về thông tin user nữa
+        // Lấy thông tin người dùng từ SharedPreferences vì API có thể không trả về thông tin user trong phản hồi hồ sơ
         SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(Constants.SHARED_PREF_NAME, 0);
+        String email = sharedPreferences.getString(Constants.KEY_EMAIL, "Chưa cập nhật");
         String username = sharedPreferences.getString(Constants.KEY_USERNAME, "Chưa đăng nhập");
-        tvEmail.setText(username); // Trong hệ thống của bạn, username có thể là email
 
+        // Ưu tiên sử dụng email nếu có, nếu không thì dùng username
+        tvEmail.setText(email != null && !email.equals("Chưa đăng nhập") ? email : username);
+
+        // Cố gắng lấy số điện thoại từ profile, nếu không có thì để trống
         tvPhone.setText(profile.getSoDienThoai() != null ? profile.getSoDienThoai() : "Chưa cập nhật");
         tvGender.setText(profile.getGioiTinh() != null ? profile.getGioiTinh() : "Chưa cập nhật");
         tvDob.setText(profile.getNgaySinh() != null ? profile.getNgaySinh() : "Chưa cập nhật");

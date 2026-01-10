@@ -475,8 +475,11 @@ public class AdvancedSearchActivity extends AppCompatActivity {
                 company.setDiaChi((String) map.get("diaChi"));
             }
 
-            if (map.containsKey("lienHeCty") && map.get("lienHeCty") != null) {
-                company.setLienHeCty((String) map.get("lienHeCty"));
+            if (map.containsKey("emailCty") && map.get("emailCty") != null) {
+                company.setEmailCty((String) map.get("emailCty"));
+            }
+            if (map.containsKey("soDienThoaiCty") && map.get("soDienThoaiCty") != null) {
+                company.setSoDienThoaiCty((String) map.get("soDienThoaiCty"));
             }
 
             if (map.containsKey("hinhAnhCty") && map.get("hinhAnhCty") != null) {

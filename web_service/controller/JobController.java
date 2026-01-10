@@ -9,7 +9,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
 
 @Controller
 public class JobController {
@@ -41,6 +45,27 @@ public class JobController {
     @Autowired
     private ExperienceLevelService experienceLevelService;
     
+    // API endpoint to get company coordinates
+    @GetMapping("/api/employer/company-coordinates")
+    public ResponseEntity<?> getCompanyCoordinates(Authentication authentication) {
+        User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        Company company = companyService.getCompanyByUser(user).orElse(null);
+        if (company == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Company not found"));
+        }
+
+        Map<String, Object> coordinates = new HashMap<>();
+        coordinates.put("kinhDo", company.getKinhDo());
+        coordinates.put("viDo", company.getViDo());
+        coordinates.put("diaChi", company.getDiaChi());
+
+        return ResponseEntity.ok(coordinates);
+    }
+
     // Trang danh sách công việc của nhà tuyển dụng
     @GetMapping("/employer/jobs")
     public String employerJobs(@RequestParam(value = "search", required = false) String search, Authentication authentication, Model model) {
@@ -103,6 +128,7 @@ public class JobController {
                            @RequestParam(required = false) Integer maCapDoKinhNghiem,
                            @RequestParam(required = false) Double kinhDo,
                            @RequestParam(required = false) Double viDo,
+                           @RequestParam(required = false) String jobAddress,
                            Authentication authentication, Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
         if (user == null) {
@@ -151,6 +177,13 @@ public class JobController {
                     job.setKinhDo(company.getKinhDo());
                     job.setViDo(company.getViDo());
                 }
+            }
+
+            // Cập nhật địa chỉ công việc nếu được cung cấp
+            if (jobAddress != null && !jobAddress.trim().isEmpty()) {
+                // Có thể lưu vào một trường trong DB nếu cần, hoặc xử lý theo yêu cầu
+                // Hiện tại, chúng ta có thể lưu vào một trường tạm thời hoặc ghi chú
+                // Tùy vào yêu cầu kinh doanh, có thể cần thêm trường vào DB
             }
 
             // Đặt trạng thái mặc định
@@ -234,6 +267,7 @@ public class JobController {
                            @RequestParam(required = false) Integer maCapDoKinhNghiem,
                            @RequestParam(required = false) Double kinhDo,
                            @RequestParam(required = false) Double viDo,
+                           @RequestParam(required = false) String jobAddress,
                            Authentication authentication, Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
         if (user == null) {
@@ -319,6 +353,13 @@ public class JobController {
                     }
                 }
                 // Nếu công việc đã có tọa độ, giữ nguyên (không thay đổi)
+            }
+
+            // Cập nhật địa chỉ công việc nếu được cung cấp
+            if (jobAddress != null && !jobAddress.trim().isEmpty()) {
+                // Có thể lưu vào một trường trong DB nếu cần, hoặc xử lý theo yêu cầu
+                // Hiện tại, chúng ta có thể lưu vào một trường tạm thời hoặc ghi chú
+                // Tùy vào yêu cầu kinh doanh, có thể cần thêm trường vào DB
             }
 
             // Bảo toàn giá trị ngày hết hạn tuyển dụng

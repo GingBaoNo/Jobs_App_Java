@@ -90,8 +90,11 @@ public class CompaniesFragment extends Fragment implements CompanyAdapter.OnComp
                                     if (map.get("diaChi") != null) {
                                         company.setDiaChi((String) map.get("diaChi"));
                                     }
-                                    if (map.get("lienHeCty") != null) {
-                                        company.setLienHeCty((String) map.get("lienHeCty"));
+                                    if (map.get("emailCty") != null) {
+                                        company.setEmailCty((String) map.get("emailCty"));
+                                    }
+                                    if (map.get("soDienThoaiCty") != null) {
+                                        company.setSoDienThoaiCty((String) map.get("soDienThoaiCty"));
                                     }
                                     if (map.get("hinhAnhCty") != null) {
                                         company.setHinhAnhCty((String) map.get("hinhAnhCty"));

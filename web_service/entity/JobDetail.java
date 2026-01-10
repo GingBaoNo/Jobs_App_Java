@@ -103,6 +103,10 @@ public class JobDetail {
     @Column(name = "vi_do", precision = 11, scale = 8)
     private BigDecimal viDo;
 
+    // Transient field for job-specific address during form submission
+    @Transient
+    private String jobAddress;
+
     // Constructors
     public JobDetail() {}
 
@@ -339,5 +343,13 @@ public class JobDetail {
 
     public void setViDo(BigDecimal viDo) {
         this.viDo = viDo;
+    }
+
+    public String getJobAddress() {
+        return jobAddress;
+    }
+
+    public void setJobAddress(String jobAddress) {
+        this.jobAddress = jobAddress;
     }
 }

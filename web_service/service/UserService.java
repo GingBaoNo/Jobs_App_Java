@@ -59,12 +59,12 @@ public class UserService {
         return userRepository.existsByTaiKhoan(taiKhoan);
     }
     
-    public User registerUser(String taiKhoan, String matKhau, String tenHienThi, String lienHe, Role role) {
+    public User registerUser(String taiKhoan, String matKhau, String tenHienThi, String email, String soDienThoai, Role role) {
         if (userRepository.existsByTaiKhoan(taiKhoan)) {
             throw new RuntimeException("Tài khoản đã tồn tại");
         }
 
-        User user = new User(taiKhoan, matKhau, tenHienThi, lienHe);
+        User user = new User(taiKhoan, matKhau, tenHienThi, email, soDienThoai);
         user.setRole(role);
 
         User savedUser = saveUser(user);
@@ -83,7 +83,7 @@ public class UserService {
     }
 
     public List<User> getUsersBySearch(String search) {
-        return userRepository.findByTaiKhoanContainingOrTenHienThiContainingOrLienHeContaining(search, search, search);
+        return userRepository.findByTaiKhoanContainingOrTenHienThiContainingOrEmailContaining(search, search, search);
     }
 
     public List<User> getUsersByRole(Role role) {

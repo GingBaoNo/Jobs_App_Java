@@ -218,7 +218,8 @@ public class ApiAppliedJobController {
                 employeeInfo.put("maNguoiDung", updatedAppliedJob.getEmployee().getMaNguoiDung());
                 employeeInfo.put("tenHienThi", updatedAppliedJob.getEmployee().getTenHienThi());
                 employeeInfo.put("taiKhoan", updatedAppliedJob.getEmployee().getTaiKhoan());
-                employeeInfo.put("lienHe", updatedAppliedJob.getEmployee().getLienHe());
+                employeeInfo.put("email", updatedAppliedJob.getEmployee().getEmail());
+                employeeInfo.put("soDienThoai", updatedAppliedJob.getEmployee().getSoDienThoai());
             }
             response.put("employee", employeeInfo);
 
@@ -288,7 +289,8 @@ public class ApiAppliedJobController {
                     "maCongTy", company.getMaCongTy(),
                     "tenCongTy", company.getTenCongTy(),
                     "diaChi", company.getDiaChi(),
-                    "lienHeCty", company.getLienHeCty()
+                    "emailCty", company.getEmailCty(),
+                    "soDienThoaiCty", company.getSoDienThoaiCty()
                 ));
 
                 return jobInfo;
@@ -464,7 +466,8 @@ public class ApiAppliedJobController {
                 employeeInfo.put("maNguoiDung", appliedJob.getEmployee().getMaNguoiDung());
                 employeeInfo.put("tenHienThi", appliedJob.getEmployee().getTenHienThi());
                 employeeInfo.put("taiKhoan", appliedJob.getEmployee().getTaiKhoan());
-                employeeInfo.put("lienHe", appliedJob.getEmployee().getLienHe());
+                employeeInfo.put("email", appliedJob.getEmployee().getEmail());
+                employeeInfo.put("soDienThoai", appliedJob.getEmployee().getSoDienThoai());
             }
             response.put("employee", employeeInfo);
 

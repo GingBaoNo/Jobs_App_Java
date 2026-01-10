@@ -164,8 +164,11 @@ public class SavedJobsActivity extends AppCompatActivity {
                 user.setTenHienThi(map.get("tenHienThi").toString());
             }
             
-            if (map.containsKey("lienHe") && map.get("lienHe") != null) {
-                user.setLienHe(map.get("lienHe").toString());
+            if (map.containsKey("email") && map.get("email") != null) {
+                user.setEmail(map.get("email").toString());
+            }
+            if (map.containsKey("soDienThoai") && map.get("soDienThoai") != null) {
+                user.setSoDienThoai(map.get("soDienThoai").toString());
             }
             
             return user;
@@ -277,8 +280,11 @@ public class SavedJobsActivity extends AppCompatActivity {
                 company.setDiaChi(map.get("diaChi").toString());
             }
             
-            if (map.containsKey("lienHeCty") && map.get("lienHeCty") != null) {
-                company.setLienHeCty(map.get("lienHeCty").toString());
+            if (map.containsKey("emailCty") && map.get("emailCty") != null) {
+                company.setEmailCty(map.get("emailCty").toString());
+            }
+            if (map.containsKey("soDienThoaiCty") && map.get("soDienThoaiCty") != null) {
+                company.setSoDienThoaiCty(map.get("soDienThoaiCty").toString());
             }
             
             if (map.containsKey("hinhAnhCty") && map.get("hinhAnhCty") != null) {

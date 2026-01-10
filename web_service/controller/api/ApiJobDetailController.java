@@ -365,6 +365,9 @@ public class ApiJobDetailController {
         jobMap.put("luotXem", job.getLuotXem());
         jobMap.put("trangThaiDuyet", job.getTrangThaiDuyet());
         jobMap.put("trangThaiTinTuyen", job.getTrangThaiTinTuyen());
+        // Thêm thông tin tọa độ (kinh độ và vĩ độ)
+        jobMap.put("kinhDo", job.getKinhDo());
+        jobMap.put("viDo", job.getViDo());
         // Thêm thông tin công ty (bao gồm logo) vào
         if (job.getCompany() != null) {
             Company company = job.getCompany();
@@ -372,10 +375,14 @@ public class ApiJobDetailController {
             companyInfo.put("maCongTy", company.getMaCongTy());
             companyInfo.put("tenCongTy", company.getTenCongTy());
             companyInfo.put("diaChi", company.getDiaChi());
-            companyInfo.put("lienHeCty", company.getLienHeCty());
+            companyInfo.put("emailCty", company.getEmailCty());
+            companyInfo.put("soDienThoaiCty", company.getSoDienThoaiCty());
             companyInfo.put("hinhAnhCty", company.getHinhAnhCty()); // Đây là trường chứa logo công ty
             companyInfo.put("daXacThuc", company.getDaXacThuc());
             companyInfo.put("moTaCongTy", company.getMoTaCongTy()); // Thêm trường mô tả công ty
+            // Thêm thông tin tọa độ của công ty
+            companyInfo.put("kinhDo", company.getKinhDo());
+            companyInfo.put("viDo", company.getViDo());
             jobMap.put("company", companyInfo);
         }
         jobMap.put("workField", job.getWorkField());

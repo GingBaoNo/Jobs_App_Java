@@ -133,13 +133,19 @@ public class LoginActivity extends AppCompatActivity {
                                         editor.putString(Constants.KEY_USER_ROLE, userRoleObj.toString());
                                     }
 
-                                    // Thử lấy email từ trường lienHe hoặc email trong phản hồi
-                                    Object emailObj = userMap.get("lienHe"); // Assuming lienHe contains email
+                                    // Thử lấy email từ trường email trong phản hồi
+                                    Object emailObj = userMap.get("email");
                                     if (emailObj != null) {
                                         editor.putString(Constants.KEY_EMAIL, emailObj.toString());
                                     } else {
-                                        // Nếu không có, sử dụng username như email
-                                        editor.putString(Constants.KEY_EMAIL, username);
+                                        // Nếu không có email, kiểm tra trường lienHe (trường cũ) như fallback
+                                        Object lienHeObj = userMap.get("lienHe");
+                                        if (lienHeObj != null) {
+                                            editor.putString(Constants.KEY_EMAIL, lienHeObj.toString());
+                                        } else {
+                                            // Nếu không có, sử dụng username như email
+                                            editor.putString(Constants.KEY_EMAIL, username);
+                                        }
                                     }
                                 }
                             }

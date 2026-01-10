@@ -31,7 +31,7 @@ public class CompanyDetailActivity extends AppCompatActivity {
     private ImageView backButton, shareButton;
     private ImageView ivCompanyLogo;
     private TextView tvCompanyName, tvVerifiedBadge, tvCompanyLocation, tvCompanyDescription;
-    private TextView tvCompanyPhone, tvCompanyEmail;
+    private TextView tvCompanyPhone, tvCompanyPhone1, tvCompanyEmail, tvCompanyEmailDisplay;
     private TextView tvCompanyInfo;
     private TextView tvContactPerson, tvCompanyContact, tvTaxCode, tvCompanyAddress;
     private Button btnViewJobs, btnViewOnMap;
@@ -76,7 +76,10 @@ public class CompanyDetailActivity extends AppCompatActivity {
         tvCompanyLocation = findViewById(R.id.tv_company_location);
         tvCompanyDescription = findViewById(R.id.tv_company_description);
         tvCompanyPhone = findViewById(R.id.tv_company_phone);
+        tvCompanyPhone1 = findViewById(R.id.tv_company_phone_1);
         tvCompanyEmail = findViewById(R.id.tv_company_email);
+        tvCompanyEmailDisplay = findViewById(R.id.tv_company_email_display);
+        tvCompanyContact = findViewById(R.id.tv_company_contact);
 
         // Introduction section
         tvCompanyInfo = findViewById(R.id.tv_company_info);
@@ -176,8 +179,11 @@ public class CompanyDetailActivity extends AppCompatActivity {
                                 if (companyData.get("diaChi") != null) {
                                     company.setDiaChi((String) companyData.get("diaChi"));
                                 }
-                                if (companyData.get("lienHeCty") != null) {
-                                    company.setLienHeCty((String) companyData.get("lienHeCty"));
+                                if (companyData.get("emailCty") != null) {
+                                    company.setEmailCty((String) companyData.get("emailCty"));
+                                }
+                                if (companyData.get("soDienThoaiCty") != null) {
+                                    company.setSoDienThoaiCty((String) companyData.get("soDienThoaiCty"));
                                 }
                                 if (companyData.get("hinhAnhCty") != null) {
                                     company.setHinhAnhCty((String) companyData.get("hinhAnhCty"));
@@ -275,7 +281,8 @@ public class CompanyDetailActivity extends AppCompatActivity {
                                                 company.getTenNguoiDaiDien(),
                                                 company.getMaSoThue(),
                                                 company.getDiaChi(),
-                                                company.getLienHeCty(),
+                                                company.getEmailCty(),
+                                                company.getSoDienThoaiCty(),
                                                 company.getHinhAnhCty()
                                             ));
                                             job.getCompany().setMaCongTy(company.getMaCongTy());
@@ -327,24 +334,47 @@ public class CompanyDetailActivity extends AppCompatActivity {
         // Mô tả công ty (sử dụng tên lĩnh vực hoặc thông tin chung nếu có)
         tvCompanyDescription.setText("Công ty chuyên nghiệp trong lĩnh vực của mình");
 
-        // Thông tin liên hệ (sử dụng thông tin từ lienHeCty - có thể chứa cả số điện thoại và email)
-        if (company.getLienHeCty() != null && !company.getLienHeCty().isEmpty()) {
-            // Giả sử lienHeCty chứa cả số điện thoại và email, tách ra nếu cần
-            tvCompanyContact.setText(company.getLienHeCty());
+        // Thông tin liên hệ (sử dụng thông tin từ emailCty và soDienThoaiCty)
+        if ((company.getEmailCty() != null && !company.getEmailCty().isEmpty()) ||
+            (company.getSoDienThoaiCty() != null && !company.getSoDienThoaiCty().isEmpty())) {
 
-            // Cố gắng phân tích để tách riêng số điện thoại và email nếu có thể
-            String contactInfo = company.getLienHeCty();
-            if (contactInfo.contains("@")) {
-                // Đây là email
-                tvCompanyEmail.setText(contactInfo);
+            // Hiển thị email riêng biệt
+            if (company.getEmailCty() != null && !company.getEmailCty().isEmpty()) {
+                tvCompanyEmail.setText(company.getEmailCty());
+                tvCompanyEmailDisplay.setText(company.getEmailCty());
             } else {
-                // Đây là số điện thoại
-                tvCompanyPhone.setText(contactInfo);
+                tvCompanyEmail.setText("Chưa cập nhật");
+                tvCompanyEmailDisplay.setText("Chưa cập nhật");
             }
+
+            // Hiển thị số điện thoại riêng biệt
+            if (company.getSoDienThoaiCty() != null && !company.getSoDienThoaiCty().isEmpty()) {
+                tvCompanyPhone.setText(company.getSoDienThoaiCty());
+                tvCompanyPhone1.setText(company.getSoDienThoaiCty());
+            } else {
+                tvCompanyPhone.setText("Chưa cập nhật");
+                tvCompanyPhone1.setText("Chưa cập nhật");
+            }
+
+            // Hiển thị tổng hợp thông tin liên hệ
+            StringBuilder contactInfo = new StringBuilder();
+            if (company.getEmailCty() != null && !company.getEmailCty().isEmpty()) {
+                contactInfo.append("Email: ").append(company.getEmailCty());
+            }
+            if (company.getSoDienThoaiCty() != null && !company.getSoDienThoaiCty().isEmpty()) {
+                if (contactInfo.length() > 0) {
+                    contactInfo.append("\n");
+                }
+                contactInfo.append("ĐT: ").append(company.getSoDienThoaiCty());
+            }
+
+            tvCompanyContact.setText(contactInfo.toString());
         } else {
             tvCompanyContact.setText("Chưa cập nhật");
             tvCompanyPhone.setText("Chưa cập nhật");
+            tvCompanyPhone1.setText("Chưa cập nhật");
             tvCompanyEmail.setText("Chưa cập nhật");
+            tvCompanyEmailDisplay.setText("Chưa cập nhật");
         }
 
         // Giới thiệu công ty - sử dụng trường moTaCongTy nếu có
@@ -376,7 +406,7 @@ public class CompanyDetailActivity extends AppCompatActivity {
 
     private void loadCompanyLogo(String logoUrl) {
         if (logoUrl != null && !logoUrl.isEmpty()) {
-            String fullLogoUrl = "http://192.168.1.8:8080" + logoUrl;
+            String fullLogoUrl = "http://192.168.102.19:8080" + logoUrl;
             Glide.with(this)
                 .load(fullLogoUrl)
                 .placeholder(R.drawable.ic_boss) // Ảnh placeholder

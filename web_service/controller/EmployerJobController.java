@@ -38,6 +38,9 @@ public class EmployerJobController {
     @Autowired
     private ExperienceLevelService experienceLevelService;
 
+    @Autowired
+    private LocationService locationService;
+
     // Trang tạo công việc mới cho nhà tuyển dụng
     @GetMapping("/employer/job/create")
     public String createJobForm(Authentication authentication, Model model) {
@@ -58,6 +61,7 @@ public class EmployerJobController {
         model.addAttribute("workDisciplines", workDisciplineService.getAllWorkDisciplines());
         model.addAttribute("jobPositions", jobPositionService.getAllJobPositions());
         model.addAttribute("experienceLevels", experienceLevelService.getAllExperienceLevels());
+        model.addAttribute("locations", locationService.getProvinces());
         model.addAttribute("title", "Đăng tin tuyển dụng mới");
 
         return "employer/job-create";
@@ -69,6 +73,9 @@ public class EmployerJobController {
                            @RequestParam(required = false) Integer maNganh,
                            @RequestParam(required = false) Integer maViTri,
                            @RequestParam(required = false) Integer maCapDoKinhNghiem,
+                           @RequestParam(required = false) Double kinhDo,
+                           @RequestParam(required = false) Double viDo,
+                           @RequestParam(required = false) String jobAddress,
                            Authentication authentication, Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
         if (user == null) {
@@ -107,6 +114,25 @@ public class EmployerJobController {
                 }
             }
 
+            // Gán tọa độ nếu được cung cấp
+            if (kinhDo != null && viDo != null) {
+                job.setKinhDo(java.math.BigDecimal.valueOf(kinhDo));
+                job.setViDo(java.math.BigDecimal.valueOf(viDo));
+            } else {
+                // Nếu không có tọa độ cho công việc cụ thể, sử dụng tọa độ từ công ty
+                if (company.getKinhDo() != null && company.getViDo() != null) {
+                    job.setKinhDo(company.getKinhDo());
+                    job.setViDo(company.getViDo());
+                }
+            }
+
+            // Cập nhật địa chỉ công việc nếu được cung cấp
+            if (jobAddress != null && !jobAddress.trim().isEmpty()) {
+                // Có thể lưu vào một trường trong DB nếu cần, hoặc xử lý theo yêu cầu
+                // Hiện tại, chúng ta có thể lưu vào một trường tạm thời hoặc ghi chú
+                // Tùy vào yêu cầu kinh doanh, có thể cần thêm trường vào DB
+            }
+
             // Đặt trạng thái chờ duyệt
             job.setTrangThaiDuyet("Chờ duyệt");
             job.setTrangThaiTinTuyen("Mở");
@@ -131,6 +157,7 @@ public class EmployerJobController {
             model.addAttribute("workDisciplines", workDisciplineService.getAllWorkDisciplines());
             model.addAttribute("jobPositions", jobPositionService.getAllJobPositions());
             model.addAttribute("experienceLevels", experienceLevelService.getAllExperienceLevels());
+            model.addAttribute("locations", locationService.getProvinces());
             model.addAttribute("job", job);
             return "employer/job-create";
         }

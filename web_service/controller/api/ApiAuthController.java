@@ -91,7 +91,8 @@ public class ApiAuthController {
                 registerRequest.getUsername(),
                 registerRequest.getPassword(),
                 registerRequest.getDisplayName(),
-                registerRequest.getContact(),
+                registerRequest.getEmail(),
+                registerRequest.getPhoneNumber(),
                 role
             );
             
@@ -136,7 +137,8 @@ public class ApiAuthController {
         private String username;
         private String password;
         private String displayName;
-        private String contact;
+        private String email;
+        private String phoneNumber;
         private String role; // ADMIN, NTD, NV
 
         // Getters and setters
@@ -164,12 +166,20 @@ public class ApiAuthController {
             this.displayName = displayName;
         }
 
-        public String getContact() {
-            return contact;
+        public String getEmail() {
+            return email;
         }
 
-        public void setContact(String contact) {
-            this.contact = contact;
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getPhoneNumber() {
+            return phoneNumber;
+        }
+
+        public void setPhoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
         }
 
         public String getRole() {

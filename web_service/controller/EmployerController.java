@@ -193,7 +193,7 @@ public class EmployerController {
                 company.getTenNguoiDaiDien(),
                 company.getMaSoThue(),
                 company.getDiaChi(),
-                company.getLienHeCty(),
+                company.getEmailCty(),
                 company.getMoTaCongTy(),
                 kinhDo != null ? java.math.BigDecimal.valueOf(kinhDo) : null,
                 viDo != null ? java.math.BigDecimal.valueOf(viDo) : null
@@ -310,7 +310,7 @@ public class EmployerController {
         existingCompany.setDiaChi(diaChi);
         existingCompany.setMoTaCongTy(moTaCongTy);
         existingCompany.setMaSoThue(maSoThue);
-        existingCompany.setLienHeCty(lienHeCty);
+        existingCompany.setEmailCty(lienHeCty);
 
         // Cập nhật tọa độ nếu có
         if (kinhDo != null && viDo != null) {

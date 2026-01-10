@@ -290,8 +290,11 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
                 company.setDiaChi(map.get("diaChi").toString());
             }
 
-            if (map.containsKey("lienHeCty") && map.get("lienHeCty") != null) {
-                company.setLienHeCty(map.get("lienHeCty").toString());
+            if (map.containsKey("emailCty") && map.get("emailCty") != null) {
+                company.setEmailCty(map.get("emailCty").toString());
+            }
+            if (map.containsKey("soDienThoaiCty") && map.get("soDienThoaiCty") != null) {
+                company.setSoDienThoaiCty(map.get("soDienThoaiCty").toString());
             }
 
             if (map.containsKey("hinhAnhCty") && map.get("hinhAnhCty") != null) {

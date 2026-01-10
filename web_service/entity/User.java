@@ -24,8 +24,11 @@ public class User {
     @Column(name = "ten_hien_thi")
     private String tenHienThi;
 
-    @Column(name = "lien_he", nullable = false)
-    private String lienHe;
+    @Column(name = "email", nullable = false)
+    private String email;
+
+    @Column(name = "so_dien_thoai")
+    private String soDienThoai;
 
     @Column(name = "trang_thai_hoat_dong")
     private Boolean trangThaiHoatDong = true;
@@ -42,11 +45,12 @@ public class User {
     // Constructors
     public User() {}
 
-    public User(String taiKhoan, String matKhau, String tenHienThi, String lienHe) {
+    public User(String taiKhoan, String matKhau, String tenHienThi, String email, String soDienThoai) {
         this.taiKhoan = taiKhoan;
         this.matKhau = matKhau;
         this.tenHienThi = tenHienThi;
-        this.lienHe = lienHe;
+        this.email = email;
+        this.soDienThoai = soDienThoai;
     }
 
     // Getters and Setters
@@ -90,12 +94,20 @@ public class User {
         this.tenHienThi = tenHienThi;
     }
 
-    public String getLienHe() {
-        return lienHe;
+    public String getEmail() {
+        return email;
     }
 
-    public void setLienHe(String lienHe) {
-        this.lienHe = lienHe;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSoDienThoai() {
+        return soDienThoai;
+    }
+
+    public void setSoDienThoai(String soDienThoai) {
+        this.soDienThoai = soDienThoai;
     }
 
     public Boolean getTrangThaiHoatDong() {

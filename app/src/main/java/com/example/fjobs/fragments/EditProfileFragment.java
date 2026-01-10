@@ -245,6 +245,18 @@ public class EditProfileFragment extends Fragment {
                 }
             }
 
+            // Xử lý thông tin người dùng nếu có trong phản hồi (để cập nhật số điện thoại vào hồ sơ nếu cần)
+            if (map.containsKey("user") && map.get("user") instanceof java.util.Map) {
+                java.util.Map<String, Object> userMap = (java.util.Map<String, Object>) map.get("user");
+
+                // Nếu số điện thoại không có trong profile, sử dụng từ user
+                if (profile.getSoDienThoai() == null || profile.getSoDienThoai().isEmpty()) {
+                    if (userMap.containsKey("soDienThoai") && userMap.get("soDienThoai") != null) {
+                        profile.setSoDienThoai(userMap.get("soDienThoai").toString());
+                    }
+                }
+            }
+
             if (map.containsKey("hoTen") && map.get("hoTen") != null) {
                 profile.setHoTen(map.get("hoTen").toString());
             }
@@ -253,6 +265,7 @@ public class EditProfileFragment extends Fragment {
                 profile.setGioiThieuBanThan(map.get("gioiThieuBanThan").toString());
             }
 
+            // Ưu tiên sử dụng số điện thoại từ phản hồi trực tiếp nếu có, nếu không thì từ user
             if (map.containsKey("soDienThoai") && map.get("soDienThoai") != null) {
                 profile.setSoDienThoai(map.get("soDienThoai").toString());
             }

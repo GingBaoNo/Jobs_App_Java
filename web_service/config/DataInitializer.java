@@ -18,8 +18,6 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private UserService userService;
     
-    @Autowired
-    private PasswordEncoder passwordEncoder;
     
     @Override
     public void run(String... args) throws Exception {
@@ -31,7 +29,7 @@ public class DataInitializer implements CommandLineRunner {
         // Tạo tài khoản admin mặc định nếu chưa tồn tại
         if (!userService.existsByTaiKhoan("admin")) {
             // Không mã hóa mật khẩu trong quá trình phát triển
-            User adminUser = new User("admin", "admin123", "Quản trị viên", "admin@company.com");
+            User adminUser = new User("admin", "admin123", "Quản trị viên", "admin@company.com", null);
             adminUser.setRole(adminRole);
             userService.saveUser(adminUser);
             System.out.println("Tài khoản admin mặc định đã được tạo: admin / admin123");

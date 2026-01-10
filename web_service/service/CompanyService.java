@@ -91,7 +91,7 @@ public class CompanyService {
         company.setTenNguoiDaiDien(tenNguoiDaiDien);
         company.setMaSoThue(maSoThue);
         company.setDiaChi(diaChi);
-        company.setLienHeCty(lienHeCty);
+        company.setEmailCty(lienHeCty);
         company.setDaXacThuc(false); // Chưa xác thực khi mới đăng ký
         company.setTrangThai("PENDING"); // Đặt trạng thái chờ duyệt
 
@@ -202,7 +202,7 @@ public class CompanyService {
         company.setTenNguoiDaiDien(tenNguoiDaiDien);
         company.setMaSoThue(maSoThue);
         company.setDiaChi(diaChi);
-        company.setLienHeCty(lienHeCty);
+        company.setEmailCty(lienHeCty);
         company.setDaXacThuc(false); // Chưa xác thực khi mới đăng ký
         company.setTrangThai("PENDING"); // Đặt trạng thái chờ duyệt
         company.setKinhDo(kinhDo);

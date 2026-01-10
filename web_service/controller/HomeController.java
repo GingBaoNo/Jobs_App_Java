@@ -105,7 +105,8 @@ public class HomeController {
                 user.getTaiKhoan(),
                 user.getMatKhau(),
                 user.getTenHienThi(),
-                user.getLienHe(),
+                user.getEmail(),
+                user.getSoDienThoai(),
                 role
             );
 

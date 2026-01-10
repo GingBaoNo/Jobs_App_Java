@@ -30,8 +30,11 @@ public class Company {
     @Column(name = "dia_chi")
     private String diaChi;
 
-    @Column(name = "lien_he_cty")
-    private String lienHeCty;
+    @Column(name = "email_cty")
+    private String emailCty;
+
+    @Column(name = "so_dien_thoai_cty")
+    private String soDienThoaiCty;
 
     @Column(name = "hinh_anh_cty")
     private String hinhAnhCty;
@@ -117,12 +120,20 @@ public class Company {
         this.diaChi = diaChi;
     }
 
-    public String getLienHeCty() {
-        return lienHeCty;
+    public String getEmailCty() {
+        return emailCty;
     }
 
-    public void setLienHeCty(String lienHeCty) {
-        this.lienHeCty = lienHeCty;
+    public void setEmailCty(String emailCty) {
+        this.emailCty = emailCty;
+    }
+
+    public String getSoDienThoaiCty() {
+        return soDienThoaiCty;
+    }
+
+    public void setSoDienThoaiCty(String soDienThoaiCty) {
+        this.soDienThoaiCty = soDienThoaiCty;
     }
 
     public String getHinhAnhCty() {

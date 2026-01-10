@@ -436,8 +436,11 @@ public class JobDetailActivity extends AppCompatActivity {
                 company.setDiaChi(map.get("diaChi").toString());
             }
 
-            if (map.containsKey("lienHeCty") && map.get("lienHeCty") != null) {
-                company.setLienHeCty(map.get("lienHeCty").toString());
+            if (map.containsKey("emailCty") && map.get("emailCty") != null) {
+                company.setEmailCty(map.get("emailCty").toString());
+            }
+            if (map.containsKey("soDienThoaiCty") && map.get("soDienThoaiCty") != null) {
+                company.setSoDienThoaiCty(map.get("soDienThoaiCty").toString());
             }
 
             if (map.containsKey("hinhAnhCty") && map.get("hinhAnhCty") != null) {
@@ -625,7 +628,7 @@ public class JobDetailActivity extends AppCompatActivity {
 
             // Load logo công ty nếu có
             if (job.getCompany().getHinhAnhCty() != null && !job.getCompany().getHinhAnhCty().isEmpty()) {
-                String logoUrl = "http://192.168.1.8:8080" + job.getCompany().getHinhAnhCty();
+                String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty();
                 Glide.with(this)
                     .load(logoUrl)
                     .placeholder(R.drawable.ic_boss)

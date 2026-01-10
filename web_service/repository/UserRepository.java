@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByTaiKhoan(String taiKhoan);
     boolean existsByTaiKhoan(String taiKhoan);
-    List<User> findByTaiKhoanContainingOrTenHienThiContainingOrLienHeContaining(String taiKhoan, String tenHienThi, String lienHe);
+    List<User> findByTaiKhoanContainingOrTenHienThiContainingOrEmailContaining(String taiKhoan, String tenHienThi, String email);
 
     // Các phương thức cần thiết cho ChatService
     List<User> findByRole(Role role);

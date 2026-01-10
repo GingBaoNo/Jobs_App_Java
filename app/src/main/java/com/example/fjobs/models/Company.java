@@ -20,8 +20,11 @@ public class Company {
     @SerializedName("diaChi")
     private String diaChi;
 
-    @SerializedName("lienHeCty")
-    private String lienHeCty;
+    @SerializedName("emailCty")
+    private String emailCty;
+
+    @SerializedName("soDienThoaiCty")
+    private String soDienThoaiCty;
 
     @SerializedName("hinhAnhCty")
     private String hinhAnhCty;
@@ -45,12 +48,13 @@ public class Company {
     public Company() {}
 
     public Company(String tenCongTy, String tenNguoiDaiDien, String maSoThue,
-                   String diaChi, String lienHeCty, String hinhAnhCty) {
+                   String diaChi, String emailCty, String soDienThoaiCty, String hinhAnhCty) {
         this.tenCongTy = tenCongTy;
         this.tenNguoiDaiDien = tenNguoiDaiDien;
         this.maSoThue = maSoThue;
         this.diaChi = diaChi;
-        this.lienHeCty = lienHeCty;
+        this.emailCty = emailCty;
+        this.soDienThoaiCty = soDienThoaiCty;
         this.hinhAnhCty = hinhAnhCty;
     }
 
@@ -70,8 +74,11 @@ public class Company {
     public String getDiaChi() { return diaChi; }
     public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
 
-    public String getLienHeCty() { return lienHeCty; }
-    public void setLienHeCty(String lienHeCty) { this.lienHeCty = lienHeCty; }
+    public String getEmailCty() { return emailCty; }
+    public void setEmailCty(String emailCty) { this.emailCty = emailCty; }
+
+    public String getSoDienThoaiCty() { return soDienThoaiCty; }
+    public void setSoDienThoaiCty(String soDienThoaiCty) { this.soDienThoaiCty = soDienThoaiCty; }
 
     public String getHinhAnhCty() { return hinhAnhCty; }
     public void setHinhAnhCty(String hinhAnhCty) { this.hinhAnhCty = hinhAnhCty; }
