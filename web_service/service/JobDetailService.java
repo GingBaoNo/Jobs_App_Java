@@ -20,6 +20,9 @@ public class JobDetailService {
     @Autowired
     private JobDetailRepository jobDetailRepository;
 
+    @Autowired
+    private NotificationEventService notificationEventService;
+
     public List<JobDetail> getAllJobs() {
         return jobDetailRepository.findAll();
     }
@@ -54,7 +57,14 @@ public class JobDetailService {
     }
 
     public JobDetail saveJob(JobDetail jobDetail) {
-        return jobDetailRepository.save(jobDetail);
+        JobDetail savedJob = jobDetailRepository.save(jobDetail);
+
+        // Gửi email thông báo cho admin về tin tuyển dụng mới nếu trạng thái là "Chờ duyệt"
+        if ("Chờ duyệt".equals(jobDetail.getTrangThaiDuyet())) {
+            notificationEventService.notifyAdminOfNewJobForApproval(savedJob, "admin@example.com");
+        }
+
+        return savedJob;
     }
 
     public JobDetail updateJob(JobDetail jobDetail) {
@@ -84,6 +94,11 @@ public class JobDetailService {
         System.out.println("DEBUG Service - After save - ChiTiet: [" + savedJob.getChiTiet() + "]");
         System.out.println("DEBUG Service - After save - YeuCauCongViec: [" + savedJob.getYeuCauCongViec() + "]");
         System.out.println("DEBUG Service - After save - QuyenLoi: [" + savedJob.getQuyenLoi() + "]");
+
+        // Gửi email thông báo cho admin về tin tuyển dụng được cập nhật nếu trạng thái là "Chờ duyệt"
+        if ("Chờ duyệt".equals(jobDetail.getTrangThaiDuyet())) {
+            notificationEventService.notifyAdminOfNewJobForApproval(savedJob, "admin@example.com");
+        }
 
         return savedJob;
     }

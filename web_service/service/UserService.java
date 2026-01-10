@@ -42,12 +42,20 @@ public class UserService {
     }
     
     public User saveUser(User user) {
-        // Không mã hóa mật khẩu trong quá trình phát triển
+        // Mã hóa mật khẩu nếu có thay đổi
+        if (user.getMatKhau() != null && !user.getMatKhau().startsWith("$2a$")) {
+            // Nếu mật khẩu chưa được mã hóa (không bắt đầu bằng $2a$), thì mã hóa
+            user.setMatKhau(passwordEncoder.encode(user.getMatKhau()));
+        }
         return userRepository.save(user);
     }
     
     public User updateUser(User user) {
-        // Không mã hóa mật khẩu trong quá trình phát triển
+        // Mã hóa mật khẩu nếu có thay đổi
+        if (user.getMatKhau() != null && !user.getMatKhau().startsWith("$2a$")) {
+            // Nếu mật khẩu chưa được mã hóa (không bắt đầu bằng $2a$), thì mã hóa
+            user.setMatKhau(passwordEncoder.encode(user.getMatKhau()));
+        }
         return userRepository.save(user);
     }
     
@@ -64,7 +72,9 @@ public class UserService {
             throw new RuntimeException("Tài khoản đã tồn tại");
         }
 
-        User user = new User(taiKhoan, matKhau, tenHienThi, email, soDienThoai);
+        // Mã hóa mật khẩu trước khi lưu
+        String encodedPassword = passwordEncoder.encode(matKhau);
+        User user = new User(taiKhoan, encodedPassword, tenHienThi, email, soDienThoai);
         user.setRole(role);
 
         User savedUser = saveUser(user);
@@ -88,5 +98,13 @@ public class UserService {
 
     public List<User> getUsersByRole(Role role) {
         return userRepository.findByRole(role);
+    }
+
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    public String encodePassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
     }
 }

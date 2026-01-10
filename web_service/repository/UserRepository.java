@@ -13,6 +13,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByTaiKhoan(String taiKhoan);
+    Optional<User> findByEmail(String email);
     boolean existsByTaiKhoan(String taiKhoan);
     List<User> findByTaiKhoanContainingOrTenHienThiContainingOrEmailContaining(String taiKhoan, String tenHienThi, String email);
 

@@ -332,6 +332,7 @@ public class ApiCompanyController {
         companyInfo.put("maSoThue", company.getMaSoThue());
         companyInfo.put("diaChi", company.getDiaChi());
         companyInfo.put("emailCty", company.getEmailCty());
+        companyInfo.put("soDienThoaiCty", company.getSoDienThoaiCty());
         companyInfo.put("hinhAnhCty", company.getHinhAnhCty());
         companyInfo.put("daXacThuc", company.getDaXacThuc());
         companyInfo.put("trangThai", company.getTrangThai());

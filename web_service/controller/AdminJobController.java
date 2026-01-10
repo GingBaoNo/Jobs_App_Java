@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.JobDetail;
 import com.example.demo.service.JobDetailService;
+import com.example.demo.service.NotificationEventService;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,9 @@ public class AdminJobController {
     
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private NotificationEventService notificationEventService;
     
     // Trang quản lý tin tuyển dụng chờ duyệt
     @GetMapping("/admin/jobs/pending")
@@ -42,20 +46,24 @@ public class AdminJobController {
         if (job != null) {
             job.setTrangThaiDuyet("Đã duyệt");
             jobDetailService.updateJob(job);
+            // Gửi email thông báo cho nhà tuyển dụng về việc công việc được duyệt
+            notificationEventService.notifyJobApproval(job);
             model.addAttribute("successMessage", "Duyệt tin tuyển dụng thành công!");
         } else {
             model.addAttribute("errorMessage", "Không tìm thấy tin tuyển dụng!");
         }
         return "redirect:/admin/jobs/pending";
     }
-    
+
     // Từ chối tin tuyển dụng
     @PostMapping("/admin/job/{id}/reject")
-    public String rejectJob(@PathVariable Integer id, Model model) {
+    public String rejectJob(@PathVariable Integer id, @RequestParam(required = false) String rejectionReason, Model model) {
         JobDetail job = jobDetailService.getJobById(id);
         if (job != null) {
             job.setTrangThaiDuyet("Từ chối");
             jobDetailService.updateJob(job);
+            // Gửi email thông báo cho nhà tuyển dụng về việc công việc bị từ chối
+            notificationEventService.notifyJobRejection(job, rejectionReason != null ? rejectionReason : "Nội dung không phù hợp hoặc sai quy định");
             model.addAttribute("successMessage", "Từ chối tin tuyển dụng thành công!");
         } else {
             model.addAttribute("errorMessage", "Không tìm thấy tin tuyển dụng!");

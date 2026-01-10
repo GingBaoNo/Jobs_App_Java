@@ -30,6 +30,16 @@ public interface ApiService {
     @POST("auth/register")
     Call<ApiResponse> register(@Body RegisterRequest registerRequest);
 
+    // OTP APIs
+    @POST("auth/forgot-password")
+    Call<ApiResponse> sendOtp(@Body Map<String, String> emailRequest);
+
+    @POST("auth/verify-otp")
+    Call<ApiResponse> verifyOtp(@Body Map<String, String> otpRequest);
+
+    @POST("auth/reset-password")
+    Call<ApiResponse> resetPassword(@Body Map<String, String> resetPasswordRequest);
+
     // Job APIs
     @GET("v1/job-details")
     Call<ApiResponse> getAllJobs();

@@ -17,6 +17,7 @@ import com.example.demo.service.WorkFieldService;
 import com.example.demo.service.WorkTypeService;
 import com.example.demo.service.JobDetailService;
 import com.example.demo.service.MessageService;
+import com.example.demo.service.NotificationEventService;
 import com.example.demo.service.WorkDisciplineService;
 import com.example.demo.service.JobPositionService;
 import com.example.demo.service.ExperienceLevelService;
@@ -67,6 +68,9 @@ public class AdminController {
 
     @Autowired
     private ExperienceLevelService experienceLevelService;
+
+    @Autowired
+    private NotificationEventService notificationEventService;
 
     // Trang dashboard của admin
     @GetMapping("/admin/dashboard")
@@ -148,7 +152,12 @@ public class AdminController {
     @PostMapping("/admin/companies/{id}/approve")
     public String approveCompany(@PathVariable Integer id) {
         try {
-            companyService.approveCompany(id);
+            Company company = companyService.getCompanyById(id).orElse(null);
+            if (company != null) {
+                companyService.approveCompany(id);
+                // Gửi email thông báo cho công ty về việc được duyệt
+                notificationEventService.notifyCompanyApproval(company);
+            }
         } catch (Exception e) {
             // Could add error handling if needed
         }
@@ -157,9 +166,14 @@ public class AdminController {
 
     // Từ chối công ty
     @PostMapping("/admin/companies/{id}/reject")
-    public String rejectCompany(@PathVariable Integer id) {
+    public String rejectCompany(@PathVariable Integer id, @RequestParam(required = false) String rejectionReason) {
         try {
-            companyService.rejectCompany(id);
+            Company company = companyService.getCompanyById(id).orElse(null);
+            if (company != null) {
+                companyService.rejectCompany(id);
+                // Gửi email thông báo cho công ty về việc bị từ chối
+                notificationEventService.notifyCompanyRejection(company, rejectionReason != null ? rejectionReason : "Thông tin không đầy đủ hoặc không chính xác");
+            }
         } catch (Exception e) {
             // Could add error handling if needed
         }

@@ -10,6 +10,7 @@ import com.example.demo.service.AppliedJobService;
 import com.example.demo.service.CompanyService;
 import com.example.demo.service.JobDetailService;
 import com.example.demo.service.MessageService;
+import com.example.demo.service.NotificationEventService;
 import com.example.demo.service.ProfileService;
 import com.example.demo.service.UserService;
 
@@ -50,6 +51,9 @@ public class EmployerController {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private NotificationEventService notificationEventService;
 
     // Trang dashboard của nhà tuyển dụng
     @GetMapping("/employer/dashboard")
@@ -428,6 +432,9 @@ public class EmployerController {
         }
 
         appliedJobService.updateAppliedJob(appliedJob);
+
+        // Gửi email thông báo cho ứng viên về thay đổi trạng thái
+        notificationEventService.notifyApplicantOfApplicationStatus(appliedJob);
 
         // Redirect để tránh resubmission
         return "redirect:/employer/applicants/" + id + "/cv";

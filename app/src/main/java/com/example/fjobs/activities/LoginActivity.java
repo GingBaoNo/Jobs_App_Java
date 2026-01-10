@@ -25,6 +25,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etUsername, etPassword;
     private Button btnLogin;
     private TextView tvRegister;
+    private TextView tvForgotPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +49,7 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.et_password);
         btnLogin = findViewById(R.id.btn_login);
         tvRegister = findViewById(R.id.tv_register);
+        tvForgotPassword = findViewById(R.id.tv_forgot_password);
     }
 
     private void setupClickListeners() {
@@ -65,6 +67,10 @@ public class LoginActivity extends AppCompatActivity {
 
         tvRegister.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+        });
+
+        tvForgotPassword.setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
         });
     }
 

@@ -5,10 +5,10 @@ import com.example.demo.entity.JobDetail;
 import com.example.demo.entity.Profile;
 import com.example.demo.entity.User;
 import com.example.demo.repository.AppliedJobRepository;
+import com.example.demo.service.NotificationEventService;
+import com.example.demo.service.ProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.example.demo.service.ProfileService;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +21,9 @@ public class AppliedJobService {
 
     @Autowired
     private ProfileService profileService;
+
+    @Autowired
+    private NotificationEventService notificationEventService;
     
     public List<AppliedJob> getAllAppliedJobs() {
         return appliedJobRepository.findAll();
@@ -68,7 +71,12 @@ public class AppliedJobService {
         }
 
         AppliedJob appliedJob = new AppliedJob(employee, jobDetail, cvUrl);
-        return saveAppliedJob(appliedJob);
+        AppliedJob savedAppliedJob = saveAppliedJob(appliedJob);
+
+        // Gửi email thông báo cho nhà tuyển dụng về ứng viên mới
+        notificationEventService.notifyEmployerOfNewApplication(savedAppliedJob);
+
+        return savedAppliedJob;
     }
 
     public AppliedJob applyForJobWithCv(User employee, JobDetail jobDetail, String urlCv) {
@@ -78,7 +86,12 @@ public class AppliedJobService {
         }
 
         AppliedJob appliedJob = new AppliedJob(employee, jobDetail, urlCv);
-        return saveAppliedJob(appliedJob);
+        AppliedJob savedAppliedJob = saveAppliedJob(appliedJob);
+
+        // Gửi email thông báo cho nhà tuyển dụng về ứng viên mới
+        notificationEventService.notifyEmployerOfNewApplication(savedAppliedJob);
+
+        return savedAppliedJob;
     }
 
     public Optional<AppliedJob> getAppliedJobByIdWithDetails(Integer id) {

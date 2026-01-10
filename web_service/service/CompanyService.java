@@ -23,6 +23,9 @@ public class CompanyService {
     @Autowired
     private JobDetailService jobDetailService;
 
+    @Autowired
+    private NotificationEventService notificationEventService;
+
     public List<Company> getAllCompanies() {
         return companyRepository.findAll();
     }
@@ -95,7 +98,13 @@ public class CompanyService {
         company.setDaXacThuc(false); // Chưa xác thực khi mới đăng ký
         company.setTrangThai("PENDING"); // Đặt trạng thái chờ duyệt
 
-        return saveCompany(company);
+        Company savedCompany = saveCompany(company);
+
+        // Gửi email thông báo cho admin về công ty mới đăng ký
+        // Sử dụng email admin mặc định hoặc có thể lấy từ config
+        notificationEventService.notifyAdminOfNewCompanyForApproval(savedCompany, "admin@example.com");
+
+        return savedCompany;
     }
 
     public Company approveCompany(Integer companyId) {
@@ -208,6 +217,12 @@ public class CompanyService {
         company.setKinhDo(kinhDo);
         company.setViDo(viDo);
 
-        return saveCompany(company);
+        Company savedCompany = saveCompany(company);
+
+        // Gửi email thông báo cho admin về công ty mới đăng ký
+        // Sử dụng email admin mặc định hoặc có thể lấy từ config
+        notificationEventService.notifyAdminOfNewCompanyForApproval(savedCompany, "admin@example.com");
+
+        return savedCompany;
     }
 }

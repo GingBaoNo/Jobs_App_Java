@@ -283,4 +283,14 @@ CREATE TABLE job_alerts (
     CONSTRAINT fk_job_alerts_type FOREIGN KEY (ma_hinh_thuc) REFERENCES work_types (ma_hinh_thuc)
 );
 
+-- Bảng lưu trữ mã OTP cho chức năng quên mật khẩu
+CREATE TABLE otp_codes (
+    ma_otp INT PRIMARY KEY IDENTITY(1,1),
+    email NVARCHAR(255) NOT NULL,
+    otp_code NVARCHAR(6) NOT NULL,
+    ngay_tao DATETIME2 NOT NULL DEFAULT GETDATE(),
+    da_su_dung BIT NOT NULL DEFAULT 0,
+    han_su_dung DATETIME2 NOT NULL
+);
+
 -- HẾT MÃ SQL HOÀN CHỈNH
