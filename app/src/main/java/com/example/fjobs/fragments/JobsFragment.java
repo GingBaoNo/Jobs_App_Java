@@ -58,7 +58,7 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
 
     private void setupRecyclerView() {
         jobList = new ArrayList<>();
-        jobAdapter = new com.example.fjobs.adapters.JobAdapter(jobList, this); // Truyền listener là fragment hiện tại
+        jobAdapter = new com.example.fjobs.adapters.JobAdapter(getContext(), jobList, this); // Truyền context, listener là fragment hiện tại
         rvJobs.setLayoutManager(new LinearLayoutManager(getContext()));
         rvJobs.setAdapter(jobAdapter);
     }
@@ -96,9 +96,8 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
                                 }
                             }
 
-                            jobList.clear();
-                            jobList.addAll(jobs);
-                            jobAdapter.notifyDataSetChanged();
+                            // Kiểm tra trạng thái lưu cho từng công việc
+                            checkSavedStatusForJobs(jobs);
 
                             Log.d("JobsFragment", "Loaded " + jobs.size() + " jobs from API");
                         } else {
@@ -115,6 +114,51 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
                 Log.e("JobsFragment", "Error loading jobs", t);
+            }
+        });
+    }
+
+    // Phương thức kiểm tra trạng thái lưu cho danh sách công việc
+    private void checkSavedStatusForJobs(List<JobDetail> jobs) {
+        jobList.clear();
+        jobList.addAll(jobs);
+
+        // Gọi API kiểm tra trạng thái lưu cho từng công việc
+        for (int i = 0; i < jobs.size(); i++) {
+            JobDetail job = jobs.get(i);
+            checkSavedStatusForSingleJob(job, i);
+        }
+
+        jobAdapter.notifyDataSetChanged();
+    }
+
+    // Phương thức kiểm tra trạng thái lưu cho một công việc
+    private void checkSavedStatusForSingleJob(JobDetail job, int position) {
+        Call<ApiResponse> call = apiService.checkIfJobSaved(job.getMaCongViec());
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Cập nhật trạng thái saved cho công việc
+                    job.setSaved(response.body().isSuccess());
+
+                    // Cập nhật lại adapter
+                    if (position < jobList.size()) {
+                        jobList.set(position, job);
+                        jobAdapter.notifyItemChanged(position);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Nếu kiểm tra thất bại, mặc định là chưa lưu
+                job.setSaved(false);
+
+                if (position < jobList.size()) {
+                    jobList.set(position, job);
+                    jobAdapter.notifyItemChanged(position);
+                }
             }
         });
     }
@@ -198,7 +242,13 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
 
             // Handle ngayDang
             if (map.containsKey("ngayDang") && map.get("ngayDang") != null) {
-                job.setNgayDang(map.get("ngayDang").toString());
+                // Chuyển đổi ngày đăng từ định dạng server sang định dạng phù hợp
+                String ngayDang = map.get("ngayDang").toString();
+                // Nếu ngày có định dạng ISO (ví dụ: "2023-12-01T00:00:00" hoặc "2023-12-01T00:00:00.000+00:00")
+                if (ngayDang.contains("T")) {
+                    ngayDang = ngayDang.substring(0, 10); // Lấy phần ngày: "yyyy-MM-dd"
+                }
+                job.setNgayDang(ngayDang);
             }
 
             // Handle luotXem

@@ -1,29 +1,41 @@
 package com.example.fjobs.adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.fjobs.R;
+import com.example.fjobs.api.ApiClient;
+import com.example.fjobs.api.ApiService;
+import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.JobDetail;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import java.util.List;
 
 public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
     private List<JobDetail> jobList;
     private OnJobClickListener listener;
+    private Context context;
+    private ApiService apiService;
 
     public interface OnJobClickListener {
         void onJobClick(JobDetail job);
     }
 
-    public JobAdapter(List<JobDetail> jobList, OnJobClickListener listener) {
+    public JobAdapter(Context context, List<JobDetail> jobList, OnJobClickListener listener) {
+        this.context = context;
         this.jobList = jobList;
         this.listener = listener;
+        this.apiService = ApiClient.getApiService();
     }
 
     @NonNull
@@ -48,41 +60,30 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
     public class JobViewHolder extends RecyclerView.ViewHolder {
         private ImageView ivCompanyLogo;
+        private ImageView ivBookmark;
         private TextView tvJobTitle;
         private TextView tvCompanyName;
-        private TextView tvStatusBadge;
+        private TextView tvCategoryTag;
+        private TextView tvLocationTag;
+        private TextView tvTimeAgo;
         private TextView tvSalary;
-        private TextView tvShortDescription;
-        private TextView tvExperienceLevel; // Thêm mới
-        private TextView tvJobPosition;     // Thêm mới
-        private TextView tvLocation;
-        private TextView tvPostingDate;
-        private TextView tvApplicationDeadline;
-        private TextView btnTagApproved;
-        private TextView btnTagOpen;
-        private Button btnViewDetails;
 
         public JobViewHolder(@NonNull View itemView) {
             super(itemView);
             ivCompanyLogo = itemView.findViewById(R.id.iv_company_logo);
+            ivBookmark = itemView.findViewById(R.id.iv_bookmark);
             tvJobTitle = itemView.findViewById(R.id.tv_job_title);
             tvCompanyName = itemView.findViewById(R.id.tv_company_name);
-            tvStatusBadge = itemView.findViewById(R.id.tv_status_badge);
+            tvCategoryTag = itemView.findViewById(R.id.tv_category_tag);
+            tvLocationTag = itemView.findViewById(R.id.tv_location_tag);
+            tvTimeAgo = itemView.findViewById(R.id.tv_time_ago);
             tvSalary = itemView.findViewById(R.id.tv_salary);
-            tvShortDescription = itemView.findViewById(R.id.tv_short_description);
-            tvExperienceLevel = itemView.findViewById(R.id.tv_experience_level); // Ánh xạ mới
-            tvJobPosition = itemView.findViewById(R.id.tv_job_position);         // Ánh xạ mới
-            tvLocation = itemView.findViewById(R.id.tv_location);
-            tvPostingDate = itemView.findViewById(R.id.tv_posting_date);
-            tvApplicationDeadline = itemView.findViewById(R.id.tv_application_deadline);
-            btnTagApproved = itemView.findViewById(R.id.btn_tag_approved);
-            btnTagOpen = itemView.findViewById(R.id.btn_tag_open);
-            btnViewDetails = itemView.findViewById(R.id.btn_view_details);
 
-            btnViewDetails.setOnClickListener(v -> {
+            // Xử lý sự kiện click cho bookmark
+            ivBookmark.setOnClickListener(v -> {
                 int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onJobClick(jobList.get(position));
+                if (position != RecyclerView.NO_POSITION) {
+                    toggleBookmark(position);
                 }
             });
 
@@ -107,82 +108,210 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
                     String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
                     Glide.with(itemView.getContext())
                         .load(logoUrl)
-                        .placeholder(R.drawable.ic_boss) // Ảnh placeholder khi đang load
-                        .error(R.drawable.ic_boss) // Ảnh khi có lỗi
+                        .placeholder(R.drawable.logotimviec) // Ảnh placeholder khi đang load
+                        .error(R.drawable.logotimviec) // Ảnh khi có lỗi
                         .into(ivCompanyLogo);
                 } else {
                     // Nếu không có logo, sử dụng ảnh mặc định
-                    ivCompanyLogo.setImageResource(R.drawable.ic_boss);
+                    ivCompanyLogo.setImageResource(R.drawable.logotimviec);
                 }
             }
 
-            // Cập nhật trạng thái công việc
-            tvStatusBadge.setText(job.getTrangThaiTinTuyen());
+            // Cập nhật danh mục công việc (lĩnh vực hoặc ngành)
+            if (job.getWorkField() != null) {
+                tvCategoryTag.setText(job.getWorkField().getTenLinhVuc());
+            } else if (job.getJobPosition() != null && job.getJobPosition().getWorkDiscipline() != null) {
+                tvCategoryTag.setText(job.getJobPosition().getWorkDiscipline().getTenNganh());
+            } else {
+                tvCategoryTag.setText("Nhiều lĩnh vực");
+            }
+
+            // Cập nhật địa điểm công việc
+            if (job.getCompany() != null && job.getCompany().getDiaChi() != null) {
+                tvLocationTag.setText(getCityFromAddress(job.getCompany().getDiaChi()));
+            } else {
+                tvLocationTag.setText("Nhiều địa điểm");
+            }
+
+            // Cập nhật thời gian đăng (chuyển đổi từ ngày đăng nếu có)
+            if (job.getNgayDang() != null) {
+                tvTimeAgo.setText(formatTimeAgo(job.getNgayDang()));
+            } else {
+                tvTimeAgo.setText("Mới đăng");
+            }
 
             // Cập nhật mức lương
             if (job.getLuong() != null && job.getLuong() > 0) {
-                String salaryText = String.format("%,d", job.getLuong()) + " VNĐ";
+                String salaryText = formatSalary(job.getLuong());
                 if (job.getLoaiLuong() != null && !job.getLoaiLuong().isEmpty()) {
-                    salaryText += " (" + job.getLoaiLuong() + ")";
+                    salaryText += "/" + job.getLoaiLuong();
                 }
                 tvSalary.setText(salaryText);
             } else {
                 tvSalary.setText("Thương lượng");
             }
 
-            // Cập nhật mô tả ngắn (chi tiết công việc)
-            if (job.getChiTiet() != null && !job.getChiTiet().isEmpty()) {
-                String shortDescription = job.getChiTiet();
-                // Giới hạn độ dài mô tả để phù hợp với giao diện
-                if (shortDescription.length() > 100) {
-                    shortDescription = shortDescription.substring(0, 100) + "...";
+            // Cập nhật trạng thái bookmark
+            updateBookmarkIcon(job.isSaved());
+        }
+
+        // Cập nhật icon bookmark dựa trên trạng thái
+        private void updateBookmarkIcon(boolean isBookmarked) {
+            if (isBookmarked) {
+                ivBookmark.setImageResource(R.drawable.ic_bookmark2); // Trạng thái đã lưu
+            } else {
+                ivBookmark.setImageResource(R.drawable.ic_bookmark); // Trạng thái chưa lưu
+            }
+        }
+
+        // Hàm hỗ trợ định dạng lương
+        private String formatSalary(int salary) {
+            if (salary >= 10000000) {
+                double millions = salary / 1000000.0;
+                return String.format("%.1f triệu", millions);
+            } else {
+                double thousands = salary / 1000.0;
+                return String.format("%.0f nghìn", thousands);
+            }
+        }
+
+        // Hàm hỗ trợ lấy tên thành phố từ địa chỉ
+        private String getCityFromAddress(String address) {
+            if (address == null || address.isEmpty()) {
+                return "N/A";
+            }
+
+            // Một số thành phố phổ biến để tìm trong địa chỉ
+            String[] cities = {"Hà Nội", "TP.HCM", "Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ", "Bình Dương", "Đồng Nai"};
+
+            for (String city : cities) {
+                if (address.toLowerCase().contains(city.toLowerCase())) {
+                    if (city.equals("Hồ Chí Minh")) {
+                        return "TP.HCM";
+                    }
+                    return city;
                 }
-                tvShortDescription.setText(shortDescription);
+            }
+
+            // Nếu không tìm thấy thành phố cụ thể, trả về 2 từ cuối cùng của địa chỉ
+            String[] parts = address.split(" ");
+            if (parts.length >= 2) {
+                return parts[parts.length - 2] + " " + parts[parts.length - 1];
+            } else if (parts.length == 1) {
+                return parts[0];
             } else {
-                tvShortDescription.setText("Không có mô tả");
+                return "Nhiều địa điểm";
             }
+        }
 
-            // Cập nhật cấp độ kinh nghiệm
-            if (job.getExperienceLevel() != null && job.getExperienceLevel().getTenCapDo() != null) {
-                tvExperienceLevel.setText(job.getExperienceLevel().getTenCapDo());
-                tvExperienceLevel.setVisibility(View.VISIBLE);
+        // Hàm hỗ trợ định dạng thời gian đăng
+        private String formatTimeAgo(String dateString) {
+            try {
+                // Giả sử dateString có định dạng "yyyy-MM-dd" hoặc "yyyy-MM-dd HH:mm:ss"
+                // Trong thực tế, bạn có thể cần điều chỉnh để phù hợp với định dạng thực tế từ API
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                java.util.Date date = sdf.parse(dateString);
+                long dateInMillis = date.getTime();
+
+                long now = System.currentTimeMillis();
+                long diffInMillis = now - dateInMillis;
+
+                long days = diffInMillis / (24 * 60 * 60 * 1000);
+
+                if (days == 0) {
+                    return "Hôm nay";
+                } else if (days == 1) {
+                    return "Hôm qua";
+                } else if (days < 7) {
+                    return days + " ngày trước";
+                } else if (days < 30) {
+                    long weeks = days / 7;
+                    return weeks + " tuần trước";
+                } else {
+                    long months = days / 30;
+                    return months + " tháng trước";
+                }
+            } catch (Exception e) {
+                // Nếu không thể phân tích ngày, trả về giá trị mặc định
+                return "Mới đăng";
+            }
+        }
+
+        // Phương thức toggle bookmark
+        private void toggleBookmark(int position) {
+            JobDetail job = jobList.get(position);
+
+            // Đảo ngược trạng thái bookmark
+            boolean isBookmarked = job.isSaved();
+            int jobId = job.getMaCongViec();
+
+            if (isBookmarked) {
+                // Gọi API hủy lưu việc làm
+                unsaveJob(jobId, position);
             } else {
-                tvExperienceLevel.setText("Kinh nghiệm linh hoạt");
-                tvExperienceLevel.setVisibility(View.VISIBLE); // Hoặc View.GONE nếu không muốn hiển thị
+                // Gọi API lưu việc làm
+                saveJob(jobId, position);
             }
+        }
 
-            // Cập nhật vị trí công việc
-            if (job.getJobPosition() != null && job.getJobPosition().getTenViTri() != null) {
-                tvJobPosition.setText(job.getJobPosition().getTenViTri());
-                tvJobPosition.setVisibility(View.VISIBLE);
-            } else {
-                tvJobPosition.setText("Vị trí linh hoạt");
-                tvJobPosition.setVisibility(View.VISIBLE); // Hoặc View.GONE nếu không muốn hiển thị
-            }
+        // Gọi API lưu việc làm
+        private void saveJob(int jobId, int position) {
+            com.example.fjobs.api.ApiService.SaveJobRequest request = new com.example.fjobs.api.ApiService.SaveJobRequest();
+            request.setJobDetailId(jobId);
 
-            // Cập nhật địa điểm (nếu có thông tin địa điểm trong tương lai có thể thêm)
-            // Hiện tại chưa có thông tin địa điểm trong model JobDetail, nên tạm để mặc định
-            tvLocation.setText("Hà Nội"); // Thay bằng thông tin thực tế khi có
+            Call<ApiResponse> call = apiService.saveJob(request);
+            call.enqueue(new Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        // Cập nhật trạng thái trong model
+                        JobDetail job = jobList.get(position);
+                        job.setSaved(true);
 
-            // Cập nhật ngày đăng
-            if (job.getNgayDang() != null) {
-                tvPostingDate.setText(job.getNgayDang());
-            }
+                        // Cập nhật lại icon bookmark
+                        updateBookmarkIcon(true);
 
-            // Cập nhật hạn nộp
-            if (job.getNgayKetThucTuyenDung() != null) {
-                tvApplicationDeadline.setText(job.getNgayKetThucTuyenDung());
-            }
+                        Toast.makeText(context, "Đã lưu công việc", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Lưu công việc thất bại", Toast.LENGTH_SHORT).show();
+                    }
+                }
 
-            // Cập nhật trạng thái đã duyệt
-            String approvalStatus = job.getTrangThaiDuyet();
-            btnTagApproved.setText(approvalStatus.equals("Đã duyệt") ? "Đã duyệt" : "Chờ duyệt");
-            btnTagApproved.setVisibility(approvalStatus.equals("Đã duyệt") ? View.VISIBLE : View.GONE);
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    Toast.makeText(context, "Lỗi kết nối khi lưu công việc", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
-            // Cập nhật trạng thái mở
-            String openStatus = job.getTrangThaiTinTuyen();
-            btnTagOpen.setText(openStatus);
-            btnTagOpen.setVisibility(View.VISIBLE); // Luôn hiển thị nhưng có thể ẩn nếu cần
+        // Gọi API hủy lưu việc làm
+        private void unsaveJob(int jobId, int position) {
+            com.example.fjobs.api.ApiService.UnsaveJobRequest request = new com.example.fjobs.api.ApiService.UnsaveJobRequest();
+            request.setJobDetailId(jobId);
+
+            Call<ApiResponse> call = apiService.unsaveJob(request);
+            call.enqueue(new Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        // Cập nhật trạng thái trong model
+                        JobDetail job = jobList.get(position);
+                        job.setSaved(false);
+
+                        // Cập nhật lại icon bookmark
+                        updateBookmarkIcon(false);
+
+                        Toast.makeText(context, "Đã bỏ lưu công việc", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Bỏ lưu công việc thất bại", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    Toast.makeText(context, "Lỗi kết nối khi bỏ lưu công việc", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 }

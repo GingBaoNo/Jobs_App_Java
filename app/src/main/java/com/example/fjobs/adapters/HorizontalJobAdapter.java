@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -15,8 +14,6 @@ import com.example.fjobs.activities.JobDetailActivity;
 import com.example.fjobs.R;
 import com.example.fjobs.models.JobDetail;
 import java.util.List;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdapter.JobViewHolder> {
     private List<JobDetail> jobList;
@@ -49,38 +46,29 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
 
     public class JobViewHolder extends RecyclerView.ViewHolder {
         private ImageView ivCompanyLogo;
+        private ImageView ivBookmark;
         private TextView tvJobTitle;
         private TextView tvCompanyName;
-        private TextView tvStatusBadge;
+        private TextView tvCategoryTag;
+        private TextView tvLocationTag;
+        private TextView tvTimeAgo;
         private TextView tvSalary;
-        private TextView tvShortDescription;
-        private TextView tvExperienceLevel; // Thêm mới
-        private TextView tvJobPosition;     // Thêm mới
-        private TextView tvLocation;
-        private TextView tvApplicationDeadline;
-        private TextView tvPostingDate;
-        private TextView btnTagApproved;
-        private TextView btnTagOpen;
-        private Button btnViewDetails;
 
         public JobViewHolder(@NonNull View itemView) {
             super(itemView);
             ivCompanyLogo = itemView.findViewById(R.id.iv_company_logo);
+            ivBookmark = itemView.findViewById(R.id.iv_bookmark);
             tvJobTitle = itemView.findViewById(R.id.tv_job_title);
             tvCompanyName = itemView.findViewById(R.id.tv_company_name);
-            tvStatusBadge = itemView.findViewById(R.id.tv_status_badge);
+            tvCategoryTag = itemView.findViewById(R.id.tv_category_tag);
+            tvLocationTag = itemView.findViewById(R.id.tv_location_tag);
+            tvTimeAgo = itemView.findViewById(R.id.tv_time_ago);
             tvSalary = itemView.findViewById(R.id.tv_salary);
-            tvShortDescription = itemView.findViewById(R.id.tv_short_description);
-            tvExperienceLevel = itemView.findViewById(R.id.tv_experience_level); // Thêm mới
-            tvJobPosition = itemView.findViewById(R.id.tv_job_position);         // Thêm mới
-            tvLocation = itemView.findViewById(R.id.tv_location);
-            tvApplicationDeadline = itemView.findViewById(R.id.tv_application_deadline);
-            tvPostingDate = itemView.findViewById(R.id.tv_posting_date);
-            btnTagApproved = itemView.findViewById(R.id.btn_tag_approved);
-            btnTagOpen = itemView.findViewById(R.id.btn_tag_open);
-            btnViewDetails = itemView.findViewById(R.id.btn_view_details);
 
-            btnViewDetails.setOnClickListener(v -> {
+            // Ẩn bookmark trong adapter này vì không sử dụng chức năng lưu
+            ivBookmark.setVisibility(View.GONE);
+
+            itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     JobDetail job = jobList.get(position);
@@ -106,77 +94,120 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
                     String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty();
                     Glide.with(itemView.getContext())
                         .load(logoUrl)
-                        .placeholder(R.drawable.ic_boss)
-                        .error(R.drawable.ic_boss)
+                        .placeholder(R.drawable.logotimviec)
+                        .error(R.drawable.logotimviec)
                         .into(ivCompanyLogo);
                 } else {
-                    ivCompanyLogo.setImageResource(R.drawable.ic_boss);
+                    ivCompanyLogo.setImageResource(R.drawable.logotimviec);
                 }
             }
 
-            // Set job status
-            String status = job.getTrangThaiTinTuyen();
-            tvStatusBadge.setText(status);
+            // Set category tag (work field or discipline)
+            if (job.getWorkField() != null) {
+                tvCategoryTag.setText(job.getWorkField().getTenLinhVuc());
+            } else if (job.getJobPosition() != null && job.getJobPosition().getWorkDiscipline() != null) {
+                tvCategoryTag.setText(job.getJobPosition().getWorkDiscipline().getTenNganh());
+            } else {
+                tvCategoryTag.setText("Nhiều lĩnh vực");
+            }
+
+            // Set location tag
+            if (job.getCompany() != null && job.getCompany().getDiaChi() != null) {
+                tvLocationTag.setText(getCityFromAddress(job.getCompany().getDiaChi()));
+            } else {
+                tvLocationTag.setText("Nhiều địa điểm");
+            }
+
+            // Set posting date
+            if (job.getNgayDang() != null) {
+                tvTimeAgo.setText(formatTimeAgo(job.getNgayDang()));
+            } else {
+                tvTimeAgo.setText("Mới đăng");
+            }
 
             // Set salary
             if (job.getLuong() != null && job.getLuong() > 0) {
-                String salaryText = String.format("%,d", job.getLuong()) + " VNĐ";
+                String salaryText = formatSalary(job.getLuong());
                 if (job.getLoaiLuong() != null && !job.getLoaiLuong().isEmpty()) {
-                    salaryText += " (" + job.getLoaiLuong() + ")";
+                    salaryText += "/" + job.getLoaiLuong();
                 }
                 tvSalary.setText(salaryText);
             } else {
                 tvSalary.setText("Thương lượng");
             }
+        }
 
-            // Set short description from job detail
-            if (job.getChiTiet() != null && job.getChiTiet().length() > 100) {
-                tvShortDescription.setText(job.getChiTiet().substring(0, 100) + "...");
+        // Hàm hỗ trợ định dạng lương
+        private String formatSalary(int salary) {
+            if (salary >= 10000000) {
+                double millions = salary / 1000000.0;
+                return String.format("%.1f triệu", millions);
             } else {
-                tvShortDescription.setText(job.getChiTiet());
+                double thousands = salary / 1000.0;
+                return String.format("%.0f nghìn", thousands);
+            }
+        }
+
+        // Hàm hỗ trợ lấy tên thành phố từ địa chỉ
+        private String getCityFromAddress(String address) {
+            if (address == null || address.isEmpty()) {
+                return "N/A";
             }
 
-            // Set experience level if available
-            if (job.getExperienceLevel() != null && job.getExperienceLevel().getTenCapDo() != null) {
-                tvExperienceLevel.setText(job.getExperienceLevel().getTenCapDo());
-            } else {
-                tvExperienceLevel.setText("Kinh nghiệm linh hoạt");
-            }
+            // Một số thành phố phổ biến để tìm trong địa chỉ
+            String[] cities = {"Hà Nội", "TP.HCM", "Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ", "Bình Dương", "Đồng Nai"};
 
-            // Set job position if available
-            if (job.getJobPosition() != null && job.getJobPosition().getTenViTri() != null) {
-                tvJobPosition.setText(job.getJobPosition().getTenViTri());
-            } else {
-                tvJobPosition.setText("Vị trí linh hoạt");
-            }
-
-            // Set location (we might need to get this from another source)
-            tvLocation.setText("Hà Nội"); // Temporary - should be retrieved from job location data
-
-            // Set posting date
-            if (job.getNgayDang() != null) {
-                try {
-                    tvPostingDate.setText(job.getNgayDang().substring(0, 10)); // Lấy phần ngày từ chuỗi datetime
-                } catch (Exception e) {
-                    tvPostingDate.setText(job.getNgayDang()); // Nếu chuỗi quá ngắn, hiển thị nguyên bản
+            for (String city : cities) {
+                if (address.toLowerCase().contains(city.toLowerCase())) {
+                    if (city.equals("Hồ Chí Minh")) {
+                        return "TP.HCM";
+                    }
+                    return city;
                 }
-            } else {
-                tvPostingDate.setText("N/A");
             }
 
-            // Set application deadline
-            if (job.getNgayKetThucTuyenDung() != null) {
-                tvApplicationDeadline.setText(job.getNgayKetThucTuyenDung());
+            // Nếu không tìm thấy thành phố cụ thể, trả về 2 từ cuối cùng của địa chỉ
+            String[] parts = address.split(" ");
+            if (parts.length >= 2) {
+                return parts[parts.length - 2] + " " + parts[parts.length - 1];
+            } else if (parts.length == 1) {
+                return parts[0];
             } else {
-                tvApplicationDeadline.setText("N/A");
+                return "Nhiều địa điểm";
             }
+        }
 
-            // Set approval status
-            String approvalStatus = job.getTrangThaiDuyet();
-            btnTagApproved.setText(approvalStatus.equals("Đã duyệt") ? "Đã duyệt" : "Chờ duyệt");
+        // Hàm hỗ trợ định dạng thời gian đăng
+        private String formatTimeAgo(String dateString) {
+            try {
+                // Giả sử dateString có định dạng "yyyy-MM-dd" hoặc "yyyy-MM-dd HH:mm:ss"
+                // Trong thực tế, bạn có thể cần điều chỉnh để phù hợp với định dạng thực tế từ API
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                java.util.Date date = sdf.parse(dateString);
+                long dateInMillis = date.getTime();
 
-            // Set the open tag text
-            btnTagOpen.setText(job.getTrangThaiTinTuyen());
+                long now = System.currentTimeMillis();
+                long diffInMillis = now - dateInMillis;
+
+                long days = diffInMillis / (24 * 60 * 60 * 1000);
+
+                if (days == 0) {
+                    return "Hôm nay";
+                } else if (days == 1) {
+                    return "Hôm qua";
+                } else if (days < 7) {
+                    return days + " ngày trước";
+                } else if (days < 30) {
+                    long weeks = days / 7;
+                    return weeks + " tuần trước";
+                } else {
+                    long months = days / 30;
+                    return months + " tháng trước";
+                }
+            } catch (Exception e) {
+                // Nếu không thể phân tích ngày, trả về giá trị mặc định
+                return "Mới đăng";
+            }
         }
     }
 }

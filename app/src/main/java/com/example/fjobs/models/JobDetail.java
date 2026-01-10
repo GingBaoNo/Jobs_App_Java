@@ -83,6 +83,12 @@ public class JobDetail {
     @SerializedName("viDo")
     private BigDecimal viDo; // Vĩ độ
 
+    @SerializedName("workField")
+    private WorkField workField; // Lĩnh vực công việc
+
+    // Thêm thuộc tính để theo dõi trạng thái lưu việc làm
+    private Boolean saved = false;
+
     // Constructors
     public JobDetail() {}
 
@@ -174,4 +180,11 @@ public class JobDetail {
 
     public BigDecimal getViDo() { return viDo; }
     public void setViDo(BigDecimal viDo) { this.viDo = viDo; }
+
+    public WorkField getWorkField() { return workField; }
+    public void setWorkField(WorkField workField) { this.workField = workField; }
+
+    // Getter và setter cho thuộc tính saved
+    public Boolean isSaved() { return saved; }
+    public void setSaved(Boolean saved) { this.saved = saved; }
 }

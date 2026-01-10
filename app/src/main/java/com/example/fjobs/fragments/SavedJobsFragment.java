@@ -47,7 +47,7 @@ public class SavedJobsFragment extends Fragment implements JobAdapter.OnJobClick
     private void initViews(View view) {
         rvSavedJobs = view.findViewById(R.id.rv_saved_jobs);
         savedJobsList = new ArrayList<>();
-        adapter = new JobAdapter(savedJobsList, this); // Sử dụng interface listener
+        adapter = new JobAdapter(getContext(), savedJobsList, this); // Sử dụng interface listener
 
         rvSavedJobs.setLayoutManager(new LinearLayoutManager(getContext()));
         rvSavedJobs.setAdapter(adapter);
@@ -74,6 +74,7 @@ public class SavedJobsFragment extends Fragment implements JobAdapter.OnJobClick
                                         java.util.Map<String, Object> jobMap = (java.util.Map<String, Object>) map.get("jobDetail");
                                         JobDetail job = convertMapToJobDetail(jobMap);
                                         if (job != null) {
+                                            job.setSaved(true); // Đánh dấu là đã lưu
                                             loadedJobs.add(job);
                                         }
                                     }
@@ -151,7 +152,13 @@ public class SavedJobsFragment extends Fragment implements JobAdapter.OnJobClick
             }
 
             if (map.containsKey("ngayDang") && map.get("ngayDang") != null) {
-                job.setNgayDang(map.get("ngayDang").toString());
+                // Chuyển đổi ngày đăng từ định dạng server sang định dạng phù hợp
+                String ngayDang = map.get("ngayDang").toString();
+                // Nếu ngày có định dạng ISO (ví dụ: "2023-12-01T00:00:00" hoặc "2023-12-01T00:00:00.000+00:00")
+                if (ngayDang.contains("T")) {
+                    ngayDang = ngayDang.substring(0, 10); // Lấy phần ngày: "yyyy-MM-dd"
+                }
+                job.setNgayDang(ngayDang);
             }
 
             if (map.containsKey("luotXem") && map.get("luotXem") != null) {
