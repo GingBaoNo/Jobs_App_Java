@@ -23,16 +23,6 @@
             android:textStyle="bold"
             android:textColor="@android:color/black" />
 
-        <!-- Tên công ty -->
-        <TextView
-            android:id="@+id/tv_company_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Tên công ty"
-            android:textSize="14sp"
-            android:textColor="#666666"
-            android:layout_marginTop="4dp" />
-
         <!-- Mức lương -->
         <TextView
             android:id="@+id/tv_salary"

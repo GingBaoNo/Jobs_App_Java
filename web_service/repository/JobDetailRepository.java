@@ -244,4 +244,12 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
 
     // Tìm kiếm theo ID hình thức làm việc
     List<JobDetail> findByWorkType_MaHinhThuc(Integer maHinhThuc);
+
+    // Phương thức tìm kiếm công việc cùng công ty (ngoại trừ công việc hiện tại)
+    @Query("SELECT j FROM JobDetail j WHERE j.company = :company AND j.maCongViec != :currentJobId AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở'")
+    List<JobDetail> findByCompanyAndNotId(@Param("company") Company company, @Param("currentJobId") Integer currentJobId);
+
+    // Phương thức tìm kiếm công việc cùng lĩnh vực (ngoại trừ công việc hiện tại)
+    @Query("SELECT j FROM JobDetail j WHERE j.workField = :workField AND j.maCongViec != :currentJobId AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở'")
+    List<JobDetail> findByWorkFieldAndNotId(@Param("workField") WorkField workField, @Param("currentJobId") Integer currentJobId);
 }

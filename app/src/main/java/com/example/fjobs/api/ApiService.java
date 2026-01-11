@@ -193,8 +193,8 @@ public interface ApiService {
     @POST("v1/saved-jobs")
     Call<ApiResponse> saveJob(@Body SaveJobRequest request);
 
-    @DELETE("v1/saved-jobs")
-    Call<ApiResponse> unsaveJob(@Body UnsaveJobRequest request);
+    @DELETE("v1/saved-jobs/{jobId}")
+    Call<ApiResponse> unsaveJob(@Path("jobId") int jobId);
 
     @GET("v1/saved-jobs/check/{jobId}")
     Call<ApiResponse> checkIfJobSaved(@Path("jobId") int jobId);

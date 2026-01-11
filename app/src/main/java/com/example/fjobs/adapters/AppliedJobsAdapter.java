@@ -67,13 +67,12 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
     }
 
     public class AppliedJobViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvJobTitle, tvCompanyName, tvSalary, tvStatus, tvApplyDate, tvCvInfo;
+        private TextView tvJobTitle, tvSalary, tvStatus, tvApplyDate, tvCvInfo;
         private Button btnCancelApplication;
 
         public AppliedJobViewHolder(@NonNull View itemView) {
             super(itemView);
             tvJobTitle = itemView.findViewById(R.id.tv_job_title);
-            tvCompanyName = itemView.findViewById(R.id.tv_company_name);
             tvSalary = itemView.findViewById(R.id.tv_salary);
             tvStatus = itemView.findViewById(R.id.tv_status);
             tvApplyDate = itemView.findViewById(R.id.tv_apply_date);
@@ -85,9 +84,6 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
             if (appliedJob.getJobDetail() != null) {
                 tvJobTitle.setText(appliedJob.getJobDetail().getTieuDe() != null ?
                     appliedJob.getJobDetail().getTieuDe() : "Không xác định");
-                tvCompanyName.setText(appliedJob.getJobDetail().getCompany() != null &&
-                    appliedJob.getJobDetail().getCompany().getTenCongTy() != null ?
-                    appliedJob.getJobDetail().getCompany().getTenCongTy() : "N/A");
 
                 if (appliedJob.getJobDetail().getLuong() != null) {
                     tvSalary.setText(String.format("%,d VNĐ", appliedJob.getJobDetail().getLuong()));
@@ -96,7 +92,6 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
                 }
             } else {
                 tvJobTitle.setText("Công việc không xác định");
-                tvCompanyName.setText("N/A");
                 tvSalary.setText("N/A");
             }
 
@@ -120,6 +115,18 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
             } else {
                 tvCvInfo.setText("CV: Chưa nộp");
             }
+
+            // Xử lý sự kiện click vào item để chuyển sang trang chi tiết công việc
+            itemView.setOnClickListener(v -> {
+                if (appliedJob.getJobDetail() != null) {
+                    // Chuyển sang trang chi tiết công việc
+                    Intent intent = new Intent(context, JobDetailActivity.class);
+                    intent.putExtra("job_id", appliedJob.getJobDetail().getMaCongViec());
+                    context.startActivity(intent);
+                } else {
+                    Toast.makeText(context, "Không thể mở chi tiết công việc", Toast.LENGTH_SHORT).show();
+                }
+            });
 
             // Xử lý sự kiện hủy ứng tuyển
             btnCancelApplication.setOnClickListener(v -> {
@@ -168,27 +175,73 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
         }
 
         private void cancelApplication(int applicationId) {
+            // Thêm cơ chế chống nhấn nhanh
+            btnCancelApplication.setEnabled(false);
+            String originalText = btnCancelApplication.getText().toString();
+            btnCancelApplication.setText("Đang hủy...");
+
             Call<ApiResponse> call = apiService.cancelApplication(applicationId);
             call.enqueue(new Callback<ApiResponse>() {
                 @Override
                 public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        ApiResponse apiResponse = response.body();
-                        if (apiResponse.isSuccess()) {
-                            appliedJobs.remove(getAdapterPosition());
-                            notifyItemRemoved(getAdapterPosition());
-                            Toast.makeText(context, "Hủy ứng tuyển thành công", Toast.LENGTH_SHORT).show();
+                    // Luôn kích hoạt lại nút sau khi nhận phản hồi
+                    btnCancelApplication.setEnabled(true);
+                    btnCancelApplication.setText(originalText);
+
+                    if (response.isSuccessful()) {
+                        if (response.body() != null) {
+                            ApiResponse apiResponse = response.body();
+                            if (apiResponse.isSuccess()) {
+                                // Lấy vị trí hiện tại để đảm bảo xóa đúng item
+                                int position = getAdapterPosition();
+                                if (position != RecyclerView.NO_POSITION) {
+                                    appliedJobs.remove(position);
+                                    notifyItemRemoved(position);
+                                    Toast.makeText(context, "Hủy ứng tuyển thành công", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    // Nếu không lấy được vị trí, thử làm mới toàn bộ danh sách
+                                    Toast.makeText(context, "Hủy ứng tuyển thành công, vui lòng làm mới danh sách", Toast.LENGTH_LONG).show();
+                                }
+                            } else {
+                                String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Hủy ứng tuyển thất bại";
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                            }
                         } else {
-                            Toast.makeText(context, apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                            // Phản hồi thành công nhưng không có body
+                            // Có thể API trả về mã trạng thái 200 nhưng không có nội dung
+                            int position = getAdapterPosition();
+                            if (position != RecyclerView.NO_POSITION) {
+                                appliedJobs.remove(position);
+                                notifyItemRemoved(position);
+                                Toast.makeText(context, "Hủy ứng tuyển thành công", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(context, "Hủy ứng tuyển thành công, vui lòng làm mới danh sách", Toast.LENGTH_LONG).show();
+                            }
                         }
                     } else {
-                        Toast.makeText(context, "Không thể hủy ứng tuyển", Toast.LENGTH_SHORT).show();
+                        // Xử lý lỗi HTTP (mã trạng thái không phải 2xx)
+                        int statusCode = response.code();
+                        String errorBody = "";
+                        try {
+                            if (response.errorBody() != null) {
+                                errorBody = response.errorBody().string();
+                            }
+                        } catch (Exception e) {
+                            errorBody = "Lỗi không xác định";
+                        }
+                        Toast.makeText(context, "Lỗi " + statusCode + ": Không thể hủy ứng tuyển", Toast.LENGTH_LONG).show();
+                        System.out.println("API Error: " + errorBody);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    Toast.makeText(context, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    // Kích hoạt lại nút khi có lỗi kết nối
+                    btnCancelApplication.setEnabled(true);
+                    btnCancelApplication.setText(originalText);
+                    Toast.makeText(context, "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    System.out.println("Connection Error: " + t.getMessage());
+                    t.printStackTrace();
                 }
             });
         }

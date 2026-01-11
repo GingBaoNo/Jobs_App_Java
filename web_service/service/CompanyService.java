@@ -81,11 +81,11 @@ public class CompanyService {
         return companyRepository.existsByTenCongTy(tenCongTy);
     }
 
-    public Company registerCompany(User user, String tenCongTy, String tenNguoiDaiDien, String maSoThue, String diaChi, String lienHeCty) {
-        return registerCompany(user, tenCongTy, tenNguoiDaiDien, maSoThue, diaChi, lienHeCty, null);
+    public Company registerCompany(User user, String tenCongTy, String tenNguoiDaiDien, String maSoThue, String diaChi, String emailCty) {
+        return registerCompany(user, tenCongTy, tenNguoiDaiDien, maSoThue, diaChi, emailCty, null);
     }
 
-    public Company registerCompany(User user, String tenCongTy, String tenNguoiDaiDien, String maSoThue, String diaChi, String lienHeCty, String moTaCongTy) {
+    public Company registerCompany(User user, String tenCongTy, String tenNguoiDaiDien, String maSoThue, String diaChi, String emailCty, String moTaCongTy) {
         if (companyRepository.existsByTenCongTy(tenCongTy)) {
             throw new RuntimeException("Tên công ty đã tồn tại");
         }
@@ -94,7 +94,7 @@ public class CompanyService {
         company.setTenNguoiDaiDien(tenNguoiDaiDien);
         company.setMaSoThue(maSoThue);
         company.setDiaChi(diaChi);
-        company.setEmailCty(lienHeCty);
+        company.setEmailCty(emailCty);
         company.setDaXacThuc(false); // Chưa xác thực khi mới đăng ký
         company.setTrangThai("PENDING"); // Đặt trạng thái chờ duyệt
 
@@ -202,7 +202,7 @@ public class CompanyService {
         throw new RuntimeException("Company not found with id: " + companyId);
     }
 
-    public Company updateCompanyWithCoordinates(User user, String tenCongTy, String tenNguoiDaiDien, String maSoThue, String diaChi, String lienHeCty, String moTaCongTy, java.math.BigDecimal kinhDo, java.math.BigDecimal viDo) {
+    public Company updateCompanyWithCoordinates(User user, String tenCongTy, String tenNguoiDaiDien, String maSoThue, String diaChi, String emailCty, String moTaCongTy, java.math.BigDecimal kinhDo, java.math.BigDecimal viDo) {
         if (companyRepository.existsByTenCongTy(tenCongTy)) {
             throw new RuntimeException("Tên công ty đã tồn tại");
         }
@@ -211,7 +211,7 @@ public class CompanyService {
         company.setTenNguoiDaiDien(tenNguoiDaiDien);
         company.setMaSoThue(maSoThue);
         company.setDiaChi(diaChi);
-        company.setEmailCty(lienHeCty);
+        company.setEmailCty(emailCty);
         company.setDaXacThuc(false); // Chưa xác thực khi mới đăng ký
         company.setTrangThai("PENDING"); // Đặt trạng thái chờ duyệt
         company.setKinhDo(kinhDo);

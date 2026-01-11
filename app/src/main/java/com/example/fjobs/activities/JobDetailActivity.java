@@ -157,6 +157,10 @@ public class JobDetailActivity extends AppCompatActivity {
 
         btnSaveJob.setOnClickListener(v -> {
             if (isUserLoggedIn()) {
+                // Thêm cơ chế chống nhấn nhanh
+                v.setEnabled(false);
+                v.postDelayed(() -> v.setEnabled(true), 500); // Kích hoạt lại nút sau 500ms
+
                 if (isJobSaved) {
                     unsaveJob();
                 } else {
@@ -822,10 +826,8 @@ public class JobDetailActivity extends AppCompatActivity {
 
     // Phương thức hủy lưu công việc
     private void unsaveJob() {
-        ApiService.UnsaveJobRequest request = new ApiService.UnsaveJobRequest();
-        request.setJobDetailId(Integer.valueOf(jobId)); // Đảm bảo chuyển đổi sang Integer
+        Call<ApiResponse> call = apiService.unsaveJob(jobId); // Truyền trực tiếp jobId vào API
 
-        Call<ApiResponse> call = apiService.unsaveJob(request);
         call.enqueue(new retrofit2.Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
@@ -933,12 +935,12 @@ public class JobDetailActivity extends AppCompatActivity {
     private void updateApplyButtonState() {
         if (!isUserLoggedIn()) {
             // Người dùng chưa đăng nhập - hiển thị yêu cầu đăng nhập
-            btnApplyJob.setText("Ứng tuyển ngay (cần đăng nhập)");
+            btnApplyJob.setText("Ứng tuyển(cần đăng nhập)");
             btnApplyJob.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
                     android.graphics.Color.parseColor("#757575"))); // Màu xám
         } else {
             // Người dùng đã đăng nhập - hiển thị nút ứng tuyển bình thường
-            btnApplyJob.setText("Ứng tuyển ngay");
+            btnApplyJob.setText("Ứng tuyển");
             // Đặt lại màu sắc ban đầu (màu mặc định trong layout)
             btnApplyJob.setBackgroundTintList(null); // Sử dụng màu mặc định từ layout
         }

@@ -129,11 +129,10 @@ public class SavedJobsAdapter extends RecyclerView.Adapter<SavedJobsAdapter.Save
         }
 
         private void unsaveJob(SavedJob savedJob) {
-            ApiService.UnsaveJobRequest request = new ApiService.UnsaveJobRequest();
             if (savedJob.getJobDetail() != null && savedJob.getJobDetail().getMaCongViec() != null) {
-                request.setJobDetailId(savedJob.getJobDetail().getMaCongViec());
+                int jobId = savedJob.getJobDetail().getMaCongViec();
 
-                Call<ApiResponse> call = apiService.unsaveJob(request);
+                Call<ApiResponse> call = apiService.unsaveJob(jobId);
                 call.enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {

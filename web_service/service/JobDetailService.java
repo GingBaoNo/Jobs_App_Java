@@ -313,4 +313,33 @@ public class JobDetailService {
     public List<JobDetail> getJobsByExperienceLevelId(Integer experienceLevelId) {
         return jobDetailRepository.findByExperienceLevel_MaCapDo(experienceLevelId);
     }
+
+    // Phương thức lấy các công việc liên quan (cùng công ty hoặc cùng lĩnh vực)
+    public List<JobDetail> getRelatedJobs(JobDetail currentJob, int limit) {
+        List<JobDetail> relatedJobs = new java.util.ArrayList<>();
+
+        // Lấy công việc cùng công ty (ngoại trừ công việc hiện tại)
+        if (currentJob.getCompany() != null) {
+            relatedJobs = jobDetailRepository.findByCompanyAndNotId(currentJob.getCompany(), currentJob.getMaCongViec());
+        }
+
+        // Nếu chưa đủ, thêm các công việc cùng lĩnh vực (ngoại trừ công việc hiện tại và các công việc đã có)
+        if (relatedJobs.size() < limit && currentJob.getWorkField() != null) {
+            List<JobDetail> fieldJobs = jobDetailRepository.findByWorkFieldAndNotId(currentJob.getWorkField(), currentJob.getMaCongViec());
+
+            // Lọc ra các công việc chưa có trong danh sách liên quan
+            for (JobDetail job : fieldJobs) {
+                if (!relatedJobs.contains(job) && relatedJobs.size() < limit) {
+                    relatedJobs.add(job);
+                }
+            }
+        }
+
+        // Giới hạn số lượng công việc trả về
+        if (relatedJobs.size() > limit) {
+            relatedJobs = relatedJobs.subList(0, limit);
+        }
+
+        return relatedJobs;
+    }
 }

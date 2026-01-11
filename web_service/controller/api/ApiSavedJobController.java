@@ -78,9 +78,15 @@ public class ApiSavedJobController {
         return ApiResponseUtil.success("My saved jobs retrieved successfully", savedJobs);
     }
 
-    // Xóa công việc đã lưu theo công việc (hủy lưu)
+    // Xóa công việc đã lưu theo công việc (hủy lưu) - phương thức cũ với request body
     @DeleteMapping
     public ResponseEntity<?> unsaveJob(@RequestBody UnsaveJobRequest request) {
+        return unsaveJobById(request.getJobDetailId());
+    }
+
+    // Xóa công việc đã lưu theo công việc (hủy lưu) - phương thức mới với path variable
+    @DeleteMapping("/{jobId}")
+    public ResponseEntity<?> unsaveJobById(@PathVariable Integer jobId) {
         // Lấy thông tin người dùng hiện tại
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
@@ -93,14 +99,16 @@ public class ApiSavedJobController {
             return ApiResponseUtil.error("User not found");
         }
 
-        JobDetail jobDetail = jobDetailService.getJobById(request.getJobDetailId());
+        JobDetail jobDetail = jobDetailService.getJobById(jobId);
         if (jobDetail == null) {
-            return ApiResponseUtil.error("Job detail not found with id: " + request.getJobDetailId());
+            return ApiResponseUtil.error("Job detail not found with id: " + jobId);
         }
 
         try {
             savedJobService.removeSavedJob(user.get(), jobDetail);
             return ApiResponseUtil.success("Job removed from saved jobs successfully", null);
+        } catch (RuntimeException e) {
+            return ApiResponseUtil.error(e.getMessage());
         } catch (Exception e) {
             return ApiResponseUtil.error("Error removing saved job: " + e.getMessage());
         }

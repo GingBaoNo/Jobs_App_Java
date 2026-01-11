@@ -275,7 +275,7 @@ public class EmployerController {
                                 @RequestParam("diaChi") String diaChi,
                                 @RequestParam("moTaCongTy") String moTaCongTy,
                                 @RequestParam("maSoThue") String maSoThue,
-                                @RequestParam("lienHeCty") String lienHeCty,
+                                @RequestParam("emailCty") String emailCty,
                                 @RequestParam(value = "kinhDo", required = false) Double kinhDo,
                                 @RequestParam(value = "viDo", required = false) Double viDo,
                                 @RequestParam(value = "logoFile", required = false) MultipartFile logoFile, // Thêm logo file, có thể không có
@@ -314,7 +314,7 @@ public class EmployerController {
         existingCompany.setDiaChi(diaChi);
         existingCompany.setMoTaCongTy(moTaCongTy);
         existingCompany.setMaSoThue(maSoThue);
-        existingCompany.setEmailCty(lienHeCty);
+        existingCompany.setEmailCty(emailCty);
 
         // Cập nhật tọa độ nếu có
         if (kinhDo != null && viDo != null) {

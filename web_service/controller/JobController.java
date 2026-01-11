@@ -618,11 +618,15 @@ public class JobController {
             model.addAttribute("errorMessage", "Công việc không tồn tại hoặc chưa được duyệt.");
             return "public/jobs";
         }
-        
+
         // Tăng số lượt xem
         jobDetailService.incrementViewCount(job);
-        
+
+        // Lấy các công việc liên quan (cùng lĩnh vực và công ty)
+        List<JobDetail> relatedJobs = jobDetailService.getRelatedJobs(job, 6); // Lấy tối đa 6 công việc liên quan
+
         model.addAttribute("job", job);
+        model.addAttribute("relatedJobs", relatedJobs);
         model.addAttribute("title", job.getTieuDe());
         return "public/job-detail";
     }

@@ -60,7 +60,6 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
     public class JobViewHolder extends RecyclerView.ViewHolder {
         private ImageView ivCompanyLogo;
-        private ImageView ivBookmark;
         private TextView tvJobTitle;
         private TextView tvCompanyName;
         private TextView tvCategoryTag;
@@ -71,21 +70,12 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
         public JobViewHolder(@NonNull View itemView) {
             super(itemView);
             ivCompanyLogo = itemView.findViewById(R.id.iv_company_logo);
-            ivBookmark = itemView.findViewById(R.id.iv_bookmark);
             tvJobTitle = itemView.findViewById(R.id.tv_job_title);
             tvCompanyName = itemView.findViewById(R.id.tv_company_name);
             tvCategoryTag = itemView.findViewById(R.id.tv_category_tag);
             tvLocationTag = itemView.findViewById(R.id.tv_location_tag);
             tvTimeAgo = itemView.findViewById(R.id.tv_time_ago);
             tvSalary = itemView.findViewById(R.id.tv_salary);
-
-            // Xử lý sự kiện click cho bookmark
-            ivBookmark.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    toggleBookmark(position);
-                }
-            });
 
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -149,18 +139,6 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
                 tvSalary.setText(salaryText);
             } else {
                 tvSalary.setText("Thương lượng");
-            }
-
-            // Cập nhật trạng thái bookmark
-            updateBookmarkIcon(job.isSaved());
-        }
-
-        // Cập nhật icon bookmark dựa trên trạng thái
-        private void updateBookmarkIcon(boolean isBookmarked) {
-            if (isBookmarked) {
-                ivBookmark.setImageResource(R.drawable.ic_bookmark2); // Trạng thái đã lưu
-            } else {
-                ivBookmark.setImageResource(R.drawable.ic_bookmark); // Trạng thái chưa lưu
             }
         }
 
@@ -235,83 +213,6 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
                 // Nếu không thể phân tích ngày, trả về giá trị mặc định
                 return "Mới đăng";
             }
-        }
-
-        // Phương thức toggle bookmark
-        private void toggleBookmark(int position) {
-            JobDetail job = jobList.get(position);
-
-            // Đảo ngược trạng thái bookmark
-            boolean isBookmarked = job.isSaved();
-            int jobId = job.getMaCongViec();
-
-            if (isBookmarked) {
-                // Gọi API hủy lưu việc làm
-                unsaveJob(jobId, position);
-            } else {
-                // Gọi API lưu việc làm
-                saveJob(jobId, position);
-            }
-        }
-
-        // Gọi API lưu việc làm
-        private void saveJob(int jobId, int position) {
-            com.example.fjobs.api.ApiService.SaveJobRequest request = new com.example.fjobs.api.ApiService.SaveJobRequest();
-            request.setJobDetailId(jobId);
-
-            Call<ApiResponse> call = apiService.saveJob(request);
-            call.enqueue(new Callback<ApiResponse>() {
-                @Override
-                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        // Cập nhật trạng thái trong model
-                        JobDetail job = jobList.get(position);
-                        job.setSaved(true);
-
-                        // Cập nhật lại icon bookmark
-                        updateBookmarkIcon(true);
-
-                        Toast.makeText(context, "Đã lưu công việc", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(context, "Lưu công việc thất bại", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    Toast.makeText(context, "Lỗi kết nối khi lưu công việc", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-
-        // Gọi API hủy lưu việc làm
-        private void unsaveJob(int jobId, int position) {
-            com.example.fjobs.api.ApiService.UnsaveJobRequest request = new com.example.fjobs.api.ApiService.UnsaveJobRequest();
-            request.setJobDetailId(jobId);
-
-            Call<ApiResponse> call = apiService.unsaveJob(request);
-            call.enqueue(new Callback<ApiResponse>() {
-                @Override
-                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        // Cập nhật trạng thái trong model
-                        JobDetail job = jobList.get(position);
-                        job.setSaved(false);
-
-                        // Cập nhật lại icon bookmark
-                        updateBookmarkIcon(false);
-
-                        Toast.makeText(context, "Đã bỏ lưu công việc", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(context, "Bỏ lưu công việc thất bại", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    Toast.makeText(context, "Lỗi kết nối khi bỏ lưu công việc", Toast.LENGTH_SHORT).show();
-                }
-            });
         }
     }
 }

@@ -60,6 +60,10 @@ public class SavedJobService {
     
     public void removeSavedJob(User user, JobDetail jobDetail) {
         Optional<SavedJob> existingSaved = savedJobRepository.findByUserAndJobDetail(user, jobDetail);
-        existingSaved.ifPresent(savedJobRepository::delete);
+        if (existingSaved.isPresent()) {
+            savedJobRepository.deleteById(existingSaved.get().getMaCvDaLuu());
+        } else {
+            throw new RuntimeException("Công việc chưa được lưu, không thể bỏ lưu");
+        }
     }
 }
