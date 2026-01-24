@@ -13,6 +13,7 @@ import com.example.fjobs.R;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
+import com.example.fjobs.models.CvProfile;
 import com.example.fjobs.models.JobDetail;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -632,7 +633,7 @@ public class JobDetailActivity extends AppCompatActivity {
 
             // Load logo công ty nếu có
             if (job.getCompany().getHinhAnhCty() != null && !job.getCompany().getHinhAnhCty().isEmpty()) {
-                String logoUrl = "http://192.168.102.19:8080" + job.getCompany().getHinhAnhCty();
+                String logoUrl = "http://192.168.1.8:8080" + job.getCompany().getHinhAnhCty();
                 Glide.with(this)
                     .load(logoUrl)
                     .placeholder(R.drawable.ic_boss)
@@ -742,6 +743,99 @@ public class JobDetailActivity extends AppCompatActivity {
             return;
         }
 
+        // Hiển thị dialog chọn hồ sơ CV để ứng tuyển
+        showCvSelectionDialog();
+    }
+
+    private void showCvSelectionDialog() {
+        // Gọi API để lấy danh sách hồ sơ CV của người dùng
+        Call<ApiResponse> call = apiService.getMyCvProfiles();
+        call.enqueue(new retrofit2.Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Chuyển đổi dữ liệu từ API sang danh sách CvProfile
+                        if (apiResponse.getData() instanceof java.util.List) {
+                            java.util.List<?> rawList = (java.util.List<?>) apiResponse.getData();
+                            java.util.List<CvProfile> cvProfiles = new java.util.ArrayList<>();
+
+                            for (Object obj : rawList) {
+                                if (obj instanceof java.util.Map) {
+                                    java.util.Map<String, Object> map = (java.util.Map<String, Object>) obj;
+                                    CvProfile profile = convertMapToCvProfile(map);
+                                    if (profile != null) {
+                                        cvProfiles.add(profile);
+                                    }
+                                }
+                            }
+
+                            // Hiển thị dialog chọn hồ sơ
+                            showCvSelectionDialog(cvProfiles);
+                        }
+                    } else {
+                        String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Lỗi khi tải danh sách hồ sơ";
+                        Toast.makeText(JobDetailActivity.this, message, Toast.LENGTH_SHORT).show();
+
+                        // Nếu không có hồ sơ CV, ứng tuyển với hồ sơ mặc định
+                        applyWithDefaultProfile();
+                    }
+                } else {
+                    Toast.makeText(JobDetailActivity.this, "Không thể kết nối đến máy chủ", Toast.LENGTH_SHORT).show();
+
+                    // Nếu không thể lấy danh sách CV, ứng tuyển với hồ sơ mặc định
+                    applyWithDefaultProfile();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Toast.makeText(JobDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+
+                // Nếu lỗi kết nối, ứng tuyển với hồ sơ mặc định
+                applyWithDefaultProfile();
+            }
+        });
+    }
+
+    private void showCvSelectionDialog(java.util.List<CvProfile> cvProfiles) {
+        if (cvProfiles.isEmpty()) {
+            // Nếu không có hồ sơ nào, chuyển đến màn hình tạo hồ sơ
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Chưa có hồ sơ CV")
+                    .setMessage("Bạn chưa có hồ sơ CV nào. Bạn có muốn tạo hồ sơ mới không?")
+                    .setPositiveButton("Tạo mới", (dialog, which) -> {
+                        // Chuyển đến màn hình tạo hồ sơ CV
+                        Intent intent = new Intent(JobDetailActivity.this, CvProfileManagementActivity.class);
+                        startActivity(intent);
+                    })
+                    .setNegativeButton("Hủy", null)
+                    .show();
+            return;
+        }
+
+        // Chuẩn bị danh sách tên hồ sơ để hiển thị trong dialog
+        java.util.List<String> profileNames = new java.util.ArrayList<>();
+        for (CvProfile profile : cvProfiles) {
+            profileNames.add(profile.getTenHoSo() + (profile.getLaMacDinh() != null && profile.getLaMacDinh() ? " (Mặc định)" : ""));
+        }
+
+        String[] profileArray = profileNames.toArray(new String[0]);
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Chọn hồ sơ để ứng tuyển")
+                .setItems(profileArray, (dialog, which) -> {
+                    // Ứng tuyển với hồ sơ được chọn
+                    CvProfile selectedProfile = cvProfiles.get(which);
+                    applyWithSpecificProfile(selectedProfile.getMaHoSoCv());
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void applyWithDefaultProfile() {
+        // Ứng tuyển với hồ sơ mặc định (cũ)
         ApiService.AppliedJobRequest request = new ApiService.AppliedJobRequest();
         request.setJobDetailId(Integer.valueOf(jobId)); // Đảm bảo chuyển đổi sang Integer
 
@@ -779,6 +873,212 @@ public class JobDetailActivity extends AppCompatActivity {
                 t.printStackTrace();
             }
         });
+    }
+
+    private void applyWithSpecificProfile(Integer cvProfileId) {
+        // Ứng tuyển với hồ sơ cụ thể
+        ApiService.AppliedJobWithCvProfileRequest request = new ApiService.AppliedJobWithCvProfileRequest();
+        request.setJobDetailId(Integer.valueOf(jobId));
+        request.setCvProfileId(cvProfileId);
+
+        Call<ApiResponse> call = apiService.applyForJobWithCvProfile(request);
+        call.enqueue(new retrofit2.Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    Boolean success = apiResponse.isSuccess();
+                    if (success != null && success) {
+                        Toast.makeText(JobDetailActivity.this, "Ứng tuyển thành công với hồ sơ '" +
+                                getCurrentCvProfileName(cvProfileId) + "'!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Ứng tuyển thất bại";
+                        Toast.makeText(JobDetailActivity.this, message, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Thử in ra mã lỗi cụ thể để debug
+                    int statusCode = response.code();
+                    String errorBody = "Lỗi ứng tuyển: " + statusCode;
+                    try {
+                        errorBody = response.errorBody().string();
+                    } catch (Exception e) {
+                        System.out.println("Error reading error body: " + e.getMessage());
+                    }
+                    Toast.makeText(JobDetailActivity.this, "Lỗi API: " + statusCode + " - " + errorBody, Toast.LENGTH_SHORT).show();
+                    System.out.println("API Error: " + errorBody);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Toast.makeText(JobDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                System.out.println("Connection Error: " + t.getMessage());
+                t.printStackTrace();
+            }
+        });
+    }
+
+    private String getCurrentCvProfileName(Integer cvProfileId) {
+        // Trong thực tế, bạn sẽ cần có một cách để lưu trữ và truy xuất tên hồ sơ
+        // Tuy nhiên, để đơn giản, chúng ta có thể trả về một tên mặc định
+        // hoặc lưu trữ danh sách hồ sơ trong một biến lớp
+        if (cvProfileId != null) {
+            return "Hồ sơ #" + cvProfileId;
+        }
+        return "Hồ sơ";
+    }
+
+    private CvProfile convertMapToCvProfile(java.util.Map<String, Object> map) {
+        try {
+            CvProfile profile = new CvProfile();
+
+            if (map.containsKey("maHoSoCv")) {
+                Object idObj = map.get("maHoSoCv");
+                if (idObj instanceof Integer) {
+                    profile.setMaHoSoCv((Integer) idObj);
+                } else if (idObj instanceof Double) {
+                    profile.setMaHoSoCv(((Double) idObj).intValue());
+                } else {
+                    profile.setMaHoSoCv(Integer.parseInt(idObj.toString()));
+                }
+            }
+
+            if (map.containsKey("maNguoiTimViec")) {
+                Object userIdObj = map.get("maNguoiTimViec");
+                if (userIdObj != null) {
+                    if (userIdObj instanceof Integer) {
+                        profile.setMaNguoiTimViec((Integer) userIdObj);
+                    } else if (userIdObj instanceof Double) {
+                        profile.setMaNguoiTimViec(((Double) userIdObj).intValue());
+                    } else {
+                        profile.setMaNguoiTimViec(Integer.parseInt(userIdObj.toString()));
+                    }
+                }
+            }
+
+            if (map.containsKey("tenHoSo") && map.get("tenHoSo") != null) {
+                profile.setTenHoSo(map.get("tenHoSo").toString());
+            }
+
+            if (map.containsKey("moTa") && map.get("moTa") != null) {
+                profile.setMoTa(map.get("moTa").toString());
+            }
+
+            if (map.containsKey("urlAnhDaiDien") && map.get("urlAnhDaiDien") != null) {
+                profile.setUrlAnhDaiDien(map.get("urlAnhDaiDien").toString());
+            }
+
+            if (map.containsKey("hoTen") && map.get("hoTen") != null) {
+                profile.setHoTen(map.get("hoTen").toString());
+            }
+
+            if (map.containsKey("gioiTinh") && map.get("gioiTinh") != null) {
+                profile.setGioiTinh(map.get("gioiTinh").toString());
+            }
+
+            if (map.containsKey("ngaySinh") && map.get("ngaySinh") != null) {
+                profile.setNgaySinh(map.get("ngaySinh").toString());
+            }
+
+            if (map.containsKey("soDienThoai") && map.get("soDienThoai") != null) {
+                profile.setSoDienThoai(map.get("soDienThoai").toString());
+            }
+
+            if (map.containsKey("trinhDoHocVan") && map.get("trinhDoHocVan") != null) {
+                profile.setTrinhDoHocVan(map.get("trinhDoHocVan").toString());
+            }
+
+            if (map.containsKey("tinhTrangHocVan") && map.get("tinhTrangHocVan") != null) {
+                profile.setTinhTrangHocVan(map.get("tinhTrangHocVan").toString());
+            }
+
+            if (map.containsKey("kinhNghiem") && map.get("kinhNghiem") != null) {
+                profile.setKinhNghiem(map.get("kinhNghiem").toString());
+            }
+
+            if (map.containsKey("tongNamKinhNghiem") && map.get("tongNamKinhNghiem") != null) {
+                Object expObj = map.get("tongNamKinhNghiem");
+                if (expObj instanceof Double) {
+                    profile.setTongNamKinhNghiem(java.math.BigDecimal.valueOf((Double) expObj));
+                } else if (expObj instanceof Integer) {
+                    profile.setTongNamKinhNghiem(java.math.BigDecimal.valueOf((Integer) expObj));
+                } else {
+                    profile.setTongNamKinhNghiem(new java.math.BigDecimal(expObj.toString()));
+                }
+            }
+
+            if (map.containsKey("gioiThieuBanThan") && map.get("gioiThieuBanThan") != null) {
+                profile.setGioiThieuBanThan(map.get("gioiThieuBanThan").toString());
+            }
+
+            if (map.containsKey("urlCv") && map.get("urlCv") != null) {
+                profile.setUrlCv(map.get("urlCv").toString());
+            }
+
+            if (map.containsKey("congKhai")) {
+                Object publicObj = map.get("congKhai");
+                if (publicObj instanceof Boolean) {
+                    profile.setCongKhai((Boolean) publicObj);
+                } else {
+                    profile.setCongKhai(Boolean.parseBoolean(publicObj.toString()));
+                }
+            }
+
+            if (map.containsKey("viTriMongMuon") && map.get("viTriMongMuon") != null) {
+                profile.setViTriMongMuon(map.get("viTriMongMuon").toString());
+            }
+
+            if (map.containsKey("thoiGianMongMuon") && map.get("thoiGianMongMuon") != null) {
+                profile.setThoiGianMongMuon(map.get("thoiGianMongMuon").toString());
+            }
+
+            if (map.containsKey("loaiThoiGianLamViec") && map.get("loaiThoiGianLamViec") != null) {
+                profile.setLoaiThoiGianLamViec(map.get("loaiThoiGianLamViec").toString());
+            }
+
+            if (map.containsKey("hinhThucLamViec") && map.get("hinhThucLamViec") != null) {
+                profile.setHinhThucLamViec(map.get("hinhThucLamViec").toString());
+            }
+
+            if (map.containsKey("loaiLuongMongMuon") && map.get("loaiLuongMongMuon") != null) {
+                profile.setLoaiLuongMongMuon(map.get("loaiLuongMongMuon").toString());
+            }
+
+            if (map.containsKey("mucLuongMongMuon")) {
+                Object salaryObj = map.get("mucLuongMongMuon");
+                if (salaryObj != null) {
+                    if (salaryObj instanceof Integer) {
+                        profile.setMucLuongMongMuon((Integer) salaryObj);
+                    } else if (salaryObj instanceof Double) {
+                        profile.setMucLuongMongMuon(((Double) salaryObj).intValue());
+                    } else {
+                        profile.setMucLuongMongMuon(Integer.parseInt(salaryObj.toString()));
+                    }
+                }
+            }
+
+            if (map.containsKey("ngayTao") && map.get("ngayTao") != null) {
+                profile.setNgayTao(map.get("ngayTao").toString());
+            }
+
+            if (map.containsKey("ngayCapNhat") && map.get("ngayCapNhat") != null) {
+                profile.setNgayCapNhat(map.get("ngayCapNhat").toString());
+            }
+
+            if (map.containsKey("laMacDinh")) {
+                Object defaultObj = map.get("laMacDinh");
+                if (defaultObj instanceof Boolean) {
+                    profile.setLaMacDinh((Boolean) defaultObj);
+                } else {
+                    profile.setLaMacDinh(Boolean.parseBoolean(defaultObj.toString()));
+                }
+            }
+
+            return profile;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     // Phương thức lưu công việc

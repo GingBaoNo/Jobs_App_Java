@@ -24,6 +24,9 @@ public class AppliedJob {
     @SerializedName("urlCvUngTuyen")
     private String urlCvUngTuyen;
 
+    @SerializedName("cvProfile")
+    private CvProfile cvProfile;
+
     // Constructors
     public AppliedJob() {}
 
@@ -82,5 +85,13 @@ public class AppliedJob {
 
     public void setUrlCvUngTuyen(String urlCvUngTuyen) {
         this.urlCvUngTuyen = urlCvUngTuyen;
+    }
+
+    public CvProfile getCvProfile() {
+        return cvProfile;
+    }
+
+    public void setCvProfile(CvProfile cvProfile) {
+        this.cvProfile = cvProfile;
     }
 }

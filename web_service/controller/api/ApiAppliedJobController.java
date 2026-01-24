@@ -2,10 +2,12 @@ package com.example.demo.controller.api;
 
 import com.example.demo.entity.AppliedJob;
 import com.example.demo.entity.Company;
+import com.example.demo.entity.CvProfile;
 import com.example.demo.entity.JobDetail;
 import com.example.demo.entity.Profile;
 import com.example.demo.entity.User;
 import com.example.demo.service.AppliedJobService;
+import com.example.demo.service.CvProfileService;
 import com.example.demo.service.JobDetailService;
 import com.example.demo.service.ProfileService;
 import com.example.demo.service.UserService;
@@ -38,6 +40,9 @@ public class ApiAppliedJobController {
     @Autowired
     private ProfileService profileService;
 
+    @Autowired
+    private CvProfileService cvProfileService;
+
     // Ứng tuyển vào công việc
     @PostMapping
     public ResponseEntity<?> applyForJob(@RequestBody AppliedJobRequest request) {
@@ -60,6 +65,39 @@ public class ApiAppliedJobController {
 
         try {
             AppliedJob appliedJob = appliedJobService.applyForJob(user.get(), jobDetail);
+            return ApiResponseUtil.created(appliedJob);
+        } catch (RuntimeException e) {
+            return ApiResponseUtil.error(e.getMessage());
+        }
+    }
+
+    // Ứng tuyển vào công việc với hồ sơ CV cụ thể
+    @PostMapping("/apply-with-cv-profile")
+    public ResponseEntity<?> applyForJobWithCvProfile(@RequestBody ApplyWithCvProfileRequest request) {
+        // Lấy thông tin người dùng hiện tại
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ApiResponseUtil.error("User not authenticated");
+        }
+
+        String username = authentication.getName();
+        Optional<User> user = userService.getUserByTaiKhoan(username);
+        if (!user.isPresent()) {
+            return ApiResponseUtil.error("User not found");
+        }
+
+        JobDetail jobDetail = jobDetailService.getJobById(request.getJobDetailId());
+        if (jobDetail == null) {
+            return ApiResponseUtil.error("Job detail not found with id: " + request.getJobDetailId());
+        }
+
+        try {
+            CvProfile cvProfile = cvProfileService.getCvProfileById(request.getCvProfileId(), user.get());
+            if (cvProfile == null) {
+                return ApiResponseUtil.error("CV Profile not found with id: " + request.getCvProfileId());
+            }
+
+            AppliedJob appliedJob = appliedJobService.applyForJobWithCvProfile(user.get(), jobDetail, cvProfile);
             return ApiResponseUtil.created(appliedJob);
         } catch (RuntimeException e) {
             return ApiResponseUtil.error(e.getMessage());
@@ -197,10 +235,41 @@ public class ApiAppliedJobController {
         try {
             Map<String, Object> response = new java.util.HashMap<>();
 
-            // Xử lý fallback CV: nếu không có trong applied_job, lấy từ profile
+            // Xử lý fallback CV: nếu không có trong applied_job, lấy từ hồ sơ CV hoặc profile
             String cvUrl = updatedAppliedJob.getUrlCvUngTuyen();
-            if (cvUrl == null || cvUrl.isEmpty()) {
-                // Lấy từ profile nếu có
+            Map<String, Object> cvProfileInfo = null;
+
+            if (updatedAppliedJob.getCvProfile() != null) {
+                // Nếu ứng viên sử dụng hồ sơ CV cụ thể khi ứng tuyển
+                CvProfile cvProfile = updatedAppliedJob.getCvProfile();
+                cvProfileInfo = new java.util.HashMap<>();
+                cvProfileInfo.put("maHoSoCv", cvProfile.getMaHoSoCv());
+                cvProfileInfo.put("tenHoSo", cvProfile.getTenHoSo());
+                cvProfileInfo.put("moTa", cvProfile.getMoTa());
+                cvProfileInfo.put("hoTen", cvProfile.getHoTen());
+                cvProfileInfo.put("gioiTinh", cvProfile.getGioiTinh());
+                cvProfileInfo.put("ngaySinh", cvProfile.getNgaySinh());
+                cvProfileInfo.put("soDienThoai", cvProfile.getSoDienThoai());
+                cvProfileInfo.put("trinhDoHocVan", cvProfile.getTrinhDoHocVan());
+                cvProfileInfo.put("tinhTrangHocVan", cvProfile.getTinhTrangHocVan());
+                cvProfileInfo.put("kinhNghiem", cvProfile.getKinhNghiem());
+                cvProfileInfo.put("tongNamKinhNghiem", cvProfile.getTongNamKinhNghiem());
+                cvProfileInfo.put("gioiThieuBanThan", cvProfile.getGioiThieuBanThan());
+                cvProfileInfo.put("urlAnhDaiDien", cvProfile.getUrlAnhDaiDien());
+                cvProfileInfo.put("urlCv", cvProfile.getUrlCv());
+                cvProfileInfo.put("viTriMongMuon", cvProfile.getViTriMongMuon());
+                cvProfileInfo.put("thoiGianMongMuon", cvProfile.getThoiGianMongMuon());
+                cvProfileInfo.put("loaiThoiGianLamViec", cvProfile.getLoaiThoiGianLamViec());
+                cvProfileInfo.put("hinhThucLamViec", cvProfile.getHinhThucLamViec());
+                cvProfileInfo.put("loaiLuongMongMuon", cvProfile.getLoaiLuongMongMuon());
+                cvProfileInfo.put("mucLuongMongMuon", cvProfile.getMucLuongMongMuon());
+
+                // Ưu tiên sử dụng CV từ hồ sơ CV nếu có
+                if (cvUrl == null || cvUrl.isEmpty()) {
+                    cvUrl = cvProfile.getUrlCv();
+                }
+            } else if (cvUrl == null || cvUrl.isEmpty()) {
+                // Nếu không có hồ sơ CV cụ thể và không có CV trong applied_job, lấy từ profile
                 Optional<Profile> profileOpt = profileService.getProfileByUser(updatedAppliedJob.getEmployee());
                 if (profileOpt.isPresent() && profileOpt.get().getUrlCv() != null) {
                     cvUrl = profileOpt.get().getUrlCv();
@@ -208,6 +277,7 @@ public class ApiAppliedJobController {
             }
 
             response.put("cvUrl", cvUrl);
+            response.put("cvProfile", cvProfileInfo); // Thêm thông tin hồ sơ CV nếu có
             response.put("trangThaiUngTuyen", updatedAppliedJob.getTrangThaiUngTuyen());
             response.put("danhGiaNtd", updatedAppliedJob.getDanhGiaNtd());
             response.put("ngayUngTuyen", updatedAppliedJob.getNgayUngTuyen());
@@ -269,6 +339,34 @@ public class ApiAppliedJobController {
                 jobInfo.put("ngayUngTuyen", job.getNgayUngTuyen());
                 jobInfo.put("urlCvUngTuyen", job.getUrlCvUngTuyen());
 
+                // Thêm thông tin hồ sơ CV nếu có
+                if (job.getCvProfile() != null) {
+                    CvProfile cvProfile = job.getCvProfile();
+                    Map<String, Object> cvProfileInfo = new java.util.HashMap<>();
+                    cvProfileInfo.put("maHoSoCv", cvProfile.getMaHoSoCv());
+                    cvProfileInfo.put("tenHoSo", cvProfile.getTenHoSo());
+                    cvProfileInfo.put("moTa", cvProfile.getMoTa());
+                    cvProfileInfo.put("hoTen", cvProfile.getHoTen());
+                    cvProfileInfo.put("gioiTinh", cvProfile.getGioiTinh());
+                    cvProfileInfo.put("ngaySinh", cvProfile.getNgaySinh());
+                    cvProfileInfo.put("soDienThoai", cvProfile.getSoDienThoai());
+                    cvProfileInfo.put("trinhDoHocVan", cvProfile.getTrinhDoHocVan());
+                    cvProfileInfo.put("tinhTrangHocVan", cvProfile.getTinhTrangHocVan());
+                    cvProfileInfo.put("kinhNghiem", cvProfile.getKinhNghiem());
+                    cvProfileInfo.put("tongNamKinhNghiem", cvProfile.getTongNamKinhNghiem());
+                    cvProfileInfo.put("gioiThieuBanThan", cvProfile.getGioiThieuBanThan());
+                    cvProfileInfo.put("urlAnhDaiDien", cvProfile.getUrlAnhDaiDien());
+                    cvProfileInfo.put("urlCv", cvProfile.getUrlCv());
+                    cvProfileInfo.put("viTriMongMuon", cvProfile.getViTriMongMuon());
+                    cvProfileInfo.put("thoiGianMongMuon", cvProfile.getThoiGianMongMuon());
+                    cvProfileInfo.put("loaiThoiGianLamViec", cvProfile.getLoaiThoiGianLamViec());
+                    cvProfileInfo.put("hinhThucLamViec", cvProfile.getHinhThucLamViec());
+                    cvProfileInfo.put("loaiLuongMongMuon", cvProfile.getLoaiLuongMongMuon());
+                    cvProfileInfo.put("mucLuongMongMuon", cvProfile.getMucLuongMongMuon());
+
+                    jobInfo.put("cvProfile", cvProfileInfo);
+                }
+
                 // Thêm thông tin công việc
                 JobDetail jobDetail = job.getJobDetail();
                 jobInfo.put("jobDetail", Map.of(
@@ -328,7 +426,57 @@ public class ApiAppliedJobController {
 
         try {
             List<AppliedJob> appliedJobs = appliedJobService.getAppliedJobsByJobDetail(jobDetail);
-            return ApiResponseUtil.success("Applicants retrieved successfully", appliedJobs);
+            // Chuyển đổi danh sách ứng viên để bao gồm thông tin hồ sơ CV
+            List<Map<String, Object>> result = appliedJobs.stream().map(appliedJob -> {
+                Map<String, Object> jobInfo = new java.util.HashMap<>();
+                jobInfo.put("maUngTuyen", appliedJob.getMaUngTuyen());
+                jobInfo.put("trangThaiUngTuyen", appliedJob.getTrangThaiUngTuyen());
+                jobInfo.put("danhGiaNtd", appliedJob.getDanhGiaNtd());
+                jobInfo.put("ngayUngTuyen", appliedJob.getNgayUngTuyen());
+                jobInfo.put("urlCvUngTuyen", appliedJob.getUrlCvUngTuyen());
+
+                // Thêm thông tin hồ sơ CV nếu có
+                if (appliedJob.getCvProfile() != null) {
+                    CvProfile cvProfile = appliedJob.getCvProfile();
+                    Map<String, Object> cvProfileInfo = new java.util.HashMap<>();
+                    cvProfileInfo.put("maHoSoCv", cvProfile.getMaHoSoCv());
+                    cvProfileInfo.put("tenHoSo", cvProfile.getTenHoSo());
+                    cvProfileInfo.put("moTa", cvProfile.getMoTa());
+                    cvProfileInfo.put("hoTen", cvProfile.getHoTen());
+                    cvProfileInfo.put("gioiTinh", cvProfile.getGioiTinh());
+                    cvProfileInfo.put("ngaySinh", cvProfile.getNgaySinh());
+                    cvProfileInfo.put("soDienThoai", cvProfile.getSoDienThoai());
+                    cvProfileInfo.put("trinhDoHocVan", cvProfile.getTrinhDoHocVan());
+                    cvProfileInfo.put("tinhTrangHocVan", cvProfile.getTinhTrangHocVan());
+                    cvProfileInfo.put("kinhNghiem", cvProfile.getKinhNghiem());
+                    cvProfileInfo.put("tongNamKinhNghiem", cvProfile.getTongNamKinhNghiem());
+                    cvProfileInfo.put("gioiThieuBanThan", cvProfile.getGioiThieuBanThan());
+                    cvProfileInfo.put("urlAnhDaiDien", cvProfile.getUrlAnhDaiDien());
+                    cvProfileInfo.put("urlCv", cvProfile.getUrlCv());
+                    cvProfileInfo.put("viTriMongMuon", cvProfile.getViTriMongMuon());
+                    cvProfileInfo.put("thoiGianMongMuon", cvProfile.getThoiGianMongMuon());
+                    cvProfileInfo.put("loaiThoiGianLamViec", cvProfile.getLoaiThoiGianLamViec());
+                    cvProfileInfo.put("hinhThucLamViec", cvProfile.getHinhThucLamViec());
+                    cvProfileInfo.put("loaiLuongMongMuon", cvProfile.getLoaiLuongMongMuon());
+                    cvProfileInfo.put("mucLuongMongMuon", cvProfile.getMucLuongMongMuon());
+
+                    jobInfo.put("cvProfile", cvProfileInfo);
+                }
+
+                // Thêm thông tin người ứng tuyển
+                User employee = appliedJob.getEmployee();
+                Map<String, Object> employeeInfo = new java.util.HashMap<>();
+                employeeInfo.put("maNguoiDung", employee.getMaNguoiDung());
+                employeeInfo.put("tenHienThi", employee.getTenHienThi());
+                employeeInfo.put("taiKhoan", employee.getTaiKhoan());
+                employeeInfo.put("email", employee.getEmail());
+                employeeInfo.put("soDienThoai", employee.getSoDienThoai());
+                jobInfo.put("employee", employeeInfo);
+
+                return jobInfo;
+            }).collect(Collectors.toList());
+
+            return ApiResponseUtil.success("Applicants retrieved successfully", result);
         } catch (Exception e) {
             return ApiResponseUtil.error("Error retrieving applicants: " + e.getMessage());
         }
@@ -410,7 +558,71 @@ public class ApiAppliedJobController {
 
         try {
             List<AppliedJob> appliedJobs = appliedJobService.getAppliedJobsByEmployer(user.get().getMaNguoiDung());
-            return ApiResponseUtil.success("Applications for employer retrieved successfully", appliedJobs);
+            // Chuyển đổi danh sách ứng viên để bao gồm thông tin hồ sơ CV
+            List<Map<String, Object>> result = appliedJobs.stream().map(appliedJob -> {
+                Map<String, Object> jobInfo = new java.util.HashMap<>();
+                jobInfo.put("maUngTuyen", appliedJob.getMaUngTuyen());
+                jobInfo.put("trangThaiUngTuyen", appliedJob.getTrangThaiUngTuyen());
+                jobInfo.put("danhGiaNtd", appliedJob.getDanhGiaNtd());
+                jobInfo.put("ngayUngTuyen", appliedJob.getNgayUngTuyen());
+                jobInfo.put("urlCvUngTuyen", appliedJob.getUrlCvUngTuyen());
+
+                // Thêm thông tin hồ sơ CV nếu có
+                if (appliedJob.getCvProfile() != null) {
+                    CvProfile cvProfile = appliedJob.getCvProfile();
+                    Map<String, Object> cvProfileInfo = new java.util.HashMap<>();
+                    cvProfileInfo.put("maHoSoCv", cvProfile.getMaHoSoCv());
+                    cvProfileInfo.put("tenHoSo", cvProfile.getTenHoSo());
+                    cvProfileInfo.put("moTa", cvProfile.getMoTa());
+                    cvProfileInfo.put("hoTen", cvProfile.getHoTen());
+                    cvProfileInfo.put("gioiTinh", cvProfile.getGioiTinh());
+                    cvProfileInfo.put("ngaySinh", cvProfile.getNgaySinh());
+                    cvProfileInfo.put("soDienThoai", cvProfile.getSoDienThoai());
+                    cvProfileInfo.put("trinhDoHocVan", cvProfile.getTrinhDoHocVan());
+                    cvProfileInfo.put("tinhTrangHocVan", cvProfile.getTinhTrangHocVan());
+                    cvProfileInfo.put("kinhNghiem", cvProfile.getKinhNghiem());
+                    cvProfileInfo.put("tongNamKinhNghiem", cvProfile.getTongNamKinhNghiem());
+                    cvProfileInfo.put("gioiThieuBanThan", cvProfile.getGioiThieuBanThan());
+                    cvProfileInfo.put("urlAnhDaiDien", cvProfile.getUrlAnhDaiDien());
+                    cvProfileInfo.put("urlCv", cvProfile.getUrlCv());
+                    cvProfileInfo.put("viTriMongMuon", cvProfile.getViTriMongMuon());
+                    cvProfileInfo.put("thoiGianMongMuon", cvProfile.getThoiGianMongMuon());
+                    cvProfileInfo.put("loaiThoiGianLamViec", cvProfile.getLoaiThoiGianLamViec());
+                    cvProfileInfo.put("hinhThucLamViec", cvProfile.getHinhThucLamViec());
+                    cvProfileInfo.put("loaiLuongMongMuon", cvProfile.getLoaiLuongMongMuon());
+                    cvProfileInfo.put("mucLuongMongMuon", cvProfile.getMucLuongMongMuon());
+
+                    jobInfo.put("cvProfile", cvProfileInfo);
+                }
+
+                // Thêm thông tin người ứng tuyển
+                User employee = appliedJob.getEmployee();
+                Map<String, Object> employeeInfo = new java.util.HashMap<>();
+                employeeInfo.put("maNguoiDung", employee.getMaNguoiDung());
+                employeeInfo.put("tenHienThi", employee.getTenHienThi());
+                employeeInfo.put("taiKhoan", employee.getTaiKhoan());
+                employeeInfo.put("email", employee.getEmail());
+                employeeInfo.put("soDienThoai", employee.getSoDienThoai());
+                jobInfo.put("employee", employeeInfo);
+
+                // Thêm thông tin công việc
+                JobDetail jobDetail = appliedJob.getJobDetail();
+                Map<String, Object> jobDetailInfo = new java.util.HashMap<>();
+                jobDetailInfo.put("maCongViec", jobDetail.getMaCongViec());
+                jobDetailInfo.put("tieuDe", jobDetail.getTieuDe());
+                jobDetailInfo.put("chiTiet", jobDetail.getChiTiet());
+                jobDetailInfo.put("yeuCauCongViec", jobDetail.getYeuCauCongViec());
+                jobDetailInfo.put("quyenLoi", jobDetail.getQuyenLoi());
+                jobDetailInfo.put("luong", jobDetail.getLuong());
+                jobDetailInfo.put("loaiLuong", jobDetail.getLoaiLuong());
+                jobDetailInfo.put("trangThaiDuyet", jobDetail.getTrangThaiDuyet());
+                jobDetailInfo.put("trangThaiTinTuyen", jobDetail.getTrangThaiTinTuyen());
+                jobInfo.put("jobDetail", jobDetailInfo);
+
+                return jobInfo;
+            }).collect(Collectors.toList());
+
+            return ApiResponseUtil.success("Applications for employer retrieved successfully", result);
         } catch (Exception e) {
             return ApiResponseUtil.error("Error retrieving applications: " + e.getMessage());
         }
@@ -445,10 +657,41 @@ public class ApiAppliedJobController {
         try {
             Map<String, Object> response = new java.util.HashMap<>();
 
-            // Xử lý fallback CV: nếu không có trong applied_job, lấy từ profile
+            // Xử lý fallback CV: nếu không có trong applied_job, lấy từ hồ sơ CV hoặc profile
             String cvUrl = appliedJob.getUrlCvUngTuyen();
-            if (cvUrl == null || cvUrl.isEmpty()) {
-                // Lấy từ profile nếu có
+            Map<String, Object> cvProfileInfo = null;
+
+            if (appliedJob.getCvProfile() != null) {
+                // Nếu ứng viên sử dụng hồ sơ CV cụ thể khi ứng tuyển
+                CvProfile cvProfile = appliedJob.getCvProfile();
+                cvProfileInfo = new java.util.HashMap<>();
+                cvProfileInfo.put("maHoSoCv", cvProfile.getMaHoSoCv());
+                cvProfileInfo.put("tenHoSo", cvProfile.getTenHoSo());
+                cvProfileInfo.put("moTa", cvProfile.getMoTa());
+                cvProfileInfo.put("hoTen", cvProfile.getHoTen());
+                cvProfileInfo.put("gioiTinh", cvProfile.getGioiTinh());
+                cvProfileInfo.put("ngaySinh", cvProfile.getNgaySinh());
+                cvProfileInfo.put("soDienThoai", cvProfile.getSoDienThoai());
+                cvProfileInfo.put("trinhDoHocVan", cvProfile.getTrinhDoHocVan());
+                cvProfileInfo.put("tinhTrangHocVan", cvProfile.getTinhTrangHocVan());
+                cvProfileInfo.put("kinhNghiem", cvProfile.getKinhNghiem());
+                cvProfileInfo.put("tongNamKinhNghiem", cvProfile.getTongNamKinhNghiem());
+                cvProfileInfo.put("gioiThieuBanThan", cvProfile.getGioiThieuBanThan());
+                cvProfileInfo.put("urlAnhDaiDien", cvProfile.getUrlAnhDaiDien());
+                cvProfileInfo.put("urlCv", cvProfile.getUrlCv());
+                cvProfileInfo.put("viTriMongMuon", cvProfile.getViTriMongMuon());
+                cvProfileInfo.put("thoiGianMongMuon", cvProfile.getThoiGianMongMuon());
+                cvProfileInfo.put("loaiThoiGianLamViec", cvProfile.getLoaiThoiGianLamViec());
+                cvProfileInfo.put("hinhThucLamViec", cvProfile.getHinhThucLamViec());
+                cvProfileInfo.put("loaiLuongMongMuon", cvProfile.getLoaiLuongMongMuon());
+                cvProfileInfo.put("mucLuongMongMuon", cvProfile.getMucLuongMongMuon());
+
+                // Ưu tiên sử dụng CV từ hồ sơ CV nếu có
+                if (cvUrl == null || cvUrl.isEmpty()) {
+                    cvUrl = cvProfile.getUrlCv();
+                }
+            } else if (cvUrl == null || cvUrl.isEmpty()) {
+                // Nếu không có hồ sơ CV cụ thể và không có CV trong applied_job, lấy từ profile
                 Optional<Profile> profileOpt = profileService.getProfileByUser(appliedJob.getEmployee());
                 if (profileOpt.isPresent() && profileOpt.get().getUrlCv() != null) {
                     cvUrl = profileOpt.get().getUrlCv();
@@ -456,6 +699,7 @@ public class ApiAppliedJobController {
             }
 
             response.put("cvUrl", cvUrl);
+            response.put("cvProfile", cvProfileInfo); // Thêm thông tin hồ sơ CV nếu có
             response.put("trangThaiUngTuyen", appliedJob.getTrangThaiUngTuyen());
             response.put("danhGiaNtd", appliedJob.getDanhGiaNtd());
             response.put("ngayUngTuyen", appliedJob.getNgayUngTuyen());
@@ -502,6 +746,27 @@ public class ApiAppliedJobController {
 
         public void setJobDetailId(Integer jobDetailId) {
             this.jobDetailId = jobDetailId;
+        }
+    }
+
+    public static class ApplyWithCvProfileRequest {
+        private Integer jobDetailId;
+        private Integer cvProfileId;
+
+        public Integer getJobDetailId() {
+            return jobDetailId;
+        }
+
+        public void setJobDetailId(Integer jobDetailId) {
+            this.jobDetailId = jobDetailId;
+        }
+
+        public Integer getCvProfileId() {
+            return cvProfileId;
+        }
+
+        public void setCvProfileId(Integer cvProfileId) {
+            this.cvProfileId = cvProfileId;
         }
     }
 

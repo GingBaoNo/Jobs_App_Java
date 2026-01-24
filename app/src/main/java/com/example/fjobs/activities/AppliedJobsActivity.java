@@ -133,7 +133,7 @@ public class AppliedJobsActivity extends AppCompatActivity {
             if (map.containsKey("trangThaiUngTuyen") && map.get("trangThaiUngTuyen") != null) {
                 appliedJob.setTrangThaiUngTuyen(map.get("trangThaiUngTuyen").toString());
             }
-            
+
             if (map.containsKey("danhGiaNtd") && map.get("danhGiaNtd") != null) {
                 Object danhGiaNtdObj = map.get("danhGiaNtd");
                 if (danhGiaNtdObj instanceof Integer) {
@@ -144,11 +144,18 @@ public class AppliedJobsActivity extends AppCompatActivity {
                     appliedJob.setDanhGiaNtd(Integer.parseInt(danhGiaNtdObj.toString()));
                 }
             }
-            
+
             if (map.containsKey("ngayUngTuyen") && map.get("ngayUngTuyen") != null) {
                 appliedJob.setNgayUngTuyen(map.get("ngayUngTuyen").toString());
             }
-            
+
+            // Thêm thông tin hồ sơ CV nếu có
+            if (map.containsKey("cvProfile") && map.get("cvProfile") != null) {
+                java.util.Map<String, Object> cvProfileMap = (java.util.Map<String, Object>) map.get("cvProfile");
+                com.example.fjobs.models.CvProfile cvProfile = convertMapToCvProfile(cvProfileMap);
+                appliedJob.setCvProfile(cvProfile);
+            }
+
             return appliedJob;
         } catch (Exception e) {
             e.printStackTrace();
@@ -307,6 +314,57 @@ public class AppliedJobsActivity extends AppCompatActivity {
             }
             
             return company;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.CvProfile convertMapToCvProfile(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.CvProfile cvProfile = new com.example.fjobs.models.CvProfile();
+
+            if (map.containsKey("maHoSoCv")) {
+                Object idObj = map.get("maHoSoCv");
+                if (idObj instanceof Integer) {
+                    cvProfile.setMaHoSoCv((Integer) idObj);
+                } else if (idObj instanceof Double) {
+                    cvProfile.setMaHoSoCv(((Double) idObj).intValue());
+                } else {
+                    cvProfile.setMaHoSoCv(Integer.parseInt(idObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenHoSo") && map.get("tenHoSo") != null) {
+                cvProfile.setTenHoSo(map.get("tenHoSo").toString());
+            }
+
+            if (map.containsKey("hoTen") && map.get("hoTen") != null) {
+                cvProfile.setHoTen(map.get("hoTen").toString());
+            }
+
+            if (map.containsKey("gioiTinh") && map.get("gioiTinh") != null) {
+                cvProfile.setGioiTinh(map.get("gioiTinh").toString());
+            }
+
+            if (map.containsKey("soDienThoai") && map.get("soDienThoai") != null) {
+                cvProfile.setSoDienThoai(map.get("soDienThoai").toString());
+            }
+
+            if (map.containsKey("viTriMongMuon") && map.get("viTriMongMuon") != null) {
+                cvProfile.setViTriMongMuon(map.get("viTriMongMuon").toString());
+            }
+
+            if (map.containsKey("laMacDinh")) {
+                Object defaultObj = map.get("laMacDinh");
+                if (defaultObj instanceof Boolean) {
+                    cvProfile.setLaMacDinh((Boolean) defaultObj);
+                } else {
+                    cvProfile.setLaMacDinh(Boolean.parseBoolean(defaultObj.toString()));
+                }
+            }
+
+            return cvProfile;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

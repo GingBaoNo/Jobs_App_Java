@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.AppliedJob;
+import com.example.demo.entity.CvProfile;
 import com.example.demo.entity.JobDetail;
 import com.example.demo.entity.Profile;
 import com.example.demo.entity.User;
@@ -104,5 +105,20 @@ public class AppliedJobService {
 
     public List<AppliedJob> getAppliedJobsByEmployerAndJob(Integer employerId, JobDetail jobDetail) {
         return appliedJobRepository.findByJobDetailCompanyUserMaNguoiDungAndJobDetail(employerId, jobDetail);
+    }
+
+    public AppliedJob applyForJobWithCvProfile(User employee, JobDetail jobDetail, CvProfile cvProfile) {
+        Optional<AppliedJob> existingApplication = appliedJobRepository.findByEmployeeAndJobDetail(employee, jobDetail);
+        if (existingApplication.isPresent()) {
+            throw new RuntimeException("Bạn đã ứng tuyển vào công việc này rồi");
+        }
+
+        AppliedJob appliedJob = new AppliedJob(employee, jobDetail, cvProfile);
+        AppliedJob savedAppliedJob = saveAppliedJob(appliedJob);
+
+        // Gửi email thông báo cho nhà tuyển dụng về ứng viên mới
+        notificationEventService.notifyEmployerOfNewApplication(savedAppliedJob);
+
+        return savedAppliedJob;
     }
 }

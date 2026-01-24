@@ -31,6 +31,10 @@ public class AppliedJob {
     @Column(name = "url_cv_ung_tuyen")
     private String urlCvUngTuyen; // URL CV cụ thể cho đơn ứng tuyển này
 
+    @ManyToOne
+    @JoinColumn(name = "ma_ho_so_cv")
+    private CvProfile cvProfile; // Hồ sơ CV được sử dụng khi ứng tuyển
+
     // Constructors
     public AppliedJob() {
         this.ngayUngTuyen = LocalDateTime.now();
@@ -46,6 +50,17 @@ public class AppliedJob {
         this.employee = employee;
         this.jobDetail = jobDetail;
         this.urlCvUngTuyen = urlCvUngTuyen;
+        this.ngayUngTuyen = LocalDateTime.now();
+    }
+
+    public AppliedJob(User employee, JobDetail jobDetail, CvProfile cvProfile) {
+        this.employee = employee;
+        this.jobDetail = jobDetail;
+        this.cvProfile = cvProfile;
+        // Sử dụng URL CV từ hồ sơ CV nếu có
+        if (cvProfile != null && cvProfile.getUrlCv() != null) {
+            this.urlCvUngTuyen = cvProfile.getUrlCv();
+        }
         this.ngayUngTuyen = LocalDateTime.now();
     }
 
@@ -104,5 +119,13 @@ public class AppliedJob {
 
     public void setUrlCvUngTuyen(String urlCvUngTuyen) {
         this.urlCvUngTuyen = urlCvUngTuyen;
+    }
+
+    public CvProfile getCvProfile() {
+        return cvProfile;
+    }
+
+    public void setCvProfile(CvProfile cvProfile) {
+        this.cvProfile = cvProfile;
     }
 }

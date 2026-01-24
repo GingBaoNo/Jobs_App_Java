@@ -70,6 +70,12 @@
         <activity
             android:name=".activities.CompaniesMapActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.CvProfileManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.CreateEditCvProfileActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

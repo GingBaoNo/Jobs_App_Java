@@ -218,7 +218,7 @@ public class UserProfileFragment extends Fragment {
     private void viewCv() {
         // Mở URL CV trong trình duyệt hoặc hiển thị PDF nếu có thư viện hỗ trợ
         if (currentProfile != null && currentProfile.getUrlCv() != null && !currentProfile.getUrlCv().isEmpty()) {
-            String cvUrl = "http://192.168.102.19:8080" + currentProfile.getUrlCv();
+            String cvUrl = "http://192.168.1.8:8080" + currentProfile.getUrlCv();
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(cvUrl));
                 startActivity(intent);
@@ -270,9 +270,9 @@ public class UserProfileFragment extends Fragment {
                             // Xử lý trường hợp avatarUrl không bắt đầu bằng dấu /
                             String imageUrl;
                             if (avatarUrl.startsWith("/")) {
-                                imageUrl = "http://192.168.102.19:8080" + avatarUrl;
+                                imageUrl = "http://192.168.1.8:8080" + avatarUrl;
                             } else {
-                                imageUrl = "http://192.168.102.19:8080/" + avatarUrl;
+                                imageUrl = "http://192.168.1.8:8080/" + avatarUrl;
                             }
 
                             // Ghi log để kiểm tra URL sẽ dùng để load ảnh
@@ -608,9 +608,9 @@ public class UserProfileFragment extends Fragment {
             // Xử lý trường hợp avatarUrl không bắt đầu bằng dấu /
             String imageUrl;
             if (avatarUrl.startsWith("/")) {
-                imageUrl = "http://192.168.102.19:8080" + avatarUrl;
+                imageUrl = "http://192.168.1.8:8080" + avatarUrl;
             } else {
-                imageUrl = "http://192.168.102.19:8080/" + avatarUrl;
+                imageUrl = "http://192.168.1.8:8080/" + avatarUrl;
             }
             System.out.println("Image URL sẽ load: " + imageUrl);
 

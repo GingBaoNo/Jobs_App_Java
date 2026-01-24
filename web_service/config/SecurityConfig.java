@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import com.example.demo.config.JwtAuthenticationFilter;
 import com.example.demo.service.CustomUserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,13 +13,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import org.springframework.http.HttpStatus;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -26,8 +25,8 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Sử dụng BCryptPasswordEncoder thay vì NoOpPasswordEncoder
-        return new BCryptPasswordEncoder();
+        // Trả về NoOpPasswordEncoder để không mã hóa mật khẩu trong quá trình phát triển
+        return org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance();
     }
 
     @Bean
@@ -86,14 +85,7 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/")
                 .failureUrl("/login?error=true")
                 .permitAll()
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // Handle unauthorized requests for API differently
-            .exceptionHandling(exception -> exception
-                .defaultAuthenticationEntryPointFor(
-                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                    request -> request.getRequestURI().startsWith("/api/")
-                )
+                // Only apply form login redirect to web requests, not API requests
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")

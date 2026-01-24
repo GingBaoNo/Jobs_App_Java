@@ -210,6 +210,35 @@ CREATE TABLE profile_skills (
     CONSTRAINT fk_ps_skill FOREIGN KEY (ma_ky_nang) REFERENCES skills (ma_ky_nang) ON DELETE CASCADE
 );
 
+CREATE TABLE cv_profiles (
+    ma_ho_so_cv INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_tim_viec INT NOT NULL,
+    ten_ho_so NVARCHAR(255) NOT NULL, -- Tên hồ sơ do người dùng đặt
+    mo_ta NVARCHAR(MAX),              -- Mô tả ngắn về hồ sơ
+    url_anh_dai_dien NVARCHAR(MAX),
+    ho_ten NVARCHAR(255) NOT NULL,
+    gioi_tinh NVARCHAR(20) NOT NULL,
+    ngay_sinh DATE NULL,
+    so_dien_thoai NVARCHAR(20) NULL,
+    trinh_do_hoc_van NVARCHAR(45) NULL,
+    tinh_trang_hoc_van NVARCHAR(20) NULL,
+    kinh_nghiem NVARCHAR(MAX),
+    tong_nam_kinh_nghiem DECIMAL(4, 2) DEFAULT 0,
+    gioi_thieu_ban_than NVARCHAR(MAX),
+    url_cv NVARCHAR(MAX),             -- Đường dẫn đến file CV
+    cong_khai BIT NOT NULL DEFAULT 0,
+    vi_tri_mong_muon NVARCHAR(255) NULL,
+    thoi_gian_mong_muon NVARCHAR(255) NULL,
+    loai_thoi_gian_lam_viec NVARCHAR(45) NULL,
+    hinh_thuc_lam_viec NVARCHAR(255) NULL,
+    loai_luong_mong_muon NVARCHAR(50) NULL,
+    muc_luong_mong_muon INT NULL,
+    ngay_tao DATETIME NULL DEFAULT GETDATE(),
+    ngay_cap_nhat DATETIME NULL DEFAULT GETDATE(),
+    la_mac_dinh BIT NOT NULL DEFAULT 0, -- Hồ sơ mặc định
+    CONSTRAINT fk_cv_profile_employee FOREIGN KEY (ma_nguoi_tim_viec) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE
+);
+
 CREATE TABLE applied_jobs (
     ma_ung_tuyen INT PRIMARY KEY IDENTITY(1,1),
     ma_nguoi_tim_viec INT NOT NULL,
@@ -219,9 +248,11 @@ CREATE TABLE applied_jobs (
     danh_gia_ntd TINYINT NULL,
     ngay_ung_tuyen DATETIME NULL DEFAULT GETDATE(),
     url_cv_ung_tuyen NVARCHAR(MAX) NULL,
+    ma_ho_so_cv INT NULL, -- Tham chiếu đến hồ sơ CV được sử dụng khi ứng tuyển
     CONSTRAINT uk_employee_job UNIQUE (ma_nguoi_tim_viec, ma_cong_viec),
     CONSTRAINT fk_applied_jobs_employee FOREIGN KEY (ma_nguoi_tim_viec) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE,
-    CONSTRAINT fk_applied_jobs_job FOREIGN KEY (ma_cong_viec) REFERENCES jobdetails (ma_cong_viec) ON DELETE NO ACTION
+    CONSTRAINT fk_applied_jobs_job FOREIGN KEY (ma_cong_viec) REFERENCES jobdetails (ma_cong_viec) ON DELETE NO ACTION,
+    CONSTRAINT fk_applied_jobs_cv_profile FOREIGN KEY (ma_ho_so_cv) REFERENCES cv_profiles (ma_ho_so_cv) ON DELETE NO ACTION
 );
 
 CREATE TABLE saved_jobs (

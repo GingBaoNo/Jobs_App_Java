@@ -110,7 +110,16 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
             }
 
             // Hiển thị thông tin CV đã ứng tuyển
-            if (appliedJob.getUrlCvUngTuyen() != null && !appliedJob.getUrlCvUngTuyen().isEmpty()) {
+            if (appliedJob.getCvProfile() != null) {
+                // Ứng viên đã sử dụng hồ sơ CV cụ thể để ứng tuyển
+                String cvName = appliedJob.getCvProfile().getTenHoSo();
+                if (cvName != null && !cvName.isEmpty()) {
+                    tvCvInfo.setText("CV: " + cvName);
+                } else {
+                    tvCvInfo.setText("CV: Hồ sơ #" + appliedJob.getCvProfile().getMaHoSoCv());
+                }
+            } else if (appliedJob.getUrlCvUngTuyen() != null && !appliedJob.getUrlCvUngTuyen().isEmpty()) {
+                // Ứng viên đã nộp CV trực tiếp (trường hợp cũ)
                 tvCvInfo.setText("CV: Đã nộp");
             } else {
                 tvCvInfo.setText("CV: Chưa nộp");

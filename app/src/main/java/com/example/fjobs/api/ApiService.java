@@ -1,6 +1,7 @@
 package com.example.fjobs.api;
 
 import com.example.fjobs.models.ApiResponse;
+import com.example.fjobs.models.CvProfile;
 import com.example.fjobs.models.JobDetail;
 import com.example.fjobs.models.LoginRequest;
 import com.example.fjobs.models.RegisterRequest;
@@ -175,6 +176,51 @@ public interface ApiService {
     @Multipart
     @POST("v1/profiles/my-profile/cv")
     Call<ApiResponse> uploadCv(@Part MultipartBody.Part file);
+
+    // CV Profile APIs
+    @GET("v1/cv-profiles/my-cv-profiles")
+    Call<ApiResponse> getMyCvProfiles();
+
+    @GET("v1/cv-profiles/{id}")
+    Call<ApiResponse> getCvProfileById(@Path("id") int cvProfileId);
+
+    @POST("v1/cv-profiles")
+    Call<ApiResponse> createCvProfile(@Body CvProfile cvProfile);
+
+    @PUT("v1/cv-profiles/{id}")
+    Call<ApiResponse> updateCvProfile(@Path("id") int cvProfileId, @Body CvProfile cvProfile);
+
+    @DELETE("v1/cv-profiles/{id}")
+    Call<ApiResponse> deleteCvProfile(@Path("id") int cvProfileId);
+
+    @PUT("v1/cv-profiles/{id}/set-default")
+    Call<ApiResponse> setCvProfileAsDefault(@Path("id") int cvProfileId);
+
+    // Apply for job with specific CV profile
+    @POST("v1/applied-jobs")
+    Call<ApiResponse> applyForJobWithCvProfile(@Body AppliedJobWithCvProfileRequest request);
+
+    // Request class for applying with CV profile
+    class AppliedJobWithCvProfileRequest {
+        private Integer jobDetailId;
+        private Integer cvProfileId;
+
+        public Integer getJobDetailId() {
+            return jobDetailId;
+        }
+
+        public void setJobDetailId(Integer jobDetailId) {
+            this.jobDetailId = jobDetailId;
+        }
+
+        public Integer getCvProfileId() {
+            return cvProfileId;
+        }
+
+        public void setCvProfileId(Integer cvProfileId) {
+            this.cvProfileId = cvProfileId;
+        }
+    }
 
     // Applied Jobs APIs
     @GET("v1/applied-jobs/my-applications")

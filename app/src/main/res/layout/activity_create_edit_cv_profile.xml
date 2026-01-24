@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tạo hồ sơ CV mới"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Tên hồ sơ -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_cv_profile_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Tên hồ sơ" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Mô tả hồ sơ -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_cv_profile_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Mô tả hồ sơ" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Họ tên -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_full_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Họ tên" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Giới tính -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Giới tính"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioGroup
+            android:id="@+id/rg_gender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/rb_male"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nam"
+                android:layout_marginEnd="16dp" />
+
+            <RadioButton
+                android:id="@+id/rb_female"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nữ" />
+
+        </RadioGroup>
+
+        <!-- Ngày sinh -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_date_of_birth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Ngày sinh (YYYY-MM-DD)"
+                android:focusable="false"
+                android:clickable="true" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Số điện thoại -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_phone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Số điện thoại" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Trình độ học vấn -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_education_level"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Trình độ học vấn" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Tình trạng học vấn -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_education_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Tình trạng học vấn" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Kinh nghiệm -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_experience"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Kinh nghiệm"
+                android:minLines="3" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Tổng năm kinh nghiệm -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_total_experience_years"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Tổng năm kinh nghiệm"
+                android:inputType="numberDecimal" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Giới thiệu bản thân -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_self_introduction"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Giới thiệu bản thân"
+                android:minLines="3" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Vị trí mong muốn -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_desired_position"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Vị trí mong muốn" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Thời gian mong muốn -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_desired_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Thời gian làm việc mong muốn" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Loại thời gian làm việc -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_work_time_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Loại thời gian làm việc" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Hình thức làm việc -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_work_form"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Hình thức làm việc" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Loại lương mong muốn -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_expected_salary_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Loại lương mong muốn" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Mức lương mong muốn -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_expected_salary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Mức lương mong muốn"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Upload ảnh đại diện -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ảnh đại diện"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:id="@+id/iv_avatar_preview"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginEnd="16dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_boss" />
+
+            <Button
+                android:id="@+id/btn_upload_avatar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:backgroundTint="@android:color/holo_blue_dark"
+                android:text="Chọn ảnh"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+
+        <!-- Upload CV -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CV (PDF)"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tv_cv_filename"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:text="Chưa chọn file"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <Button
+                android:id="@+id/btn_upload_cv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:backgroundTint="@android:color/holo_green_light"
+                android:text="Chọn CV"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+
+        <!-- Checkbox hồ sơ mặc định -->
+        <CheckBox
+            android:id="@+id/cb_set_as_default"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đặt làm hồ sơ mặc định"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Nút lưu -->
+        <Button
+            android:id="@+id/btn_save_cv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/holo_blue_dark"
+            android:text="Lưu hồ sơ"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Nút hủy -->
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/darker_gray"
+            android:text="Hủy"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+</ScrollView>
