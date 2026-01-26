@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.fjobs.R;
+import com.example.fjobs.utils.ServerConfig;
 import com.example.fjobs.activities.MainActivity;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
@@ -218,7 +219,7 @@ public class UserProfileFragment extends Fragment {
     private void viewCv() {
         // Mở URL CV trong trình duyệt hoặc hiển thị PDF nếu có thư viện hỗ trợ
         if (currentProfile != null && currentProfile.getUrlCv() != null && !currentProfile.getUrlCv().isEmpty()) {
-            String cvUrl = "http://192.168.1.8:8080" + currentProfile.getUrlCv();
+            String cvUrl = ServerConfig.getBaseUrl() + currentProfile.getUrlCv();
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(cvUrl));
                 startActivity(intent);
@@ -270,9 +271,9 @@ public class UserProfileFragment extends Fragment {
                             // Xử lý trường hợp avatarUrl không bắt đầu bằng dấu /
                             String imageUrl;
                             if (avatarUrl.startsWith("/")) {
-                                imageUrl = "http://192.168.1.8:8080" + avatarUrl;
+                                imageUrl = ServerConfig.getBaseUrl() + avatarUrl;
                             } else {
-                                imageUrl = "http://192.168.1.8:8080/" + avatarUrl;
+                                imageUrl = ServerConfig.getBaseUrl() + "/" + avatarUrl;
                             }
 
                             // Ghi log để kiểm tra URL sẽ dùng để load ảnh
@@ -608,9 +609,9 @@ public class UserProfileFragment extends Fragment {
             // Xử lý trường hợp avatarUrl không bắt đầu bằng dấu /
             String imageUrl;
             if (avatarUrl.startsWith("/")) {
-                imageUrl = "http://192.168.1.8:8080" + avatarUrl;
+                imageUrl = ServerConfig.getBaseUrl() + avatarUrl;
             } else {
-                imageUrl = "http://192.168.1.8:8080/" + avatarUrl;
+                imageUrl = ServerConfig.getBaseUrl() + "/" + avatarUrl;
             }
             System.out.println("Image URL sẽ load: " + imageUrl);
 

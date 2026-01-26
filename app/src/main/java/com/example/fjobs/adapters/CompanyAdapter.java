@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.fjobs.R;
 import com.example.fjobs.models.Company;
+import com.example.fjobs.utils.ServerConfig;
 import java.util.List;
 
 public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyViewHolder> {
@@ -97,7 +98,7 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyV
 
             // Cập nhật logo công ty nếu có
             if (company.getHinhAnhCty() != null && !company.getHinhAnhCty().isEmpty()) {
-                String logoUrl = "http://192.168.1.8:8080" + company.getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
+                String logoUrl = ServerConfig.getBaseUrl() + company.getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
                 Glide.with(itemView.getContext())
                     .load(logoUrl)
                     .placeholder(R.drawable.ic_boss) // Ảnh placeholder khi đang load

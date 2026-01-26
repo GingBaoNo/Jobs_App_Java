@@ -7,6 +7,8 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import com.example.fjobs.utils.ServerConfig;
+
 public class WebSocketManager {
     private static final String TAG = "WebSocketManager";
     private WebSocketClient webSocketClient;
@@ -29,7 +31,7 @@ public class WebSocketManager {
         // Cập nhật URL WebSocket theo cấu hình của bạn
         // Nếu gặp lỗi HTTP 302, có thể server yêu cầu sử dụng WSS (WebSocket Secure) thay vì WS
         // hoặc endpoint chưa được cấu hình đúng trên backend
-        this.serverUrl = "ws://192.168.1.8:8080/ws";
+        this.serverUrl = ServerConfig.getWebSocketUrl();
     }
 
     // Thêm phương thức để thiết lập URL WebSocket tùy chỉnh
@@ -124,7 +126,7 @@ public class WebSocketManager {
                         Log.e(TAG, "Backend hiện tại có thể đang sử dụng STOMP tại endpoint '" + serverUrl + "'");
 
                         // Kiểm tra nếu endpoint sử dụng STOMP (có thể cần endpoint khác cho WebSocket thuần)
-                        if (serverUrl.contains("/ws") && serverUrl.contains("192.168.1.8")) {
+                        if (serverUrl.contains("/ws") && serverUrl.contains(ServerConfig.getServerIp())) {
                             Log.e(TAG, "Backend có vẻ đang sử dụng STOMP. Endpoint WebSocket thuần có thể là /websocket hoặc endpoint khác.");
                         }
 

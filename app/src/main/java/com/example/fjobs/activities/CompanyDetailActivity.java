@@ -18,6 +18,7 @@ import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.Company;
+import com.example.fjobs.utils.ServerConfig;
 import com.example.fjobs.models.JobDetail;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -406,7 +407,7 @@ public class CompanyDetailActivity extends AppCompatActivity {
 
     private void loadCompanyLogo(String logoUrl) {
         if (logoUrl != null && !logoUrl.isEmpty()) {
-            String fullLogoUrl = "http://192.168.1.8:8080" + logoUrl;
+            String fullLogoUrl = ServerConfig.getBaseUrl() + logoUrl;
             Glide.with(this)
                 .load(fullLogoUrl)
                 .placeholder(R.drawable.ic_boss) // Ảnh placeholder

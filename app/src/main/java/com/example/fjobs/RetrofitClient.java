@@ -1,5 +1,6 @@
 package com.example.fjobs;
 
+import com.example.fjobs.utils.ServerConfig;
 import retrofit2.Retrofit;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -11,7 +12,6 @@ import com.google.gson.GsonBuilder;
 public class RetrofitClient {
 
     // private static final String BASE_URL = "http://10.0.2.2:8080/"; // Dùng cho Android Emulator
-    private static final String BASE_URL = "http://192.168.1.8:8080/"; // Dùng cho thiết bị thật
     private static RetrofitClient instance;
     private StatusApi statusApi;
 
@@ -21,7 +21,7 @@ public class RetrofitClient {
                 .create();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(ServerConfig.getBaseUrl() + "/")
                 .addConverterFactory(ScalarsConverterFactory.create()) // Dùng cho response String
                 .addConverterFactory(new SafeResponseConverterFactory(GsonConverterFactory.create(gson)))    // Dùng cho response JSON
                 .build();

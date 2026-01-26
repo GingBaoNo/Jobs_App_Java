@@ -1,11 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tìm việc làm</string>
-<!--    <string name="app_name">Fjobs</string>-->
-    <string name="title_activity_main">MainActivity</string>
-    <string name="navigation_drawer_open">Mở ngăn điều hướng</string>
-    <string name="navigation_drawer_close">Đóng ngăn điều hướng</string>
-    <string name="action_settings">Cài đặt</string>
-    <string name="splash_app_name">FJobs</string>
-    <string name="splash_slogan">Phần mềm tìm việc làm tốt nhất</string>
+    <string name="app_name">Tìm việc làm</string>                                                                                                │     │
+    <string name="title_activity_main">MainActivity</string>                                                                                     │
+    <string name="navigation_drawer_open">Mở ngăn điều hướng</string>                                                                            │
+    <string name="navigation_drawer_close">Đóng ngăn điều hướng</string>                                                                         │
+    <string name="action_settings">Cài đặt</string>                                                                                              │
+    <string name="splash_app_name">FJobs</string>                                                                                                │
+    <string name="splash_slogan">Phần mềm tìm việc làm tốt nhất</string>                                                                         │
     <string name="splash_description">Kết nối ứng viên với nhà tuyển dụng hàng đầu</string>
+    <string name="server_ip">192.168.1.8</string>
+    <string name="base_url">http://%1$s:8080</string>
+    <string name="api_base_url">http://%1$s:8080/api</string>
+    <string name="websocket_url">ws://%1$s:8080/ws</string>
 </resources>

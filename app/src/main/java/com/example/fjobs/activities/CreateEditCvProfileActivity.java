@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.fjobs.utils.ServerConfig;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -180,7 +181,7 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
             
             // Hiển thị ảnh đại diện nếu có
             if (currentCvProfile.getUrlAnhDaiDien() != null && !currentCvProfile.getUrlAnhDaiDien().isEmpty()) {
-                String imageUrl = "http://192.168.1.8:8080" + currentCvProfile.getUrlAnhDaiDien();
+                String imageUrl = ServerConfig.getBaseUrl() + currentCvProfile.getUrlAnhDaiDien();
                 Glide.with(this)
                     .load(imageUrl)
                     .placeholder(R.drawable.ic_boss)

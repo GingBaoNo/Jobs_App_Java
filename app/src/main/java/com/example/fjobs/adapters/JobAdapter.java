@@ -16,6 +16,7 @@ import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.JobDetail;
+import com.example.fjobs.utils.ServerConfig;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -95,7 +96,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
                 // Hiển thị logo công ty nếu có
                 if (job.getCompany().getHinhAnhCty() != null) {
-                    String logoUrl = "http://192.168.1.8:8080" + job.getCompany().getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
+                    String logoUrl = ServerConfig.getBaseUrl() + job.getCompany().getHinhAnhCty(); // Điều chỉnh URL theo server của bạn
                     Glide.with(itemView.getContext())
                         .load(logoUrl)
                         .placeholder(R.drawable.logotimviec) // Ảnh placeholder khi đang load

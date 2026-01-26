@@ -15,6 +15,7 @@ import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.CvProfile;
 import com.example.fjobs.models.JobDetail;
+import com.example.fjobs.utils.ServerConfig;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -633,7 +634,7 @@ public class JobDetailActivity extends AppCompatActivity {
 
             // Load logo công ty nếu có
             if (job.getCompany().getHinhAnhCty() != null && !job.getCompany().getHinhAnhCty().isEmpty()) {
-                String logoUrl = "http://192.168.1.8:8080" + job.getCompany().getHinhAnhCty();
+                String logoUrl = ServerConfig.getBaseUrl() + job.getCompany().getHinhAnhCty();
                 Glide.with(this)
                     .load(logoUrl)
                     .placeholder(R.drawable.ic_boss)

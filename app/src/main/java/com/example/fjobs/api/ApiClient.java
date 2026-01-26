@@ -2,6 +2,7 @@ package com.example.fjobs.api;
 
 import android.content.Context;
 
+import com.example.fjobs.utils.ServerConfig;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -13,11 +14,6 @@ import java.util.concurrent.TimeUnit;
 public class ApiClient {
     private static Retrofit retrofit;
     private static Context context;
-    // Cập nhật URL để sử dụng địa chỉ máy chủ thực tế
-    // Nếu dùng Android Emulator: sử dụng 10.0.2.2 thay cho localhost
-    // Nếu dùng thiết bị thật: sử dụng IP địa phương của máy chủ (ví dụ: 192.168.1.x)
-    // private static final String BASE_URL = "http://10.0.2.2:8080/api/"; // Dùng cho Android Emulator
-    private static final String BASE_URL = "http://192.168.1.8:8080/api/"; // Dùng cho thiết bị thật
 
     public static Retrofit getRetrofitInstance(Context ctx) {
         if (retrofit == null) {
@@ -40,7 +36,7 @@ public class ApiClient {
             }
 
             retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
+                    .baseUrl(ServerConfig.getApiBaseUrl() + "/")
                     .client(httpClient.build())
                     .addConverterFactory(new SafeResponseConverterFactory(GsonConverterFactory.create(gson)))
                     .build();

@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.fjobs.R;
 import com.example.fjobs.fragments.UserProfileFragment;
+import com.example.fjobs.utils.ServerConfig;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.fragments.AppliedJobsFragment;
@@ -200,9 +201,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (avatarUrl != null && !avatarUrl.isEmpty()) {
                 String imageUrl;
                 if (avatarUrl.startsWith("/")) {
-                    imageUrl = "http://192.168.1.8:8080" + avatarUrl;
+                    imageUrl = ServerConfig.getBaseUrl() + avatarUrl;
                 } else {
-                    imageUrl = "http://192.168.1.8:8080/" + avatarUrl;
+                    imageUrl = ServerConfig.getBaseUrl() + "/" + avatarUrl;
                 }
 
                 try {
