@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.fjobs.activities.CompanyDetailActivity;
+import com.example.fjobs.fragments.CompanyDetailFragment;
 import com.example.fjobs.R;
 import com.example.fjobs.adapters.CompanyAdapter;
 import com.example.fjobs.api.ApiClient;
@@ -124,9 +124,19 @@ public class CompaniesFragment extends Fragment implements CompanyAdapter.OnComp
 
     @Override
     public void onCompanyClick(Company company) {
-        // Chuyển đến màn hình chi tiết công ty
-        Intent intent = new Intent(getContext(), CompanyDetailActivity.class);
-        intent.putExtra("company_id", company.getMaCongTy());
-        startActivity(intent);
+        // Chuyển đến màn hình chi tiết công ty bằng Fragment
+        Bundle bundle = new Bundle();
+        bundle.putInt("company_id", company.getMaCongTy());
+
+        CompanyDetailFragment companyDetailFragment = new CompanyDetailFragment();
+        companyDetailFragment.setArguments(bundle);
+
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.content_frame, companyDetailFragment)
+                .addToBackStack(null)
+                .commit();
+        }
     }
 }

@@ -1,33 +1,42 @@
-package com.example.fjobs.activities;
+package com.example.fjobs.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.example.fjobs.R;
-import com.example.fjobs.adapters.JobAdapter;
+import com.example.fjobs.fragments.JobDetailFragment;
+import com.example.fjobs.fragments.MapFragment;
 import com.example.fjobs.adapters.JobItemAdapter;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.Company;
-import com.example.fjobs.utils.ServerConfig;
 import com.example.fjobs.models.JobDetail;
+import com.example.fjobs.utils.ServerConfig;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CompanyDetailActivity extends AppCompatActivity {
+public class CompanyDetailFragment extends Fragment {
     // Các thành phần mới từ layout mới
     private ImageView backButton, shareButton;
     private ImageView ivCompanyLogo;
@@ -45,87 +54,105 @@ public class CompanyDetailActivity extends AppCompatActivity {
     private Company currentCompany; // Biến để lưu trữ thông tin công ty hiện tại
     private ApiService apiService;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_company_detail);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_company_detail, container, false);
 
-        initViews();
-        setupClickListeners();
+        initViews(view);
+        setupClickListeners(view);
         apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
 
-        // Lấy ID công ty từ intent
-        companyId = getIntent().getIntExtra("company_id", -1);
-        if (companyId == -1) {
-            Toast.makeText(this, "Lỗi: Không tìm thấy ID công ty", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
+        // Lấy ID công ty từ arguments
+        Bundle args = getArguments();
+        if (args != null) {
+            companyId = args.getInt("company_id", -1);
+            if (companyId == -1) {
+                Toast.makeText(requireContext(), "Lỗi: Không tìm thấy ID công ty", Toast.LENGTH_SHORT).show();
+                return view;
+            }
         }
 
         loadCompanyDetails();
+
+        return view;
     }
 
-    private void initViews() {
+    private void initViews(View view) {
         // Toolbar components
-        backButton = findViewById(R.id.back_button);
-        shareButton = findViewById(R.id.share_button);
+        backButton = view.findViewById(R.id.back_button);
+        shareButton = view.findViewById(R.id.share_button);
 
         // Company Hero Section
-        ivCompanyLogo = findViewById(R.id.iv_company_logo);
-        tvCompanyName = findViewById(R.id.tv_company_name);
-        tvVerifiedBadge = findViewById(R.id.tv_verified_badge);
-        tvCompanyLocation = findViewById(R.id.tv_company_location);
-        tvCompanyDescription = findViewById(R.id.tv_company_description);
-        tvCompanyPhone = findViewById(R.id.tv_company_phone);
-        tvCompanyPhone1 = findViewById(R.id.tv_company_phone_1);
-        tvCompanyEmail = findViewById(R.id.tv_company_email);
-        tvCompanyEmailDisplay = findViewById(R.id.tv_company_email_display);
-        tvCompanyContact = findViewById(R.id.tv_company_contact);
+        ivCompanyLogo = view.findViewById(R.id.iv_company_logo);
+        tvCompanyName = view.findViewById(R.id.tv_company_name);
+        tvVerifiedBadge = view.findViewById(R.id.tv_verified_badge);
+        tvCompanyLocation = view.findViewById(R.id.tv_company_location);
+        tvCompanyDescription = view.findViewById(R.id.tv_company_description);
+        tvCompanyPhone = view.findViewById(R.id.tv_company_phone);
+        tvCompanyPhone1 = view.findViewById(R.id.tv_company_phone_1);
+        tvCompanyEmail = view.findViewById(R.id.tv_company_email);
+        tvCompanyEmailDisplay = view.findViewById(R.id.tv_company_email_display);
+        tvCompanyContact = view.findViewById(R.id.tv_company_contact);
 
         // Introduction section
-        tvCompanyInfo = findViewById(R.id.tv_company_info);
+        tvCompanyInfo = view.findViewById(R.id.tv_company_info);
 
         // Contact Information section
-        tvContactPerson = findViewById(R.id.tv_contact_person);
-        tvCompanyContact = findViewById(R.id.tv_company_contact);
-        tvTaxCode = findViewById(R.id.tv_tax_code);
-        tvCompanyAddress = findViewById(R.id.tv_company_address);
+        tvContactPerson = view.findViewById(R.id.tv_contact_person);
+        tvCompanyContact = view.findViewById(R.id.tv_company_contact);
+        tvTaxCode = view.findViewById(R.id.tv_tax_code);
+        tvCompanyAddress = view.findViewById(R.id.tv_company_address);
 
         // Footer button
-        btnViewJobs = findViewById(R.id.sticky_footer);
+        btnViewJobs = view.findViewById(R.id.sticky_footer);
 
         // View on map button
-        btnViewOnMap = findViewById(R.id.btn_view_on_map);
+        btnViewOnMap = view.findViewById(R.id.btn_view_on_map);
 
         // RecyclerView for jobs
-        rvCompanyJobs = findViewById(R.id.rv_company_jobs);
+        rvCompanyJobs = view.findViewById(R.id.rv_company_jobs);
 
         jobList = new ArrayList<>();
         jobAdapter = new JobItemAdapter(jobList, job -> {
             // Click listener để chuyển đến trang chi tiết công việc khi click vào item
-            Intent intent = new Intent(this, JobDetailActivity.class);
-            intent.putExtra("job_id", job.getMaCongViec());
-            startActivity(intent);
+            Bundle bundle = new Bundle();
+            bundle.putInt("job_id", job.getMaCongViec());
+            
+            JobDetailFragment jobDetailFragment = new JobDetailFragment();
+            jobDetailFragment.setArguments(bundle);
+            
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, jobDetailFragment)
+                    .addToBackStack(null)
+                    .commit();
+            }
         });
 
         // LayoutManager cho RecyclerView (hiển thị danh sách công việc của công ty)
-        rvCompanyJobs.setLayoutManager(new LinearLayoutManager(this));
+        rvCompanyJobs.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvCompanyJobs.setAdapter(jobAdapter);
     }
 
-    private void setupClickListeners() {
+    private void setupClickListeners(View view) {
         // Back button
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> {
+            if (getFragmentManager() != null) {
+                getFragmentManager().popBackStack();
+            }
+        });
 
         // Share button
         shareButton.setOnClickListener(v -> {
-            Toast.makeText(this, "Chức năng chia sẻ", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Chức năng chia sẻ", Toast.LENGTH_SHORT).show();
             // Thêm chức năng chia sẻ nếu cần
         });
 
         // View jobs button
         btnViewJobs.setOnClickListener(v -> {
-            Toast.makeText(this, "Hiển thị danh sách công việc đang tuyển", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Hiển thị danh sách công việc đang tuyển", Toast.LENGTH_SHORT).show();
             // Có thể chuyển sang một activity mới để hiển thị danh sách công việc của công ty
         });
 
@@ -133,14 +160,24 @@ public class CompanyDetailActivity extends AppCompatActivity {
         btnViewOnMap.setOnClickListener(v -> {
             // Kiểm tra xem công ty có tọa độ không trước khi mở bản đồ
             if (currentCompany != null && currentCompany.getKinhDo() != null && currentCompany.getViDo() != null) {
-                Intent intent = new Intent(this, MapActivity.class);
-                intent.putExtra("company_id", currentCompany.getMaCongTy());
-                intent.putExtra("company_name", currentCompany.getTenCongTy());
-                intent.putExtra("latitude", currentCompany.getViDo().doubleValue());
-                intent.putExtra("longitude", currentCompany.getKinhDo().doubleValue());
-                startActivity(intent);
+                Bundle bundle = new Bundle();
+                bundle.putInt("company_id", currentCompany.getMaCongTy());
+                bundle.putString("company_name", currentCompany.getTenCongTy());
+                bundle.putDouble("latitude", currentCompany.getViDo().doubleValue());
+                bundle.putDouble("longitude", currentCompany.getKinhDo().doubleValue());
+
+                MapFragment mapFragment = new MapFragment();
+                mapFragment.setArguments(bundle);
+
+                if (getActivity() != null) {
+                    getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.content_frame, mapFragment)
+                        .addToBackStack(null)
+                        .commit();
+                }
             } else {
-                Toast.makeText(this, "Không có thông tin vị trí cho công ty này", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Không có thông tin vị trí cho công ty này", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -298,13 +335,13 @@ public class CompanyDetailActivity extends AppCompatActivity {
                         }
                     }
                 } else {
-                    Toast.makeText(CompanyDetailActivity.this, "Không thể tải chi tiết công ty", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Không thể tải chi tiết công ty", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(CompanyDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -319,10 +356,10 @@ public class CompanyDetailActivity extends AppCompatActivity {
         // Hiển thị trạng thái xác thực
         if (company.isDaXacThuc()) {
             tvVerifiedBadge.setText("Đã xác thực");
-            tvVerifiedBadge.setBackground(ContextCompat.getDrawable(this, R.drawable.border_rounded_small));
+            tvVerifiedBadge.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.border_rounded_small));
         } else {
             tvVerifiedBadge.setText("Chưa xác thực");
-            tvVerifiedBadge.setBackground(ContextCompat.getDrawable(this, R.drawable.border_rounded_small));
+            tvVerifiedBadge.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.border_rounded_small));
         }
 
         // Địa chỉ công ty (nếu có)
@@ -332,8 +369,12 @@ public class CompanyDetailActivity extends AppCompatActivity {
             tvCompanyLocation.setText("Chưa cập nhật địa chỉ");
         }
 
-        // Mô tả công ty (sử dụng tên lĩnh vực hoặc thông tin chung nếu có)
-        tvCompanyDescription.setText("Công ty chuyên nghiệp trong lĩnh vực của mình");
+        // Mô tả công ty (sử dụng thông tin chung nếu có)
+        if (company.getMoTaCongTy() != null && !company.getMoTaCongTy().isEmpty()) {
+            tvCompanyDescription.setText(company.getMoTaCongTy());
+        } else {
+            tvCompanyDescription.setText("Công ty chuyên nghiệp trong lĩnh vực của mình");
+        }
 
         // Thông tin liên hệ (sử dụng thông tin từ emailCty và soDienThoaiCty)
         if ((company.getEmailCty() != null && !company.getEmailCty().isEmpty()) ||
@@ -378,7 +419,7 @@ public class CompanyDetailActivity extends AppCompatActivity {
             tvCompanyEmailDisplay.setText("Chưa cập nhật");
         }
 
-        // Giới thiệu công ty - sử dụng trường moTaCongTy nếu có
+        // Giới thiệu công ty
         if (company.getMoTaCongTy() != null && !company.getMoTaCongTy().isEmpty()) {
             tvCompanyInfo.setText(company.getMoTaCongTy());
         } else {

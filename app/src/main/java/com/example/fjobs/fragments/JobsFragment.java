@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.fjobs.activities.JobDetailActivity;
+import com.example.fjobs.fragments.JobDetailFragment;
 import com.example.fjobs.R;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
@@ -50,9 +50,18 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
 
         // Xử lý sự kiện click cho nút tìm kiếm nâng cao
         btnAdvancedSearch.setOnClickListener(v -> {
-            // Chuyển sang AdvancedSearchActivity
-            Intent intent = new Intent(getActivity(), com.example.fjobs.activities.AdvancedSearchActivity.class);
-            startActivity(intent);
+            // Chuyển sang AdvancedSearchFragment
+            Bundle bundle = new Bundle();
+            AdvancedSearchFragment advancedSearchFragment = new AdvancedSearchFragment();
+            advancedSearchFragment.setArguments(bundle);
+
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, advancedSearchFragment)
+                    .addToBackStack(null)
+                    .commit();
+            }
         });
     }
 
@@ -166,9 +175,19 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
     @Override
     public void onJobClick(JobDetail job) {
         // Chuyển đến màn hình chi tiết công việc
-        Intent intent = new Intent(getContext(), JobDetailActivity.class);
-        intent.putExtra("job_id", job.getMaCongViec());
-        startActivity(intent);
+        Bundle bundle = new Bundle();
+        bundle.putInt("job_id", job.getMaCongViec());
+
+        JobDetailFragment jobDetailFragment = new JobDetailFragment();
+        jobDetailFragment.setArguments(bundle);
+
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.content_frame, jobDetailFragment)
+                .addToBackStack(null)
+                .commit();
+        }
     }
 
     /**

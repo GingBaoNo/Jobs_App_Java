@@ -14,7 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import com.example.fjobs.R;
-import com.example.fjobs.activities.ChatDetailActivity;
+import com.example.fjobs.fragments.ChatDetailFragment;
 import com.example.fjobs.adapters.ChatUserAdapter;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
@@ -273,12 +273,22 @@ public class ChatFragment extends Fragment implements ChatUserAdapter.OnChatUser
 
     @Override
     public void onChatUserClick(ChatUser chatUser) {
-        // Chuyển sang activity chat detail
-        Intent intent = new Intent(requireContext(), ChatDetailActivity.class);
-        intent.putExtra("OTHER_USER_ID", chatUser.getUser().getMaNguoiDung());
-        intent.putExtra("OTHER_USER_NAME", chatUser.getUser().getTenHienThi() != null ? 
+        // Chuyển sang fragment chat detail
+        Bundle bundle = new Bundle();
+        bundle.putInt("OTHER_USER_ID", chatUser.getUser().getMaNguoiDung());
+        bundle.putString("OTHER_USER_NAME", chatUser.getUser().getTenHienThi() != null ?
             chatUser.getUser().getTenHienThi() : chatUser.getUser().getTaiKhoan());
-        startActivity(intent);
+
+        ChatDetailFragment chatDetailFragment = new ChatDetailFragment();
+        chatDetailFragment.setArguments(bundle);
+
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.content_frame, chatDetailFragment)
+                .addToBackStack(null)
+                .commit();
+        }
     }
 
     // Cập nhật lại dữ liệu khi quay lại fragment

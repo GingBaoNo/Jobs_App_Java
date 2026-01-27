@@ -5,6 +5,7 @@ import com.example.demo.entity.User;
 import com.example.demo.repository.CvProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -95,6 +96,7 @@ public class CvProfileService {
         return null;
     }
 
+    @Transactional
     public boolean deleteCvProfile(Integer id, User currentUser) {
         CvProfile cvProfile = getCvProfileById(id, currentUser);
         if (cvProfile != null) {
@@ -103,7 +105,10 @@ public class CvProfileService {
             if (cvProfile.getLaMacDinh() && userCvProfiles.size() <= 1) {
                 throw new RuntimeException("Không thể xóa hồ sơ mặc định duy nhất");
             }
-            
+
+            // Kiểm tra thêm nếu hồ sơ đang được sử dụng trong ứng tuyển
+            // (nếu có logic liên quan đến việc không cho phép xóa hồ sơ đang được sử dụng)
+
             cvProfileRepository.delete(cvProfile);
             return true;
         }

@@ -1,30 +1,36 @@
-package com.example.fjobs.activities;
+package com.example.fjobs.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fjobs.R;
+import com.example.fjobs.fragments.CreateEditCvProfileFragment;
 import com.example.fjobs.adapters.CvProfileAdapter;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.CvProfile;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CvProfileManagementActivity extends AppCompatActivity implements CvProfileAdapter.OnCvProfileActionListener {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class CvProfileManagementFragment extends Fragment implements CvProfileAdapter.OnCvProfileActionListener {
 
     private RecyclerView rvCvProfiles;
     private EditText etSearchCv;
@@ -33,36 +39,48 @@ public class CvProfileManagementActivity extends AppCompatActivity implements Cv
     private List<CvProfile> cvProfiles;
     private ApiService apiService;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cv_profile_management);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_cv_profile_management, container, false);
 
-        initViews();
-        setupRecyclerView();
+        initViews(view);
+        setupRecyclerView(view);
         apiService = ApiClient.getApiService();
         loadCvProfiles();
         setupClickListeners();
+
+        return view;
     }
 
-    private void initViews() {
-        rvCvProfiles = findViewById(R.id.rv_cv_profiles);
-        etSearchCv = findViewById(R.id.et_search_cv);
-        btnAddCv = findViewById(R.id.btn_add_cv);
+    private void initViews(View view) {
+        rvCvProfiles = view.findViewById(R.id.rv_cv_profiles);
+        etSearchCv = view.findViewById(R.id.et_search_cv);
+        btnAddCv = view.findViewById(R.id.btn_add_cv);
     }
 
-    private void setupRecyclerView() {
+    private void setupRecyclerView(View view) {
         cvProfiles = new ArrayList<>();
-        cvProfileAdapter = new CvProfileAdapter(cvProfiles, this);
-        rvCvProfiles.setLayoutManager(new LinearLayoutManager(this));
+        cvProfileAdapter = new CvProfileAdapter(cvProfiles, this, apiService);
+        rvCvProfiles.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvCvProfiles.setAdapter(cvProfileAdapter);
     }
 
     private void setupClickListeners() {
         btnAddCv.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CreateEditCvProfileActivity.class);
-            intent.putExtra("mode", "create");
-            startActivity(intent);
+            Bundle bundle = new Bundle();
+            bundle.putString("mode", "create");
+
+            CreateEditCvProfileFragment createEditCvProfileFragment = new CreateEditCvProfileFragment();
+            createEditCvProfileFragment.setArguments(bundle);
+
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, createEditCvProfileFragment)
+                    .addToBackStack(null)
+                    .commit();
+            }
         });
     }
 
@@ -78,7 +96,7 @@ public class CvProfileManagementActivity extends AppCompatActivity implements Cv
                         if (apiResponse.getData() instanceof List) {
                             List<?> rawList = (List<?>) apiResponse.getData();
                             List<CvProfile> loadedProfiles = new ArrayList<>();
-                            
+
                             for (Object obj : rawList) {
                                 if (obj instanceof java.util.Map) {
                                     java.util.Map<String, Object> map = (java.util.Map<String, Object>) obj;
@@ -88,23 +106,23 @@ public class CvProfileManagementActivity extends AppCompatActivity implements Cv
                                     }
                                 }
                             }
-                            
+
                             cvProfiles.clear();
                             cvProfiles.addAll(loadedProfiles);
                             cvProfileAdapter.notifyDataSetChanged();
                         }
                     } else {
                         String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Lỗi khi tải danh sách hồ sơ";
-                        Toast.makeText(CvProfileManagementActivity.this, message, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(CvProfileManagementActivity.this, "Không thể kết nối đến máy chủ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Không thể kết nối đến máy chủ", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(CvProfileManagementActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -264,16 +282,26 @@ public class CvProfileManagementActivity extends AppCompatActivity implements Cv
 
     @Override
     public void onEditCvProfile(CvProfile cvProfile) {
-        Intent intent = new Intent(this, CreateEditCvProfileActivity.class);
-        intent.putExtra("mode", "edit");
-        intent.putExtra("cv_profile", cvProfile);
-        startActivity(intent);
+        Bundle bundle = new Bundle();
+        bundle.putString("mode", "edit");
+        bundle.putParcelable("cv_profile", cvProfile);
+
+        CreateEditCvProfileFragment createEditCvProfileFragment = new CreateEditCvProfileFragment();
+        createEditCvProfileFragment.setArguments(bundle);
+
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.content_frame, createEditCvProfileFragment)
+                .addToBackStack(null)
+                .commit();
+        }
     }
 
     @Override
     public void onDeleteCvProfile(int position, CvProfile cvProfile) {
         // Xác nhận xóa
-        new android.app.AlertDialog.Builder(this)
+        new android.app.AlertDialog.Builder(requireContext())
                 .setTitle("Xác nhận xóa")
                 .setMessage("Bạn có chắc chắn muốn xóa hồ sơ '" + cvProfile.getTenHoSo() + "'?")
                 .setPositiveButton("Xóa", (dialog, which) -> deleteCvProfile(cvProfile.getMaHoSoCv(), position))
@@ -289,21 +317,31 @@ public class CvProfileManagementActivity extends AppCompatActivity implements Cv
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
-                        cvProfiles.remove(position);
-                        cvProfileAdapter.notifyItemRemoved(position);
-                        Toast.makeText(CvProfileManagementActivity.this, "Xóa hồ sơ thành công", Toast.LENGTH_SHORT).show();
+                        // Xóa thành công từ phía server
+                        // Cập nhật danh sách cục bộ
+                        if (position >= 0 && position < cvProfiles.size()) {
+                            cvProfiles.remove(position);
+                            cvProfileAdapter.notifyItemRemoved(position);
+                        }
+                        Toast.makeText(requireContext(), "Xóa hồ sơ thành công", Toast.LENGTH_SHORT).show();
                     } else {
                         String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Xóa hồ sơ thất bại";
-                        Toast.makeText(CvProfileManagementActivity.this, message, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(CvProfileManagementActivity.this, "Không thể xóa hồ sơ", Toast.LENGTH_SHORT).show();
+                    // Xử lý trường hợp phản hồi không thành công
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Toast.makeText(requireContext(), "Lỗi từ server: " + errorBody, Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(requireContext(), "Không thể xóa hồ sơ", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(CvProfileManagementActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -319,27 +357,27 @@ public class CvProfileManagementActivity extends AppCompatActivity implements Cv
                     if (apiResponse.isSuccess()) {
                         // Cập nhật lại danh sách hồ sơ
                         loadCvProfiles();
-                        Toast.makeText(CvProfileManagementActivity.this, "Đặt làm hồ sơ mặc định thành công", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Đặt làm hồ sơ mặc định thành công", Toast.LENGTH_SHORT).show();
                     } else {
                         String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Đặt hồ sơ mặc định thất bại";
-                        Toast.makeText(CvProfileManagementActivity.this, message, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(CvProfileManagementActivity.this, "Không thể đặt hồ sơ mặc định", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Không thể đặt hồ sơ mặc định", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(CvProfileManagementActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
-        // Tải lại danh sách hồ sơ mỗi khi quay lại activity
+        // Tải lại danh sách hồ sơ mỗi khi quay lại fragment
         loadCvProfiles();
     }
 }

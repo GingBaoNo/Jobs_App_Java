@@ -152,11 +152,15 @@ public class ApiCvProfileController {
             String username = authentication.getName();
             Optional<User> user = userService.getUserByTaiKhoan(username);
             if (user.isPresent()) {
-                boolean deleted = cvProfileService.deleteCvProfile(id, user.get());
-                if (deleted) {
-                    return ApiResponseUtil.noContent();
-                } else {
-                    return ApiResponseUtil.error("CV Profile not found with id: " + id);
+                try {
+                    boolean deleted = cvProfileService.deleteCvProfile(id, user.get());
+                    if (deleted) {
+                        return ApiResponseUtil.noContent();
+                    } else {
+                        return ApiResponseUtil.error("CV Profile not found with id: " + id);
+                    }
+                } catch (RuntimeException e) {
+                    return ApiResponseUtil.error("Cannot delete CV Profile: " + e.getMessage());
                 }
             } else {
                 return ApiResponseUtil.error("User not found");

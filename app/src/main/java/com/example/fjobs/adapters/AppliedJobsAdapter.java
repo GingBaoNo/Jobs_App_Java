@@ -12,11 +12,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.fjobs.activities.JobDetailActivity;
+import com.example.fjobs.fragments.JobDetailFragment;
 import com.example.fjobs.R;
+import com.example.fjobs.activities.MainActivity;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
+
+import android.os.Bundle;
 import com.example.fjobs.models.AppliedJob;
 
 import java.text.SimpleDateFormat;
@@ -128,10 +131,21 @@ public class AppliedJobsAdapter extends RecyclerView.Adapter<AppliedJobsAdapter.
             // Xử lý sự kiện click vào item để chuyển sang trang chi tiết công việc
             itemView.setOnClickListener(v -> {
                 if (appliedJob.getJobDetail() != null) {
-                    // Chuyển sang trang chi tiết công việc
-                    Intent intent = new Intent(context, JobDetailActivity.class);
-                    intent.putExtra("job_id", appliedJob.getJobDetail().getMaCongViec());
-                    context.startActivity(intent);
+                    // Chuyển sang sử dụng Fragment thay vì Activity
+                    if (context instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) context;
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("job_id", appliedJob.getJobDetail().getMaCongViec());
+
+                        JobDetailFragment jobDetailFragment = new JobDetailFragment();
+                        jobDetailFragment.setArguments(bundle);
+
+                        mainActivity.getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.content_frame, jobDetailFragment)
+                            .addToBackStack(null)
+                            .commit();
+                    }
                 } else {
                     Toast.makeText(context, "Không thể mở chi tiết công việc", Toast.LENGTH_SHORT).show();
                 }

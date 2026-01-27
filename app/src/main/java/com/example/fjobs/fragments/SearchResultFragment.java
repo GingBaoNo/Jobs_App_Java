@@ -113,9 +113,18 @@ public class SearchResultFragment extends Fragment {
 
         // Xử lý sự kiện click cho nút tìm kiếm nâng cao
         btnAdvancedSearch.setOnClickListener(v -> {
-            // Chuyển sang AdvancedSearchActivity
-            Intent intent = new Intent(getActivity(), com.example.fjobs.activities.AdvancedSearchActivity.class);
-            startActivity(intent);
+            // Chuyển sang AdvancedSearchFragment
+            Bundle bundle = new Bundle();
+            AdvancedSearchFragment advancedSearchFragment = new AdvancedSearchFragment();
+            advancedSearchFragment.setArguments(bundle);
+
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, advancedSearchFragment)
+                    .addToBackStack(null)
+                    .commit();
+            }
         });
     }
 

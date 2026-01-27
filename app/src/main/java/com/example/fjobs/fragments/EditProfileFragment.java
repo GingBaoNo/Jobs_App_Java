@@ -1,8 +1,6 @@
 package com.example.fjobs.fragments;
 
-import android.app.DatePickerDialog;
 import android.os.Bundle;
-import java.util.Calendar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +11,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.fjobs.R;
@@ -36,19 +36,19 @@ public class EditProfileFragment extends Fragment {
     private EditText etWorkExperience;
     private SeekBar sbTotalExperience;
     private TextView tvTotalExperienceValue;
-    
+
     private Button btnUpdate, btnCancel;
     private ApiService apiService;
     private Profile currentProfile;
-    private boolean isUpdating = false;
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_edit_profile, container, false);
 
         initViews(view);
         setupClickListeners();
-        setupSpinners(view);
+        setupSpinners();
         loadCurrentProfile();
 
         return view;
@@ -62,10 +62,10 @@ public class EditProfileFragment extends Fragment {
         etDob = view.findViewById(R.id.et_dob);
         spnGender = view.findViewById(R.id.spn_gender);
         spnEducation = view.findViewById(R.id.spn_education);
-        
+
         // Career Goal
         etCareerGoal = view.findViewById(R.id.et_career_goal);
-        
+
         // Desired Position
         etDesiredPosition = view.findViewById(R.id.et_desired_position);
         etDesiredSalary = view.findViewById(R.id.et_desired_salary);
@@ -73,12 +73,12 @@ public class EditProfileFragment extends Fragment {
         spnWorkType = view.findViewById(R.id.spn_work_type);
         spnWorkTime = view.findViewById(R.id.spn_work_time);
         spnWorkScheduleType = view.findViewById(R.id.spn_work_schedule_type);
-        
+
         // Work Experience
         etWorkExperience = view.findViewById(R.id.et_work_experience);
         sbTotalExperience = view.findViewById(R.id.sb_total_experience);
         tvTotalExperienceValue = view.findViewById(R.id.tv_total_experience_value);
-        
+
         btnUpdate = view.findViewById(R.id.btn_update_profile);
         btnCancel = view.findViewById(R.id.btn_cancel_profile);
 
@@ -99,90 +99,64 @@ public class EditProfileFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
-
-        // Setup Date Picker for birth date
-        etDob.setOnClickListener(v -> showDatePickerDialog());
-    }
-
-    private void showDatePickerDialog() {
-        // Lấy ngày hiện tại
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-
-        // Tạo DatePickerDialog
-        DatePickerDialog datePickerDialog = new DatePickerDialog(
-                getContext(),
-                (view, selectedYear, selectedMonth, selectedDay) -> {
-                    // Format ngày tháng năm
-                    String formattedDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay);
-                    etDob.setText(formattedDate);
-                },
-                year, month, day
-        );
-
-        // Hiển thị dialog
-        datePickerDialog.show();
     }
 
     private void setupClickListeners() {
         btnUpdate.setOnClickListener(v -> updateProfile());
         btnCancel.setOnClickListener(v -> {
-            // Quay lại fragment trước đó
-            if (getActivity() != null) {
-                getActivity().getSupportFragmentManager().popBackStack();
+            if (getFragmentManager() != null) {
+                getFragmentManager().popBackStack();
             }
         });
     }
 
-    private void setupSpinners(View view) {
+    private void setupSpinners() {
         // Setup gender spinner
         String[] genders = {"Nam", "Nữ", "Khác"};
-        android.widget.ArrayAdapter<String> genderAdapter = new android.widget.ArrayAdapter<>(getContext(),
+        android.widget.ArrayAdapter<String> genderAdapter = new android.widget.ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, genders);
         genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spnGender.setAdapter(genderAdapter);
 
         // Setup education spinner
         String[] educations = {"Trung học", "Trung cấp", "Cao đẳng", "Đại học", "Thạc sĩ", "Tiến sĩ", "Khác"};
-        android.widget.ArrayAdapter<String> educationAdapter = new android.widget.ArrayAdapter<>(getContext(),
+        android.widget.ArrayAdapter<String> educationAdapter = new android.widget.ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, educations);
         educationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spnEducation.setAdapter(educationAdapter);
 
         // Setup salary type spinner
         String[] salaryTypes = {"Theo tháng", "Theo năm", "Theo giờ", "Theo dự án"};
-        android.widget.ArrayAdapter<String> salaryTypeAdapter = new android.widget.ArrayAdapter<>(getContext(),
+        android.widget.ArrayAdapter<String> salaryTypeAdapter = new android.widget.ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, salaryTypes);
         salaryTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spnDesiredSalaryType.setAdapter(salaryTypeAdapter);
 
         // Setup work type spinner
         String[] workTypes = {"Toàn thời gian", "Bán thời gian", "Làm việc từ xa", "Làm việc bán thời gian", "Thực tập"};
-        android.widget.ArrayAdapter<String> workTypeAdapter = new android.widget.ArrayAdapter<>(getContext(),
+        android.widget.ArrayAdapter<String> workTypeAdapter = new android.widget.ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, workTypes);
         workTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spnWorkType.setAdapter(workTypeAdapter);
 
         // Setup work time spinner
         String[] workTimes = {"Sáng (8h-17h)", "Ca đêm", "Ca gãy", "Linh động", "Theo ca"};
-        android.widget.ArrayAdapter<String> workTimeAdapter = new android.widget.ArrayAdapter<>(getContext(),
+        android.widget.ArrayAdapter<String> workTimeAdapter = new android.widget.ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, workTimes);
         workTimeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spnWorkTime.setAdapter(workTimeAdapter);
 
         // Setup work schedule type spinner
         String[] workScheduleTypes = {"5 ngày/tuần", "6 ngày/tuần", "7 ngày/tuần", "Linh hoạt"};
-        android.widget.ArrayAdapter<String> workScheduleTypeAdapter = new android.widget.ArrayAdapter<>(getContext(),
+        android.widget.ArrayAdapter<String> workScheduleTypeAdapter = new android.widget.ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, workScheduleTypes);
         workScheduleTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spnWorkScheduleType.setAdapter(workScheduleTypeAdapter);
     }
 
     private void loadCurrentProfile() {
-        if (!ConnectionChecker.isNetworkAvailable(getContext())) {
-            Toast.makeText(getContext(), "Không có kết nối internet", Toast.LENGTH_SHORT).show();
+        if (!ConnectionChecker.isNetworkAvailable(requireContext())) {
+            Toast.makeText(requireContext(), "Không có kết nối internet", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -200,14 +174,14 @@ public class EditProfileFragment extends Fragment {
                             if (currentProfile != null) {
                                 populateFields();
                             } else {
-                                Toast.makeText(getContext(), "Dữ liệu hồ sơ không hợp lệ", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), "Dữ liệu hồ sơ không hợp lệ", Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Toast.makeText(getContext(), "Dữ liệu không đúng định dạng", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), "Dữ liệu không đúng định dạng", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Không thể tải hồ sơ";
-                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     int statusCode = response.code();
@@ -219,13 +193,13 @@ public class EditProfileFragment extends Fragment {
                             e.printStackTrace();
                         }
                     }
-                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -245,18 +219,6 @@ public class EditProfileFragment extends Fragment {
                 }
             }
 
-            // Xử lý thông tin người dùng nếu có trong phản hồi (để cập nhật số điện thoại vào hồ sơ nếu cần)
-            if (map.containsKey("user") && map.get("user") instanceof java.util.Map) {
-                java.util.Map<String, Object> userMap = (java.util.Map<String, Object>) map.get("user");
-
-                // Nếu số điện thoại không có trong profile, sử dụng từ user
-                if (profile.getSoDienThoai() == null || profile.getSoDienThoai().isEmpty()) {
-                    if (userMap.containsKey("soDienThoai") && userMap.get("soDienThoai") != null) {
-                        profile.setSoDienThoai(userMap.get("soDienThoai").toString());
-                    }
-                }
-            }
-
             if (map.containsKey("hoTen") && map.get("hoTen") != null) {
                 profile.setHoTen(map.get("hoTen").toString());
             }
@@ -265,7 +227,6 @@ public class EditProfileFragment extends Fragment {
                 profile.setGioiThieuBanThan(map.get("gioiThieuBanThan").toString());
             }
 
-            // Ưu tiên sử dụng số điện thoại từ phản hồi trực tiếp nếu có, nếu không thì từ user
             if (map.containsKey("soDienThoai") && map.get("soDienThoai") != null) {
                 profile.setSoDienThoai(map.get("soDienThoai").toString());
             }
@@ -343,10 +304,10 @@ public class EditProfileFragment extends Fragment {
         if (currentProfile.getNgaySinh() != null) etDob.setText(currentProfile.getNgaySinh());
         if (currentProfile.getGioiTinh() != null) setSpinnerSelection(spnGender, currentProfile.getGioiTinh());
         if (currentProfile.getTrinhDoHocVan() != null) setSpinnerSelection(spnEducation, currentProfile.getTrinhDoHocVan());
-        
+
         // Career Goal
         if (currentProfile.getThoiGianMongMuon() != null) etCareerGoal.setText(currentProfile.getThoiGianMongMuon());
-        
+
         // Desired Position
         if (currentProfile.getViTriMongMuon() != null) etDesiredPosition.setText(currentProfile.getViTriMongMuon());
         if (currentProfile.getMucLuongMongMuon() != null) etDesiredSalary.setText(String.valueOf(currentProfile.getMucLuongMongMuon()));
@@ -354,7 +315,7 @@ public class EditProfileFragment extends Fragment {
         if (currentProfile.getHinhThucLamViec() != null) setSpinnerSelection(spnWorkType, currentProfile.getHinhThucLamViec());
         if (currentProfile.getThoiGianMongMuon() != null) setSpinnerSelection(spnWorkTime, currentProfile.getThoiGianMongMuon());
         if (currentProfile.getLoaiThoiGianLamViec() != null) setSpinnerSelection(spnWorkScheduleType, currentProfile.getLoaiThoiGianLamViec());
-        
+
         // Work Experience
         if (currentProfile.getKinhNghiem() != null) etWorkExperience.setText(currentProfile.getKinhNghiem());
         if (currentProfile.getTongNamKinhNghiem() != null) {
@@ -379,12 +340,6 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void updateProfile() {
-        // Kiểm tra trạng thái cập nhật để tránh gọi nhiều lần
-        if (isUpdating) {
-            Toast.makeText(getContext(), "Đang cập nhật hồ sơ, vui lòng chờ...", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         // Validate required fields
         String fullName = etFullName.getText().toString().trim();
         if (fullName.isEmpty()) {
@@ -393,26 +348,14 @@ public class EditProfileFragment extends Fragment {
             return;
         }
 
-        if (!ConnectionChecker.isNetworkAvailable(getContext())) {
-            Toast.makeText(getContext(), "Không có kết nối internet", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Kiểm tra xem hồ sơ hiện tại đã được tải chưa
-        if (currentProfile == null) {
-            Toast.makeText(getContext(), "Vui lòng chờ tải hồ sơ hoàn tất trước khi cập nhật", Toast.LENGTH_SHORT).show();
-            loadCurrentProfile(); // Gọi lại để đảm bảo hồ sơ được tải
+        if (!ConnectionChecker.isNetworkAvailable(requireContext())) {
+            Toast.makeText(requireContext(), "Không có kết nối internet", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Create profile object with updated values
         Profile updatedProfile = new Profile();
-        Integer profileId = currentProfile.getMaHoSo();
-        if (profileId == null) {
-            Toast.makeText(getContext(), "Không thể xác định hồ sơ người dùng", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        updatedProfile.setMaHoSo(profileId);
+        updatedProfile.setMaHoSo(currentProfile.getMaHoSo());
         updatedProfile.setHoTen(fullName);
         updatedProfile.setGioiThieuBanThan(etIntroduction.getText().toString().trim());
         updatedProfile.setSoDienThoai(etPhone.getText().toString().trim());
@@ -439,38 +382,23 @@ public class EditProfileFragment extends Fragment {
         updatedProfile.setKinhNghiem(etWorkExperience.getText().toString().trim());
         updatedProfile.setTongNamKinhNghiem((float) sbTotalExperience.getProgress());
 
-        // Giữ nguyên các trường quan trọng khác
-        updatedProfile.setUrlAnhDaiDien(currentProfile.getUrlAnhDaiDien()); // Giữ nguyên ảnh đại diện
-        updatedProfile.setUrlCv(currentProfile.getUrlCv()); // Giữ nguyên đường dẫn CV
-        updatedProfile.setCongKhai(currentProfile.getCongKhai()); // Giữ nguyên trạng thái công khai
-
-        // Thiết lập trạng thái đang cập nhật
-        isUpdating = true;
-        btnUpdate.setEnabled(false); // Vô hiệu hóa nút trong khi cập nhật
-        btnUpdate.setText("Đang cập nhật..."); // Cập nhật văn bản nút
-
         Call<ApiResponse> call = apiService.updateMyProfile(updatedProfile);
         call.enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                // Reset trạng thái cập nhật
-                isUpdating = false;
-                if (getActivity() != null) {
-                    btnUpdate.setEnabled(true);
-                    btnUpdate.setText("Cập nhật hồ sơ");
-                }
-
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
-                        Toast.makeText(getContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
-                        // Quay lại fragment trước đó sau khi cập nhật thành công
+                        Toast.makeText(requireContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
                         if (getActivity() != null) {
-                            getActivity().getSupportFragmentManager().popBackStack();
+                            getActivity().setResult(android.app.Activity.RESULT_OK);
+                        }
+                        if (getFragmentManager() != null) {
+                            getFragmentManager().popBackStack();
                         }
                     } else {
                         String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Cập nhật thất bại";
-                        Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     int statusCode = response.code();
@@ -482,20 +410,13 @@ public class EditProfileFragment extends Fragment {
                             e.printStackTrace();
                         }
                     }
-                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                // Reset trạng thái cập nhật
-                isUpdating = false;
-                if (getActivity() != null) {
-                    btnUpdate.setEnabled(true);
-                    btnUpdate.setText("Cập nhật hồ sơ");
-                }
-
-                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

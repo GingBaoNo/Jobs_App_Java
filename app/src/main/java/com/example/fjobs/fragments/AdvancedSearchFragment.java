@@ -1,7 +1,9 @@
-package com.example.fjobs.activities;
+package com.example.fjobs.fragments;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -10,7 +12,9 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,7 +37,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AdvancedSearchActivity extends AppCompatActivity {
+public class AdvancedSearchFragment extends Fragment {
 
     private Spinner spinnerWorkField;
     private Spinner spinnerWorkDiscipline;
@@ -64,13 +68,13 @@ public class AdvancedSearchActivity extends AppCompatActivity {
     private Integer selectedWorkTypeId;
     private String selectedKeyword;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_advanced_search);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_advanced_search, container, false);
 
-        initViews();
-        setupRecyclerView(); // Thiết lập RecyclerView
+        initViews(view);
+        setupRecyclerView(view); // Thiết lập RecyclerView
         initApiService();
         setupSpinners();
         setupClickListeners();
@@ -80,25 +84,27 @@ public class AdvancedSearchActivity extends AppCompatActivity {
 
         // Load dữ liệu từ API cho các dropdown
         loadDropdownDataFromApi();
+
+        return view;
     }
 
-    private void initViews() {
-        spinnerWorkField = findViewById(R.id.spinner_work_field);
-        spinnerWorkDiscipline = findViewById(R.id.spinner_work_discipline);
-        spinnerJobPosition = findViewById(R.id.spinner_job_position);
-        spinnerExperienceLevel = findViewById(R.id.spinner_experience_level);
-        spinnerWorkType = findViewById(R.id.spinner_work_type);
-        editTextKeyword = findViewById(R.id.edit_text_keyword); // Đây là EditText, không phải Spinner
-        btnSearchAdvanced = findViewById(R.id.btn_search_advanced);
-        btnClearFilters = findViewById(R.id.btn_clear_filters);
-        recyclerView = findViewById(R.id.rv_search_results); // RecyclerView mới trong layout
+    private void initViews(View view) {
+        spinnerWorkField = view.findViewById(R.id.spinner_work_field);
+        spinnerWorkDiscipline = view.findViewById(R.id.spinner_work_discipline);
+        spinnerJobPosition = view.findViewById(R.id.spinner_job_position);
+        spinnerExperienceLevel = view.findViewById(R.id.spinner_experience_level);
+        spinnerWorkType = view.findViewById(R.id.spinner_work_type);
+        editTextKeyword = view.findViewById(R.id.edit_text_keyword); // Đây là EditText, không phải Spinner
+        btnSearchAdvanced = view.findViewById(R.id.btn_search_advanced);
+        btnClearFilters = view.findViewById(R.id.btn_clear_filters);
+        recyclerView = view.findViewById(R.id.rv_search_results); // RecyclerView mới trong layout
     }
 
-    private void setupRecyclerView() {
+    private void setupRecyclerView(View view) {
         if (recyclerView != null) {
             jobList = new ArrayList<>();
-            jobAdapter = new HorizontalJobAdapter(jobList, this);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            jobAdapter = new HorizontalJobAdapter(jobList, requireContext());
+            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
             recyclerView.setAdapter(jobAdapter);
             recyclerView.setVisibility(View.GONE); // Ban đầu ẩn RecyclerView
         }
@@ -254,7 +260,7 @@ public class AdvancedSearchActivity extends AppCompatActivity {
 
     private void performAdvancedSearch() {
         // Hiển thị ProgressBar và ẩn RecyclerView
-        ProgressBar progressBar = findViewById(R.id.progress_bar_search);
+        ProgressBar progressBar = getView().findViewById(R.id.progress_bar_search);
         if (progressBar != null) {
             progressBar.setVisibility(View.VISIBLE);
         }
@@ -285,6 +291,7 @@ public class AdvancedSearchActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 // Ẩn ProgressBar
+                ProgressBar progressBar = getView().findViewById(R.id.progress_bar_search);
                 if (progressBar != null) {
                     progressBar.setVisibility(View.GONE);
                 }
@@ -323,26 +330,27 @@ public class AdvancedSearchActivity extends AppCompatActivity {
 
                             // Hiển thị thông báo
                             if (jobs.isEmpty()) {
-                                Toast.makeText(AdvancedSearchActivity.this, "Không tìm thấy công việc phù hợp", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), "Không tìm thấy công việc phù hợp", Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(AdvancedSearchActivity.this, "Tìm thấy " + jobs.size() + " công việc", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), "Tìm thấy " + jobs.size() + " công việc", Toast.LENGTH_SHORT).show();
                             }
                         }
                     } else {
-                        Toast.makeText(AdvancedSearchActivity.this, "Lỗi: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Lỗi: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(AdvancedSearchActivity.this, "Lỗi phản hồi từ server", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Lỗi phản hồi từ server", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
                 // Ẩn ProgressBar
+                ProgressBar progressBar = getView().findViewById(R.id.progress_bar_search);
                 if (progressBar != null) {
                     progressBar.setVisibility(View.GONE);
                 }
-                Toast.makeText(AdvancedSearchActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -626,386 +634,268 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         }
     }
 
-
-    private void clearFilters() {
-        // Reset tất cả các spinner về vị trí đầu tiên (tùy chọn "Tất cả")
-        if (spinnerWorkField.getAdapter() != null && spinnerWorkField.getAdapter().getCount() > 0) {
-            spinnerWorkField.setSelection(0);
-        }
-
-        if (spinnerWorkDiscipline.getAdapter() != null && spinnerWorkDiscipline.getAdapter().getCount() > 0) {
-            spinnerWorkDiscipline.setSelection(0);
-        }
-
-        if (spinnerJobPosition.getAdapter() != null && spinnerJobPosition.getAdapter().getCount() > 0) {
-            spinnerJobPosition.setSelection(0);
-        }
-
-        if (spinnerExperienceLevel.getAdapter() != null && spinnerExperienceLevel.getAdapter().getCount() > 0) {
-            spinnerExperienceLevel.setSelection(0);
-        }
-
-        if (spinnerWorkType.getAdapter() != null && spinnerWorkType.getAdapter().getCount() > 0) {
-            spinnerWorkType.setSelection(0);
-        }
-
-        // Xóa từ khóa tìm kiếm
-        if (editTextKeyword != null) {
-            editTextKeyword.setText("");
-        }
-
-        // Reset các biến lưu trữ lựa chọn
-        selectedWorkFieldId = null;
-        selectedWorkDisciplineId = null;
-        selectedJobPositionId = null;
-        selectedExperienceLevelId = null;
-        selectedWorkTypeId = null;
-        selectedKeyword = "";
-
-        // Xóa danh sách kết quả
-        if (jobList != null) {
-            jobList.clear();
-            if (jobAdapter != null) {
-                jobAdapter.notifyDataSetChanged();
-            }
-        }
-
-        // Ẩn RecyclerView
-        if (recyclerView != null) {
-            recyclerView.setVisibility(View.GONE);
-        }
-
-        Toast.makeText(this, "Đã xóa bộ lọc", Toast.LENGTH_SHORT).show();
-    }
-
-    private void loadDropdownDataFromApi() {
-        // Load danh sách lĩnh vực
-        loadWorkFields();
-
-        // Load danh sách cấp độ kinh nghiệm
-        loadExperienceLevels();
-
-        // Load danh sách hình thức làm việc
-        loadWorkTypes();
-
-        // Cập nhật các spinner con với tùy chọn "Tất cả" ngay từ đầu
-        // để người dùng có thể thấy các tùy chọn mặc định
-        updateWorkDisciplineSpinner();
-        updateJobPositionSpinner();
-    }
-
-    private void loadWorkFields() {
-        Call<ApiResponse> call = apiService.getAllWorkFields(); // Giả định endpoint này tồn tại
-        call.enqueue(new Callback<ApiResponse>() {
-            @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Object data = response.body().getData();
-                    if (data instanceof List) {
-                        List<WorkField> fields = new ArrayList<>();
-                        for (Object item : (List<?>) data) {
-                            if (item instanceof WorkField) {
-                                fields.add((WorkField) item);
-                            } else if (item instanceof java.util.Map) {
-                                WorkField field = convertMapToWorkField((java.util.Map<String, Object>) item);
-                                if (field != null) {
-                                    fields.add(field);
-                                }
-                            }
-                        }
-                        workFields = fields;
-                        updateWorkFieldSpinner();
-                    } else {
-                        // Nếu API trả về thành công nhưng không có dữ liệu, sử dụng dữ liệu mẫu
-                        loadSampleData();
-                    }
-                } else {
-                    // Nếu phản hồi không thành công, sử dụng dữ liệu mẫu
-                    loadSampleData();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
-                // Nếu không thể load từ API, sử dụng dữ liệu mẫu
-                loadSampleData();
-            }
-        });
-    }
-
-    private void loadExperienceLevels() {
-        Call<ApiResponse> call = apiService.getAllExperienceLevels(); // Giả định endpoint này tồn tại
-        call.enqueue(new Callback<ApiResponse>() {
-            @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Object data = response.body().getData();
-                    if (data instanceof List) {
-                        List<ExperienceLevel> levels = new ArrayList<>();
-                        for (Object item : (List<?>) data) {
-                            if (item instanceof ExperienceLevel) {
-                                levels.add((ExperienceLevel) item);
-                            } else if (item instanceof java.util.Map) {
-                                ExperienceLevel level = convertMapToExperienceLevel((java.util.Map<String, Object>) item);
-                                if (level != null) {
-                                    levels.add(level);
-                                }
-                            }
-                        }
-                        experienceLevels = levels;
-                        updateExperienceLevelSpinner();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
-                // Nếu không thể load từ API, sử dụng dữ liệu mẫu nếu chưa có
-                if (workFields == null || workFields.isEmpty()) {
-                    loadSampleData();
-                }
-            }
-        });
-    }
-
-    private void loadWorkTypes() {
-        Call<ApiResponse> call = apiService.getAllWorkTypes(); // Giả định endpoint này tồn tại
-        call.enqueue(new Callback<ApiResponse>() {
-            @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Object data = response.body().getData();
-                    if (data instanceof List) {
-                        List<WorkType> types = new ArrayList<>();
-                        for (Object item : (List<?>) data) {
-                            if (item instanceof WorkType) {
-                                types.add((WorkType) item);
-                            } else if (item instanceof java.util.Map) {
-                                WorkType type = convertMapToWorkType((java.util.Map<String, Object>) item);
-                                if (type != null) {
-                                    types.add(type);
-                                }
-                            }
-                        }
-                        workTypes = types;
-                        updateWorkTypeSpinner();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
-                // Nếu không thể load từ API, sử dụng dữ liệu mẫu nếu chưa có
-                if (workFields == null || workFields.isEmpty()) {
-                    loadSampleData();
-                }
-            }
-        });
-    }
-
-    private void updateWorkFieldSpinner() {
-        List<String> fieldNames = new ArrayList<>();
-        fieldNames.add("Tất cả lĩnh vực");
-        if (workFields != null) {
-            for (WorkField field : workFields) {
-                fieldNames.add(field.getTenLinhVuc());
-            }
-        }
-        ArrayAdapter<String> fieldAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, fieldNames);
-        fieldAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerWorkField.setAdapter(fieldAdapter);
-    }
-
     private void updateWorkDisciplinesSpinner(Integer workFieldId) {
-        // Xóa lựa chọn ở các spinner phụ thuộc
-        selectedWorkDisciplineId = null;
-        selectedJobPositionId = null;
-
-        if (workFieldId != null) {
-            Call<ApiResponse> call = apiService.getWorkDisciplinesByField(workFieldId);
-            call.enqueue(new Callback<ApiResponse>() {
-                @Override
-                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        Object data = response.body().getData();
-                        if (data instanceof List) {
+        // Gọi API để lấy danh sách ngành nghề theo lĩnh vực
+        Call<ApiResponse> call = apiService.getWorkDisciplinesByField(workFieldId);
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        if (apiResponse.getData() instanceof List) {
+                            List<?> rawData = (List<?>) apiResponse.getData();
                             List<WorkDiscipline> disciplines = new ArrayList<>();
-                            for (Object item : (List<?>) data) {
-                                if (item instanceof WorkDiscipline) {
-                                    disciplines.add((WorkDiscipline) item);
-                                } else if (item instanceof java.util.Map) {
-                                    WorkDiscipline discipline = convertMapToWorkDiscipline((java.util.Map<String, Object>) item);
+
+                            // Thêm tùy chọn "Tất cả ngành nghề" vào đầu danh sách
+                            disciplines.add(new WorkDiscipline(0, "Tất cả ngành nghề", null));
+
+                            for (Object obj : rawData) {
+                                if (obj instanceof java.util.Map) {
+                                    java.util.Map<String, Object> map = (java.util.Map<String, Object>) obj;
+                                    WorkDiscipline discipline = convertMapToWorkDiscipline(map);
                                     if (discipline != null) {
                                         disciplines.add(discipline);
                                     }
                                 }
                             }
 
-                            // Cập nhật danh sách ngành nghề và spinner
-                            workDisciplines = new ArrayList<>();
-                            workDisciplines.add(new WorkDiscipline(0, "Tất cả ngành nghề", null)); // Thêm tùy chọn tất cả
-                            workDisciplines.addAll(disciplines);
-
+                            workDisciplines = disciplines;
                             updateWorkDisciplineSpinner();
-                            updateJobPositionSpinner(); // Cập nhật spinner vị trí công việc sau khi cập nhật ngành nghề
                         }
-                    } else {
-                        // Nếu không thể load từ API, sử dụng danh sách hiện tại
-                        updateWorkDisciplineSpinner();
-                        updateJobPositionSpinner();
                     }
                 }
-
-                @Override
-                public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    // Nếu không thể load từ API, sử dụng danh sách hiện tại
-                    updateWorkDisciplineSpinner();
-                    updateJobPositionSpinner();
-                }
-            });
-        } else {
-            // Nếu không có ID lĩnh vực (tức là chọn "Tất cả lĩnh vực"), hiển thị tất cả ngành nghề
-            workDisciplines = new ArrayList<>();
-            workDisciplines.add(new WorkDiscipline(0, "Tất cả ngành nghề", null));
-            updateWorkDisciplineSpinner();
-            updateJobPositionSpinner();
-        }
-    }
-
-    private void updateWorkDisciplineSpinner() {
-        List<String> disciplineNames = new ArrayList<>();
-        disciplineNames.add("Tất cả ngành nghề");
-        if (workDisciplines != null) {
-            for (WorkDiscipline discipline : workDisciplines) {
-                // Chỉ thêm nếu không phải là mục "Tất cả ngành nghề" (maNganh = 0) hoặc nếu không có mục đó
-                if (discipline.getMaNganh() != null && discipline.getMaNganh() != 0) {
-                    disciplineNames.add(discipline.getTenNganh());
-                }
             }
-        }
-        ArrayAdapter<String> disciplineAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, disciplineNames);
-        disciplineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerWorkDiscipline.setAdapter(disciplineAdapter);
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Trong trường hợp lỗi, vẫn giữ nguyên danh sách hiện tại
+                updateWorkDisciplineSpinner();
+            }
+        });
     }
 
     private void updateJobPositionsSpinner(Integer disciplineId) {
-        // Xóa lựa chọn ở spinner vị trí công việc
-        selectedJobPositionId = null;
-
-        // Hiển thị "Đang tải..." hoặc làm trống spinner để người dùng biết đang cập nhật
-        List<String> positionNames = new ArrayList<>();
-        positionNames.add("Tất cả vị trí");
-        // Nếu đang tải dữ liệu theo ngành cụ thể, có thể thêm thông báo
-        if (disciplineId != null && disciplineId != 0) {
-            positionNames.add("Đang tải...");
-        }
-
-        ArrayAdapter<String> positionAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, positionNames);
-        positionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerJobPosition.setAdapter(positionAdapter);
-
-        if (disciplineId != null && disciplineId != 0) { // Không cập nhật nếu là tùy chọn "Tất cả ngành nghề"
-            Call<ApiResponse> call = apiService.getJobPositionsByDiscipline(disciplineId);
-            call.enqueue(new Callback<ApiResponse>() {
-                @Override
-                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        Object data = response.body().getData();
-                        if (data instanceof List) {
+        // Gọi API để lấy danh sách vị trí công việc theo ngành nghề
+        Call<ApiResponse> call = apiService.getJobPositionsByDiscipline(disciplineId);
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        if (apiResponse.getData() instanceof List) {
+                            List<?> rawData = (List<?>) apiResponse.getData();
                             List<JobPosition> positions = new ArrayList<>();
-                            for (Object item : (List<?>) data) {
-                                if (item instanceof JobPosition) {
-                                    positions.add((JobPosition) item);
-                                } else if (item instanceof java.util.Map) {
-                                    JobPosition position = convertMapToJobPosition((java.util.Map<String, Object>) item);
+
+                            // Thêm tùy chọn "Tất cả vị trí" vào đầu danh sách
+                            positions.add(new JobPosition(0, "Tất cả vị trí", null));
+
+                            for (Object obj : rawData) {
+                                if (obj instanceof java.util.Map) {
+                                    java.util.Map<String, Object> map = (java.util.Map<String, Object>) obj;
+                                    JobPosition position = convertMapToJobPosition(map);
                                     if (position != null) {
                                         positions.add(position);
                                     }
                                 }
                             }
 
-                            // Cập nhật danh sách vị trí công việc và spinner
-                            jobPositions = new ArrayList<>();
-                            jobPositions.add(new JobPosition(0, "Tất cả vị trí", null)); // Thêm tùy chọn tất cả
-                            jobPositions.addAll(positions);
-
-                            // Cập nhật lại spinner với dữ liệu mới
-                            updateJobPositionSpinner();
-                        } else {
-                            // Nếu không có dữ liệu, vẫn cập nhật với danh sách rỗng
-                            jobPositions = new ArrayList<>();
-                            jobPositions.add(new JobPosition(0, "Tất cả vị trí", null));
+                            jobPositions = positions;
                             updateJobPositionSpinner();
                         }
-                    } else {
-                        // Nếu phản hồi không thành công, vẫn cập nhật với danh sách rỗng
-                        jobPositions = new ArrayList<>();
-                        jobPositions.add(new JobPosition(0, "Tất cả vị trí", null));
-                        updateJobPositionSpinner();
                     }
                 }
+            }
 
-                @Override
-                public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    // Nếu gọi API thất bại, vẫn cập nhật với danh sách rỗng
-                    jobPositions = new ArrayList<>();
-                    jobPositions.add(new JobPosition(0, "Tất cả vị trí", null));
-                    updateJobPositionSpinner();
-                }
-            });
-        } else {
-            // Nếu không có ID ngành nghề hoặc là tùy chọn "Tất cả ngành nghề", hiển thị tất cả vị trí
-            jobPositions = new ArrayList<>();
-            jobPositions.add(new JobPosition(0, "Tất cả vị trí", null));
-            updateJobPositionSpinner();
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Trong trường hợp lỗi, vẫn giữ nguyên danh sách hiện tại
+                updateJobPositionSpinner();
+            }
+        });
+    }
+
+    private void updateWorkFieldSpinner() {
+        if (workFields != null) {
+            List<String> fieldNames = new ArrayList<>();
+            fieldNames.add("Tất cả lĩnh vực"); // Thêm tùy chọn "Tất cả" vào đầu danh sách
+            for (WorkField field : workFields) {
+                fieldNames.add(field.getTenLinhVuc());
+            }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_spinner_item, fieldNames);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerWorkField.setAdapter(adapter);
+        }
+    }
+
+    private void updateWorkDisciplineSpinner() {
+        if (workDisciplines != null) {
+            List<String> disciplineNames = new ArrayList<>();
+            for (WorkDiscipline discipline : workDisciplines) {
+                disciplineNames.add(discipline.getTenNganh());
+            }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_spinner_item, disciplineNames);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerWorkDiscipline.setAdapter(adapter);
         }
     }
 
     private void updateJobPositionSpinner() {
-        List<String> positionNames = new ArrayList<>();
-        positionNames.add("Tất cả vị trí");
         if (jobPositions != null) {
+            List<String> positionNames = new ArrayList<>();
             for (JobPosition position : jobPositions) {
-                // Chỉ thêm nếu không phải là mục "Tất cả vị trí" hoặc nếu không có mục đó
-                if (position.getMaViTri() != null && position.getMaViTri() != 0) {
-                    positionNames.add(position.getTenViTri());
-                }
+                positionNames.add(position.getTenViTri());
             }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_spinner_item, positionNames);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerJobPosition.setAdapter(adapter);
         }
-        ArrayAdapter<String> positionAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, positionNames);
-        positionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerJobPosition.setAdapter(positionAdapter);
     }
 
     private void updateExperienceLevelSpinner() {
-        List<String> levelNames = new ArrayList<>();
-        levelNames.add("Tất cả cấp độ");
         if (experienceLevels != null) {
+            List<String> levelNames = new ArrayList<>();
+            levelNames.add("Tất cả cấp độ"); // Thêm tùy chọn "Tất cả" vào đầu danh sách
             for (ExperienceLevel level : experienceLevels) {
                 levelNames.add(level.getTenCapDo());
             }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_spinner_item, levelNames);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerExperienceLevel.setAdapter(adapter);
         }
-        ArrayAdapter<String> levelAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, levelNames);
-        levelAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerExperienceLevel.setAdapter(levelAdapter);
     }
 
     private void updateWorkTypeSpinner() {
-        List<String> typeNames = new ArrayList<>();
-        typeNames.add("Tất cả hình thức");
         if (workTypes != null) {
+            List<String> typeNames = new ArrayList<>();
+            typeNames.add("Tất cả hình thức"); // Thêm tùy chọn "Tất cả" vào đầu danh sách
             for (WorkType type : workTypes) {
                 typeNames.add(type.getTenHinhThuc());
             }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_spinner_item, typeNames);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerWorkType.setAdapter(adapter);
         }
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, typeNames);
-        typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerWorkType.setAdapter(typeAdapter);
     }
 
-    private WorkType convertMapToWorkType(java.util.Map<String, Object> map) {
+    private void loadDropdownDataFromApi() {
+        // Load danh sách lĩnh vực
+        Call<ApiResponse> workFieldCall = apiService.getAllWorkFields();
+        workFieldCall.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        if (apiResponse.getData() instanceof List) {
+                            List<?> rawData = (List<?>) apiResponse.getData();
+                            List<WorkField> fields = new ArrayList<>();
+                            for (Object obj : rawData) {
+                                if (obj instanceof java.util.Map) {
+                                    java.util.Map<String, Object> map = (java.util.Map<String, Object>) obj;
+                                    WorkField field = convertMapToWorkField(map);
+                                    if (field != null) {
+                                        fields.add(field);
+                                    }
+                                }
+                            }
+                            workFields = fields;
+                            updateWorkFieldSpinner();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Trong trường hợp lỗi, vẫn giữ nguyên danh sách hiện tại
+                updateWorkFieldSpinner();
+            }
+        });
+
+        // Load danh sách cấp độ kinh nghiệm
+        Call<ApiResponse> experienceLevelCall = apiService.getAllExperienceLevels();
+        experienceLevelCall.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        if (apiResponse.getData() instanceof List) {
+                            List<?> rawData = (List<?>) apiResponse.getData();
+                            List<ExperienceLevel> levels = new ArrayList<>();
+                            for (Object obj : rawData) {
+                                if (obj instanceof java.util.Map) {
+                                    java.util.Map<String, Object> map = (java.util.Map<String, Object>) obj;
+                                    ExperienceLevel level = convertMapToExperienceLevel(map);
+                                    if (level != null) {
+                                        levels.add(level);
+                                    }
+                                }
+                            }
+                            experienceLevels = levels;
+                            updateExperienceLevelSpinner();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Trong trường hợp lỗi, vẫn giữ nguyên danh sách hiện tại
+                updateExperienceLevelSpinner();
+            }
+        });
+
+        // Load danh sách hình thức làm việc
+        Call<ApiResponse> workTypeCall = apiService.getAllWorkTypes();
+        workTypeCall.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        if (apiResponse.getData() instanceof List) {
+                            List<?> rawData = (List<?>) apiResponse.getData();
+                            List<WorkType> types = new ArrayList<>();
+                            for (Object obj : rawData) {
+                                if (obj instanceof java.util.Map) {
+                                    java.util.Map<String, Object> map = (java.util.Map<String, Object>) obj;
+                                    WorkType type = convertMapToWorkType(map);
+                                    if (type != null) {
+                                        types.add(type);
+                                    }
+                                }
+                            }
+                            workTypes = types;
+                            updateWorkTypeSpinner();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Trong trường hợp lỗi, vẫn giữ nguyên danh sách hiện tại
+                updateWorkTypeSpinner();
+            }
+        });
+    }
+
+    private com.example.fjobs.models.WorkType convertMapToWorkType(java.util.Map<String, Object> map) {
         try {
-            WorkType workType = new WorkType();
+            com.example.fjobs.models.WorkType workType = new com.example.fjobs.models.WorkType();
 
             if (map.containsKey("maHinhThuc") && map.get("maHinhThuc") != null) {
                 Object maHinhThucObj = map.get("maHinhThuc");
@@ -1029,91 +919,28 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         }
     }
 
-    private void loadSampleData() {
-        // Dữ liệu mẫu cho các dropdown nếu không thể load từ API
-        workFields = new ArrayList<>();
-        workFields.add(new WorkField(1, "Công nghệ thông tin"));
-        workFields.add(new WorkField(2, "Kinh doanh"));
-        workFields.add(new WorkField(3, "Tài chính"));
+    private void clearFilters() {
+        // Reset tất cả các spinner về vị trí đầu tiên (Tất cả)
+        spinnerWorkField.setSelection(0);
+        spinnerWorkDiscipline.setSelection(0);
+        spinnerJobPosition.setSelection(0);
+        spinnerExperienceLevel.setSelection(0);
+        spinnerWorkType.setSelection(0);
 
-        workDisciplines = new ArrayList<>();
-        workDisciplines.add(new WorkDiscipline(1, "Lập trình phần mềm", workFields.get(0)));
-        workDisciplines.add(new WorkDiscipline(2, "Thiết kế UX/UI", workFields.get(0)));
-        workDisciplines.add(new WorkDiscipline(3, "Kinh doanh quốc tế", workFields.get(1)));
-        workDisciplines.add(new WorkDiscipline(4, "Ngân hàng", workFields.get(2)));
+        // Xóa nội dung ô tìm kiếm
+        editTextKeyword.setText("");
 
-        jobPositions = new ArrayList<>();
-        jobPositions.add(new JobPosition(1, "Lập trình viên Frontend", workDisciplines.get(0)));
-        jobPositions.add(new JobPosition(2, "Lập trình viên Backend", workDisciplines.get(0)));
-        jobPositions.add(new JobPosition(3, "Thiết kế UI/UX", workDisciplines.get(1)));
-        jobPositions.add(new JobPosition(4, "Chuyên viên kinh doanh", workDisciplines.get(2)));
-        jobPositions.add(new JobPosition(5, "Chuyên viên tín dụng", workDisciplines.get(3)));
+        // Reset các biến lưu trữ lựa chọn
+        selectedWorkFieldId = null;
+        selectedWorkDisciplineId = null;
+        selectedJobPositionId = null;
+        selectedExperienceLevelId = null;
+        selectedWorkTypeId = null;
+        selectedKeyword = "";
 
-        experienceLevels = new ArrayList<>();
-        experienceLevels.add(new ExperienceLevel(1, "Mới tốt nghiệp"));
-        experienceLevels.add(new ExperienceLevel(2, "1-2 năm kinh nghiệm"));
-        experienceLevels.add(new ExperienceLevel(3, "2-5 năm kinh nghiệm"));
-        experienceLevels.add(new ExperienceLevel(4, "Trên 5 năm kinh nghiệm"));
-
-        workTypes = new ArrayList<>();
-        workTypes.add(new WorkType(1, "Toàn thời gian"));
-        workTypes.add(new WorkType(2, "Bán thời gian"));
-        workTypes.add(new WorkType(3, "Freelance"));
-        workTypes.add(new WorkType(4, "Remote"));
-
-        // Cập nhật các adapter cho spinner
-        updateSpinnersWithData();
-    }
-
-    private void updateSpinnersWithData() {
-        // Cập nhật spinner lĩnh vực
-        List<String> fieldNames = new ArrayList<>();
-        fieldNames.add("Tất cả lĩnh vực");
-        for (WorkField field : workFields) {
-            fieldNames.add(field.getTenLinhVuc());
+        // Ẩn RecyclerView
+        if (recyclerView != null) {
+            recyclerView.setVisibility(View.GONE);
         }
-        ArrayAdapter<String> fieldAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, fieldNames);
-        fieldAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerWorkField.setAdapter(fieldAdapter);
-
-        // Cập nhật spinner ngành nghề
-        List<String> disciplineNames = new ArrayList<>();
-        disciplineNames.add("Tất cả ngành nghề");
-        for (WorkDiscipline discipline : workDisciplines) {
-            disciplineNames.add(discipline.getTenNganh());
-        }
-        ArrayAdapter<String> disciplineAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, disciplineNames);
-        disciplineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerWorkDiscipline.setAdapter(disciplineAdapter);
-
-        // Cập nhật spinner vị trí công việc
-        List<String> positionNames = new ArrayList<>();
-        positionNames.add("Tất cả vị trí");
-        for (JobPosition position : jobPositions) {
-            positionNames.add(position.getTenViTri());
-        }
-        ArrayAdapter<String> positionAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, positionNames);
-        positionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerJobPosition.setAdapter(positionAdapter);
-
-        // Cập nhật spinner cấp độ kinh nghiệm
-        List<String> levelNames = new ArrayList<>();
-        levelNames.add("Tất cả cấp độ");
-        for (ExperienceLevel level : experienceLevels) {
-            levelNames.add(level.getTenCapDo());
-        }
-        ArrayAdapter<String> levelAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, levelNames);
-        levelAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerExperienceLevel.setAdapter(levelAdapter);
-
-        // Cập nhật spinner hình thức làm việc
-        List<String> typeName = new ArrayList<>();
-        typeName.add("Tất cả hình thức");
-        for (WorkType type : workTypes) {
-            typeName.add(type.getTenHinhThuc());
-        }
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, typeName);
-        typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerWorkType.setAdapter(typeAdapter);
     }
 }

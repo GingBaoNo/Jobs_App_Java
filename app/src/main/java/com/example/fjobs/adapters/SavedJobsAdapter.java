@@ -12,11 +12,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.fjobs.activities.JobDetailActivity;
+import com.example.fjobs.fragments.JobDetailFragment;
 import com.example.fjobs.R;
+import com.example.fjobs.activities.MainActivity;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
+
+import android.os.Bundle;
 import com.example.fjobs.models.SavedJob;
 
 import java.util.List;
@@ -114,9 +117,21 @@ public class SavedJobsAdapter extends RecyclerView.Adapter<SavedJobsAdapter.Save
             // Xử lý sự kiện xem chi tiết công việc
             btnViewJob.setOnClickListener(v -> {
                 if (savedJob.getJobDetail() != null) {
-                    Intent intent = new Intent(context, JobDetailActivity.class);
-                    intent.putExtra("job_id", savedJob.getJobDetail().getMaCongViec());
-                    context.startActivity(intent);
+                    // Chuyển sang sử dụng Fragment thay vì Activity
+                    if (context instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) context;
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("job_id", savedJob.getJobDetail().getMaCongViec());
+
+                        JobDetailFragment jobDetailFragment = new JobDetailFragment();
+                        jobDetailFragment.setArguments(bundle);
+
+                        mainActivity.getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.content_frame, jobDetailFragment)
+                            .addToBackStack(null)
+                            .commit();
+                    }
                 } else {
                     Toast.makeText(context, "Không thể mở chi tiết công việc", Toast.LENGTH_SHORT).show();
                 }

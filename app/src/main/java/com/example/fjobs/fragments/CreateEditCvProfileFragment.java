@@ -1,4 +1,4 @@
-package com.example.fjobs.activities;
+package com.example.fjobs.fragments;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -17,10 +19,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import com.example.fjobs.utils.ServerConfig;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.fjobs.R;
@@ -29,6 +31,8 @@ import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.CvProfile;
 import com.example.fjobs.utils.FileUtils;
+import com.example.fjobs.utils.ServerConfig;
+
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -42,7 +46,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class CreateEditCvProfileActivity extends AppCompatActivity {
+public class CreateEditCvProfileFragment extends Fragment {
 
     private static final int REQUEST_CODE_PICK_AVATAR = 1001;
     private static final int REQUEST_CODE_PICK_CV = 1002;
@@ -65,65 +69,70 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
     private String avatarFilePath;
     private String cvFilePath;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_edit_cv_profile);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_create_edit_cv_profile, container, false);
 
-        initViews();
+        initViews(view);
         setupClickListeners();
         apiService = ApiClient.getApiService();
 
-        // Nhận dữ liệu từ intent
-        mode = getIntent().getStringExtra("mode");
-        if ("edit".equals(mode)) {
-            currentCvProfile = getIntent().getParcelableExtra("cv_profile");
-            if (currentCvProfile != null) {
-                populateFormData();
+        // Nhận dữ liệu từ arguments
+        Bundle args = getArguments();
+        if (args != null) {
+            mode = args.getString("mode");
+            if ("edit".equals(mode)) {
+                currentCvProfile = args.getParcelable("cv_profile");
+                if (currentCvProfile != null) {
+                    populateFormData();
+                }
             }
         }
-    }
-
-    private void initViews() {
-        etCvProfileName = findViewById(R.id.et_cv_profile_name);
-        etCvProfileDescription = findViewById(R.id.et_cv_profile_description);
-        etFullName = findViewById(R.id.et_full_name);
-        rgGender = findViewById(R.id.rg_gender);
-        rbMale = findViewById(R.id.rb_male);
-        rbFemale = findViewById(R.id.rb_female);
-        etDateOfBirth = findViewById(R.id.et_date_of_birth);
-        etPhone = findViewById(R.id.et_phone);
-        etEducationLevel = findViewById(R.id.et_education_level);
-        etEducationStatus = findViewById(R.id.et_education_status);
-        etExperience = findViewById(R.id.et_experience);
-        etTotalExperienceYears = findViewById(R.id.et_total_experience_years);
-        etSelfIntroduction = findViewById(R.id.et_self_introduction);
-        etDesiredPosition = findViewById(R.id.et_desired_position);
-        etDesiredTime = findViewById(R.id.et_desired_time);
-        etWorkTimeType = findViewById(R.id.et_work_time_type);
-        etWorkForm = findViewById(R.id.et_work_form);
-        etExpectedSalaryType = findViewById(R.id.et_expected_salary_type);
-        etExpectedSalary = findViewById(R.id.et_expected_salary);
-        ivAvatarPreview = findViewById(R.id.iv_avatar_preview);
-        tvCvFilename = findViewById(R.id.tv_cv_filename);
-        cbSetAsDefault = findViewById(R.id.cb_set_as_default);
-        btnUploadAvatar = findViewById(R.id.btn_upload_avatar);
-        btnUploadCv = findViewById(R.id.btn_upload_cv);
-        btnSaveCv = findViewById(R.id.btn_save_cv);
-        btnCancel = findViewById(R.id.btn_cancel);
 
         // Cập nhật tiêu đề
-        TextView tvTitle = findViewById(R.id.tv_title);
+        TextView tvTitle = view.findViewById(R.id.tv_title);
         if ("edit".equals(mode)) {
             tvTitle.setText("Chỉnh sửa hồ sơ CV");
         } else {
             tvTitle.setText("Tạo hồ sơ CV mới");
         }
+
+        return view;
+    }
+
+    private void initViews(View view) {
+        etCvProfileName = view.findViewById(R.id.et_cv_profile_name);
+        etCvProfileDescription = view.findViewById(R.id.et_cv_profile_description);
+        etFullName = view.findViewById(R.id.et_full_name);
+        rgGender = view.findViewById(R.id.rg_gender);
+        rbMale = view.findViewById(R.id.rb_male);
+        rbFemale = view.findViewById(R.id.rb_female);
+        etDateOfBirth = view.findViewById(R.id.et_date_of_birth);
+        etPhone = view.findViewById(R.id.et_phone);
+        etEducationLevel = view.findViewById(R.id.et_education_level);
+        etEducationStatus = view.findViewById(R.id.et_education_status);
+        etExperience = view.findViewById(R.id.et_experience);
+        etTotalExperienceYears = view.findViewById(R.id.et_total_experience_years);
+        etSelfIntroduction = view.findViewById(R.id.et_self_introduction);
+        etDesiredPosition = view.findViewById(R.id.et_desired_position);
+        etDesiredTime = view.findViewById(R.id.et_desired_time);
+        etWorkTimeType = view.findViewById(R.id.et_work_time_type);
+        etWorkForm = view.findViewById(R.id.et_work_form);
+        etExpectedSalaryType = view.findViewById(R.id.et_expected_salary_type);
+        etExpectedSalary = view.findViewById(R.id.et_expected_salary);
+        ivAvatarPreview = view.findViewById(R.id.iv_avatar_preview);
+        tvCvFilename = view.findViewById(R.id.tv_cv_filename);
+        cbSetAsDefault = view.findViewById(R.id.cb_set_as_default);
+        btnUploadAvatar = view.findViewById(R.id.btn_upload_avatar);
+        btnUploadCv = view.findViewById(R.id.btn_upload_cv);
+        btnSaveCv = view.findViewById(R.id.btn_save_cv);
+        btnCancel = view.findViewById(R.id.btn_cancel);
     }
 
     private void setupClickListeners() {
         etDateOfBirth.setOnClickListener(v -> showDatePicker());
-        
+
         btnUploadAvatar.setOnClickListener(v -> {
             if (checkPermission()) {
                 openImagePicker(REQUEST_CODE_PICK_AVATAR);
@@ -142,7 +151,11 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
 
         btnSaveCv.setOnClickListener(v -> saveCvProfile());
 
-        btnCancel.setOnClickListener(v -> finish());
+        btnCancel.setOnClickListener(v -> {
+            if (getFragmentManager() != null) {
+                getFragmentManager().popBackStack();
+            }
+        });
     }
 
     private void populateFormData() {
@@ -150,35 +163,35 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
             etCvProfileName.setText(currentCvProfile.getTenHoSo());
             etCvProfileDescription.setText(currentCvProfile.getMoTa());
             etFullName.setText(currentCvProfile.getHoTen());
-            
+
             // Thiết lập giới tính
             if ("Nam".equals(currentCvProfile.getGioiTinh()) || "Male".equalsIgnoreCase(currentCvProfile.getGioiTinh())) {
                 rbMale.setChecked(true);
             } else {
                 rbFemale.setChecked(true);
             }
-            
+
             etDateOfBirth.setText(currentCvProfile.getNgaySinh());
             etPhone.setText(currentCvProfile.getSoDienThoai());
             etEducationLevel.setText(currentCvProfile.getTrinhDoHocVan());
             etEducationStatus.setText(currentCvProfile.getTinhTrangHocVan());
             etExperience.setText(currentCvProfile.getKinhNghiem());
-            
+
             if (currentCvProfile.getTongNamKinhNghiem() != null) {
                 etTotalExperienceYears.setText(currentCvProfile.getTongNamKinhNghiem().toString());
             }
-            
+
             etSelfIntroduction.setText(currentCvProfile.getGioiThieuBanThan());
             etDesiredPosition.setText(currentCvProfile.getViTriMongMuon());
             etDesiredTime.setText(currentCvProfile.getThoiGianMongMuon());
             etWorkTimeType.setText(currentCvProfile.getLoaiThoiGianLamViec());
             etWorkForm.setText(currentCvProfile.getHinhThucLamViec());
             etExpectedSalaryType.setText(currentCvProfile.getLoaiLuongMongMuon());
-            
+
             if (currentCvProfile.getMucLuongMongMuon() != null) {
                 etExpectedSalary.setText(String.valueOf(currentCvProfile.getMucLuongMongMuon()));
             }
-            
+
             // Hiển thị ảnh đại diện nếu có
             if (currentCvProfile.getUrlAnhDaiDien() != null && !currentCvProfile.getUrlAnhDaiDien().isEmpty()) {
                 String imageUrl = ServerConfig.getBaseUrl() + currentCvProfile.getUrlAnhDaiDien();
@@ -188,13 +201,13 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
                     .error(R.drawable.ic_boss)
                     .into(ivAvatarPreview);
             }
-            
+
             // Hiển thị tên file CV nếu có
             if (currentCvProfile.getUrlCv() != null && !currentCvProfile.getUrlCv().isEmpty()) {
                 String fileName = new File(currentCvProfile.getUrlCv()).getName();
                 tvCvFilename.setText(fileName);
             }
-            
+
             // Thiết lập checkbox hồ sơ mặc định
             cbSetAsDefault.setChecked(currentCvProfile.getLaMacDinh() != null && currentCvProfile.getLaMacDinh());
         }
@@ -207,10 +220,10 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(
-            this,
+            requireContext(),
             (view, selectedYear, selectedMonth, selectedDay) -> {
                 // Format ngày tháng
-                String formattedDate = String.format(Locale.getDefault(), "%d-%02d-%02d", 
+                String formattedDate = String.format(Locale.getDefault(), "%d-%02d-%02d",
                     selectedYear, selectedMonth + 1, selectedDay);
                 etDateOfBirth.setText(formattedDate);
             },
@@ -221,13 +234,19 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
     }
 
     private boolean checkPermission() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestPermission() {
-        ActivityCompat.requestPermissions(this,
-            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-            REQUEST_CODE_PERMISSION);
+        if (getParentFragment() != null) {
+            getParentFragment().requestPermissions(
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                REQUEST_CODE_PERMISSION);
+        } else if (getActivity() != null) {
+            ActivityCompat.requestPermissions(getActivity(),
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                REQUEST_CODE_PERMISSION);
+        }
     }
 
     private void openImagePicker(int requestCode) {
@@ -243,21 +262,21 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK && data != null) {
+        if (resultCode == getActivity().RESULT_OK && data != null) {
             Uri selectedFileUri = data.getData();
             if (selectedFileUri != null) {
                 if (requestCode == REQUEST_CODE_PICK_AVATAR) {
                     // Xử lý chọn ảnh đại diện
                     ivAvatarPreview.setImageURI(selectedFileUri);
-                    avatarFilePath = FileUtils.getPathFromUri(this, selectedFileUri);
+                    avatarFilePath = FileUtils.getPathFromUri(requireContext(), selectedFileUri);
                 } else if (requestCode == REQUEST_CODE_PICK_CV) {
                     // Xử lý chọn file CV
-                    String fileName = FileUtils.getFileNameFromUri(this, selectedFileUri);
+                    String fileName = FileUtils.getFileNameFromUri(requireContext(), selectedFileUri);
                     tvCvFilename.setText(fileName);
-                    cvFilePath = FileUtils.getPathFromUri(this, selectedFileUri);
+                    cvFilePath = FileUtils.getPathFromUri(requireContext(), selectedFileUri);
                 }
             }
         }
@@ -270,7 +289,7 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Quyền được cấp, có thể thực hiện hành động
             } else {
-                Toast.makeText(this, "Cần quyền truy cập bộ nhớ để chọn ảnh và file", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Cần quyền truy cập bộ nhớ để chọn ảnh và file", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -283,11 +302,11 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
 
         // Tạo đối tượng CvProfile từ dữ liệu nhập
         CvProfile cvProfile = new CvProfile();
-        
+
         cvProfile.setTenHoSo(etCvProfileName.getText().toString().trim());
         cvProfile.setMoTa(etCvProfileDescription.getText().toString().trim());
         cvProfile.setHoTen(etFullName.getText().toString().trim());
-        
+
         // Giới tính
         int selectedGenderId = rgGender.getCheckedRadioButtonId();
         if (selectedGenderId == R.id.rb_male) {
@@ -295,30 +314,30 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
         } else if (selectedGenderId == R.id.rb_female) {
             cvProfile.setGioiTinh("Nữ");
         }
-        
+
         cvProfile.setNgaySinh(etDateOfBirth.getText().toString().trim());
         cvProfile.setSoDienThoai(etPhone.getText().toString().trim());
         cvProfile.setTrinhDoHocVan(etEducationLevel.getText().toString().trim());
         cvProfile.setTinhTrangHocVan(etEducationStatus.getText().toString().trim());
         cvProfile.setKinhNghiem(etExperience.getText().toString().trim());
-        
+
         String totalExpStr = etTotalExperienceYears.getText().toString().trim();
         if (!totalExpStr.isEmpty()) {
             cvProfile.setTongNamKinhNghiem(java.math.BigDecimal.valueOf(Double.parseDouble(totalExpStr)));
         }
-        
+
         cvProfile.setGioiThieuBanThan(etSelfIntroduction.getText().toString().trim());
         cvProfile.setViTriMongMuon(etDesiredPosition.getText().toString().trim());
         cvProfile.setThoiGianMongMuon(etDesiredTime.getText().toString().trim());
         cvProfile.setLoaiThoiGianLamViec(etWorkTimeType.getText().toString().trim());
         cvProfile.setHinhThucLamViec(etWorkForm.getText().toString().trim());
         cvProfile.setLoaiLuongMongMuon(etExpectedSalaryType.getText().toString().trim());
-        
+
         String expectedSalaryStr = etExpectedSalary.getText().toString().trim();
         if (!expectedSalaryStr.isEmpty()) {
             cvProfile.setMucLuongMongMuon(Integer.parseInt(expectedSalaryStr));
         }
-        
+
         cvProfile.setLaMacDinh(cbSetAsDefault.isChecked());
 
         if ("edit".equals(mode) && currentCvProfile != null) {
@@ -339,30 +358,35 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
                         // Upload ảnh đại diện và CV nếu có
-                        handleFileUploads((Integer) ((java.util.Map<String, Object>) apiResponse.getData()).get("maHoSoCv"));
-                        Toast.makeText(CreateEditCvProfileActivity.this, "Tạo hồ sơ thành công", Toast.LENGTH_SHORT).show();
-                        finish();
+                        Integer cvProfileId = extractCvProfileId(apiResponse);
+                        if (cvProfileId != null) {
+                            handleFileUploads(cvProfileId);
+                        }
+                        Toast.makeText(requireContext(), "Tạo hồ sơ thành công", Toast.LENGTH_SHORT).show();
+                        if (getFragmentManager() != null) {
+                            getFragmentManager().popBackStack();
+                        }
                     } else {
                         String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Tạo hồ sơ thất bại";
-                        Toast.makeText(CreateEditCvProfileActivity.this, message, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(CreateEditCvProfileActivity.this, "Không thể tạo hồ sơ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Không thể tạo hồ sơ", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(CreateEditCvProfileActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void updateCvProfile(CvProfile cvProfile) {
         if (currentCvProfile == null) return;
-        
+
         cvProfile.setMaHoSoCv(currentCvProfile.getMaHoSoCv());
-        
+
         Call<ApiResponse> call = apiService.updateCvProfile(currentCvProfile.getMaHoSoCv(), cvProfile);
         call.enqueue(new retrofit2.Callback<ApiResponse>() {
             @Override
@@ -371,35 +395,43 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
                         // Upload ảnh đại diện và CV nếu có
-                        handleFileUploads(currentCvProfile.getMaHoSoCv());
-                        Toast.makeText(CreateEditCvProfileActivity.this, "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
-                        finish();
+                        Integer cvProfileId = extractCvProfileId(apiResponse);
+                        if (cvProfileId != null) {
+                            handleFileUploads(cvProfileId);
+                        } else {
+                            // Nếu không thể trích xuất ID từ phản hồi, sử dụng ID hiện tại
+                            handleFileUploads(currentCvProfile.getMaHoSoCv());
+                        }
+                        Toast.makeText(requireContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
+                        if (getFragmentManager() != null) {
+                            getFragmentManager().popBackStack();
+                        }
                     } else {
                         String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Cập nhật hồ sơ thất bại";
-                        Toast.makeText(CreateEditCvProfileActivity.this, message, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(CreateEditCvProfileActivity.this, "Không thể cập nhật hồ sơ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Không thể cập nhật hồ sơ", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(CreateEditCvProfileActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void handleFileUploads(Integer cvProfileId) {
         if (cvProfileId == null) return;
-        
+
         // Upload ảnh đại diện nếu có
-        if (avatarFilePath != null) {
+        if (avatarFilePath != null && !avatarFilePath.isEmpty()) {
             uploadAvatar(cvProfileId);
         }
-        
+
         // Upload CV nếu có
-        if (cvFilePath != null) {
+        if (cvFilePath != null && !cvFilePath.isEmpty()) {
             uploadCv(cvProfileId);
         }
     }
@@ -418,14 +450,14 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (!apiResponse.isSuccess()) {
-                        Toast.makeText(CreateEditCvProfileActivity.this, "Upload ảnh đại diện thất bại", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Upload ảnh đại diện thất bại", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(CreateEditCvProfileActivity.this, "Lỗi upload ảnh: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi upload ảnh: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -444,16 +476,39 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (!apiResponse.isSuccess()) {
-                        Toast.makeText(CreateEditCvProfileActivity.this, "Upload CV thất bại", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Upload CV thất bại", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(CreateEditCvProfileActivity.this, "Lỗi upload CV: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi upload CV: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private Integer extractCvProfileId(ApiResponse apiResponse) {
+        try {
+            Object data = apiResponse.getData();
+            if (data instanceof java.util.Map) {
+                java.util.Map<String, Object> map = (java.util.Map<String, Object>) data;
+                Object idObj = map.get("maHoSoCv");
+                if (idObj != null) {
+                    if (idObj instanceof Integer) {
+                        return (Integer) idObj;
+                    } else if (idObj instanceof Double) {
+                        return ((Double) idObj).intValue();
+                    } else {
+                        return Integer.parseInt(idObj.toString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(requireContext(), "Lỗi khi xử lý dữ liệu phản hồi", Toast.LENGTH_SHORT).show();
+        }
+        return null;
     }
 
     private boolean validateInput() {
@@ -470,7 +525,7 @@ public class CreateEditCvProfileActivity extends AppCompatActivity {
         }
 
         if (rgGender.getCheckedRadioButtonId() == -1) {
-            Toast.makeText(this, "Vui lòng chọn giới tính", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Vui lòng chọn giới tính", Toast.LENGTH_SHORT).show();
             return false;
         }
 

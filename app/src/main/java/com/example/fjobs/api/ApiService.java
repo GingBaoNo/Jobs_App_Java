@@ -197,7 +197,7 @@ public interface ApiService {
     Call<ApiResponse> setCvProfileAsDefault(@Path("id") int cvProfileId);
 
     // Apply for job with specific CV profile
-    @POST("v1/applied-jobs")
+    @POST("v1/applied-jobs/apply-with-cv-profile")
     Call<ApiResponse> applyForJobWithCvProfile(@Body AppliedJobWithCvProfileRequest request);
 
     // Request class for applying with CV profile

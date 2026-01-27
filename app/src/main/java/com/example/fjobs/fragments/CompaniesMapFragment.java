@@ -1,10 +1,14 @@
-package com.example.fjobs.activities;
+package com.example.fjobs.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.example.fjobs.R;
 import com.example.fjobs.api.ApiClient;
@@ -26,28 +30,29 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CompaniesMapActivity extends AppCompatActivity {
+public class CompaniesMapFragment extends Fragment {
 
     private MapView mapView;
     private ApiService apiService;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Cấu hình OSM
-        Configuration.getInstance().load(this, getSharedPreferences("osm_preferences", MODE_PRIVATE));
-        
-        setContentView(R.layout.activity_map);
-        
-        mapView = findViewById(R.id.mapView);
+        Configuration.getInstance().load(requireContext(), requireContext().getSharedPreferences("osm_preferences", 0));
+
+        View view = inflater.inflate(R.layout.activity_map, container, false);
+
+        mapView = view.findViewById(R.id.mapView);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
-        
+
         apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
-        
+
         loadCompaniesAndDisplayOnMap();
+
+        return view;
     }
 
     private void loadCompaniesAndDisplayOnMap() {
@@ -62,32 +67,32 @@ public class CompaniesMapActivity extends AppCompatActivity {
                         List<Company> companies = convertDataToCompanies(apiResponse.getData());
                         displayCompaniesOnMap(companies);
                     } else {
-                        Toast.makeText(CompaniesMapActivity.this, "Không thể tải danh sách công ty", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Không thể tải danh sách công ty", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(CompaniesMapActivity.this, "Không thể tải danh sách công ty", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Không thể tải danh sách công ty", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(CompaniesMapActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private List<Company> convertDataToCompanies(Object data) {
         List<Company> companies = new ArrayList<>();
-        
+
         try {
             if (data instanceof List) {
                 List<?> rawList = (List<?>) data;
-                
+
                 for (Object obj : rawList) {
                     if (obj instanceof java.util.Map) {
                         java.util.Map<String, Object> map = (java.util.Map<String, Object>) obj;
                         Company company = new Company();
-                        
+
                         // Ánh xạ các trường từ Map sang Company
                         if (map.containsKey("maCongTy")) {
                             Object maCongTyObj = map.get("maCongTy");
@@ -99,19 +104,19 @@ public class CompaniesMapActivity extends AppCompatActivity {
                                 company.setMaCongTy(Integer.parseInt(maCongTyObj.toString()));
                             }
                         }
-                        
+
                         if (map.containsKey("tenCongTy") && map.get("tenCongTy") != null) {
                             company.setTenCongTy(map.get("tenCongTy").toString());
                         }
-                        
+
                         if (map.containsKey("diaChi") && map.get("diaChi") != null) {
                             company.setDiaChi(map.get("diaChi").toString());
                         }
-                        
+
                         if (map.containsKey("hinhAnhCty") && map.get("hinhAnhCty") != null) {
                             company.setHinhAnhCty(map.get("hinhAnhCty").toString());
                         }
-                        
+
                         if (map.containsKey("daXacThuc") && map.get("daXacThuc") != null) {
                             Object daXacThucObj = map.get("daXacThuc");
                             if (daXacThucObj instanceof Boolean) {
@@ -120,11 +125,11 @@ public class CompaniesMapActivity extends AppCompatActivity {
                                 company.setDaXacThuc(Boolean.parseBoolean(daXacThucObj.toString()));
                             }
                         }
-                        
+
                         if (map.containsKey("trangThai") && map.get("trangThai") != null) {
                             company.setTrangThai(map.get("trangThai").toString());
                         }
-                        
+
                         // Ánh xạ tọa độ
                         if (map.containsKey("kinhDo") && map.get("kinhDo") != null) {
                             Object kinhDoObj = map.get("kinhDo");
@@ -151,7 +156,7 @@ public class CompaniesMapActivity extends AppCompatActivity {
                                 company.setViDo(BigDecimal.valueOf(Double.parseDouble(viDoObj.toString())));
                             }
                         }
-                        
+
                         companies.add(company);
                     }
                 }
@@ -159,7 +164,7 @@ public class CompaniesMapActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         return companies;
     }
 
@@ -169,25 +174,25 @@ public class CompaniesMapActivity extends AppCompatActivity {
         List<String> titles = new ArrayList<>();
         List<String> snippets = new ArrayList<>();
         List<String> types = new ArrayList<>();
-        
+
         for (Company company : companies) {
             // Chỉ thêm công ty có tọa độ vào bản đồ
             if (company.getKinhDo() != null && company.getViDo() != null) {
                 double latitude = company.getViDo().doubleValue();
                 double longitude = company.getKinhDo().doubleValue();
-                
+
                 latitudes.add(latitude);
                 longitudes.add(longitude);
                 titles.add(company.getTenCongTy());
                 snippets.add(company.getDiaChi() != null ? company.getDiaChi() : "Vị trí công ty");
                 types.add("company");
-                
+
                 // Thêm marker cho công ty
-                addCompanyMarker(latitude, longitude, company.getTenCongTy(), 
+                addCompanyMarker(latitude, longitude, company.getTenCongTy(),
                     company.getDiaChi() != null ? company.getDiaChi() : "Vị trí công ty");
             }
         }
-        
+
         // Nếu có nhiều công ty, tự động zoom để hiển thị tất cả
         if (latitudes.size() > 1) {
             autoZoomToBoundaries(latitudes, longitudes);
@@ -201,7 +206,7 @@ public class CompaniesMapActivity extends AppCompatActivity {
             GeoPoint startPoint = new GeoPoint(21.0278, 105.8342);
             mapView.getController().setCenter(startPoint);
             mapView.getController().setZoom(12);
-            Toast.makeText(this, "Không có công ty nào có thông tin vị trí", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Không có công ty nào có thông tin vị trí", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -212,17 +217,15 @@ public class CompaniesMapActivity extends AppCompatActivity {
         companyMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         companyMarker.setTitle(title);
         companyMarker.setSnippet(snippet);
-        
+
         // Thêm hành động khi click vào marker
         companyMarker.setOnMarkerClickListener((marker, mapView) -> {
             // Có thể mở chi tiết công ty khi click vào marker
-            Intent intent = new Intent(CompaniesMapActivity.this, CompanyDetailActivity.class);
-            // Tìm công ty tương ứng để truyền ID
             // Trong phiên bản đơn giản, chỉ hiển thị thông báo
-            Toast.makeText(CompaniesMapActivity.this, "Công ty: " + title, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Công ty: " + title, Toast.LENGTH_SHORT).show();
             return false; // Trả về false để marker vẫn hiển thị thông tin
         });
-        
+
         mapView.getOverlays().add(companyMarker);
         mapView.invalidate();
     }
@@ -278,8 +281,8 @@ public class CompaniesMapActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         if (mapView != null) {
             mapView.onDetach();
         }

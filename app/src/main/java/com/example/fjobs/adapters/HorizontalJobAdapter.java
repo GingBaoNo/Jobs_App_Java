@@ -10,10 +10,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import com.example.fjobs.activities.JobDetailActivity;
+import com.example.fjobs.fragments.JobDetailFragment;
 import com.example.fjobs.R;
+import com.example.fjobs.activities.MainActivity;
 import com.example.fjobs.models.JobDetail;
 import com.example.fjobs.utils.ServerConfig;
+
+import android.os.Bundle;
 import java.util.List;
 
 public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdapter.JobViewHolder> {
@@ -74,9 +77,21 @@ public class HorizontalJobAdapter extends RecyclerView.Adapter<HorizontalJobAdap
                 if (position != RecyclerView.NO_POSITION) {
                     JobDetail job = jobList.get(position);
                     if (job != null && job.getMaCongViec() != null) {
-                        Intent intent = new Intent(context, JobDetailActivity.class);
-                        intent.putExtra("job_id", job.getMaCongViec());
-                        context.startActivity(intent);
+                        // Chuyển sang sử dụng Fragment thay vì Activity
+                        if (context instanceof MainActivity) {
+                            MainActivity mainActivity = (MainActivity) context;
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("job_id", job.getMaCongViec());
+
+                            JobDetailFragment jobDetailFragment = new JobDetailFragment();
+                            jobDetailFragment.setArguments(bundle);
+
+                            mainActivity.getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.content_frame, jobDetailFragment)
+                                .addToBackStack(null)
+                                .commit();
+                        }
                     }
                 }
             });

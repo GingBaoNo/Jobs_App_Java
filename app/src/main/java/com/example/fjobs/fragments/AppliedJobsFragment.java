@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,9 +33,10 @@ public class AppliedJobsFragment extends Fragment {
     private List<AppliedJob> appliedJobsList;
     private ApiService apiService;
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_applied_jobs, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_applied_jobs, container, false);
 
         initViews(view);
 
@@ -119,7 +122,7 @@ public class AppliedJobsFragment extends Fragment {
                 }
             }
 
-            // Chuyển đổi employee (người ứng tuyển) - bỏ qua nếu không cần thiết
+            // Chuyển đổi employee (người ứng tuyển)
             if (map.containsKey("employee") && map.get("employee") != null) {
                 java.util.Map<String, Object> userMap = (java.util.Map<String, Object>) map.get("employee");
                 com.example.fjobs.models.User user = convertMapToUser(userMap);
@@ -153,8 +156,11 @@ public class AppliedJobsFragment extends Fragment {
                 appliedJob.setNgayUngTuyen(map.get("ngayUngTuyen").toString());
             }
 
-            if (map.containsKey("urlCvUngTuyen") && map.get("urlCvUngTuyen") != null) {
-                appliedJob.setUrlCvUngTuyen(map.get("urlCvUngTuyen").toString());
+            // Thêm thông tin hồ sơ CV nếu có
+            if (map.containsKey("cvProfile") && map.get("cvProfile") != null) {
+                java.util.Map<String, Object> cvProfileMap = (java.util.Map<String, Object>) map.get("cvProfile");
+                com.example.fjobs.models.CvProfile cvProfile = convertMapToCvProfile(cvProfileMap);
+                appliedJob.setCvProfile(cvProfile);
             }
 
             return appliedJob;
@@ -315,6 +321,57 @@ public class AppliedJobsFragment extends Fragment {
             }
 
             return company;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private com.example.fjobs.models.CvProfile convertMapToCvProfile(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.CvProfile cvProfile = new com.example.fjobs.models.CvProfile();
+
+            if (map.containsKey("maHoSoCv")) {
+                Object idObj = map.get("maHoSoCv");
+                if (idObj instanceof Integer) {
+                    cvProfile.setMaHoSoCv((Integer) idObj);
+                } else if (idObj instanceof Double) {
+                    cvProfile.setMaHoSoCv(((Double) idObj).intValue());
+                } else {
+                    cvProfile.setMaHoSoCv(Integer.parseInt(idObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenHoSo") && map.get("tenHoSo") != null) {
+                cvProfile.setTenHoSo(map.get("tenHoSo").toString());
+            }
+
+            if (map.containsKey("hoTen") && map.get("hoTen") != null) {
+                cvProfile.setHoTen(map.get("hoTen").toString());
+            }
+
+            if (map.containsKey("gioiTinh") && map.get("gioiTinh") != null) {
+                cvProfile.setGioiTinh(map.get("gioiTinh").toString());
+            }
+
+            if (map.containsKey("soDienThoai") && map.get("soDienThoai") != null) {
+                cvProfile.setSoDienThoai(map.get("soDienThoai").toString());
+            }
+
+            if (map.containsKey("viTriMongMuon") && map.get("viTriMongMuon") != null) {
+                cvProfile.setViTriMongMuon(map.get("viTriMongMuon").toString());
+            }
+
+            if (map.containsKey("laMacDinh")) {
+                Object defaultObj = map.get("laMacDinh");
+                if (defaultObj instanceof Boolean) {
+                    cvProfile.setLaMacDinh((Boolean) defaultObj);
+                } else {
+                    cvProfile.setLaMacDinh(Boolean.parseBoolean(defaultObj.toString()));
+                }
+            }
+
+            return cvProfile;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

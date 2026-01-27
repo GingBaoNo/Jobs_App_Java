@@ -59,6 +59,10 @@ public class ApiClient {
     }
 
     public static ApiService getApiService() {
+        // Kiểm tra nếu retrofit chưa được khởi tạo, trả về lỗi rõ ràng hơn
+        if (retrofit == null) {
+            throw new IllegalStateException("ApiClient chưa được khởi tạo với Context. Vui lòng đảm bảo rằng MyApplication đã được thiết lập trong AndroidManifest.xml và đã khởi tạo ApiClient.");
+        }
         return getRetrofitInstance().create(ApiService.class);
     }
 }

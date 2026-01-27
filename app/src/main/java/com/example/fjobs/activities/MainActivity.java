@@ -24,6 +24,7 @@ import com.example.fjobs.api.ApiService;
 import com.example.fjobs.fragments.AppliedJobsFragment;
 import com.example.fjobs.fragments.ChatFragment;
 import com.example.fjobs.fragments.CompaniesFragment;
+import com.example.fjobs.fragments.CvProfileManagementFragment;
 import com.example.fjobs.fragments.HomeFragment;
 import com.example.fjobs.fragments.JobsFragment;
 import com.example.fjobs.fragments.SavedJobsFragment;
@@ -333,7 +334,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_manage_cv) {
             // Kiểm tra đăng nhập trước khi mở quản lý hồ sơ CV
             if (isUserLoggedIn()) {
-                startActivity(new Intent(this, CvProfileManagementActivity.class));
+                loadFragment(new CvProfileManagementFragment());
             } else {
                 redirectToLogin();
             }

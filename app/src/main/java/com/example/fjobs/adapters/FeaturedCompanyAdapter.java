@@ -12,10 +12,13 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import com.example.fjobs.activities.CompanyDetailActivity;
+import com.example.fjobs.fragments.CompanyDetailFragment;
 import com.example.fjobs.R;
+import com.example.fjobs.activities.MainActivity;
 import com.example.fjobs.models.Company;
 import com.example.fjobs.utils.ServerConfig;
+
+import android.os.Bundle;
 
 import java.util.List;
 
@@ -68,9 +71,21 @@ public class FeaturedCompanyAdapter extends RecyclerView.Adapter<FeaturedCompany
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Company company = companyList.get(position);
-                    Intent intent = new Intent(context, CompanyDetailActivity.class);
-                    intent.putExtra("company_id", company.getMaCongTy());
-                    context.startActivity(intent);
+                    // Chuyển sang sử dụng Fragment thay vì Activity
+                    if (context instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) context;
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("company_id", company.getMaCongTy());
+
+                        CompanyDetailFragment companyDetailFragment = new CompanyDetailFragment();
+                        companyDetailFragment.setArguments(bundle);
+
+                        mainActivity.getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.content_frame, companyDetailFragment)
+                            .addToBackStack(null)
+                            .commit();
+                    }
                 }
             });
 
@@ -79,9 +94,21 @@ public class FeaturedCompanyAdapter extends RecyclerView.Adapter<FeaturedCompany
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Company company = companyList.get(position);
-                    Intent intent = new Intent(context, CompanyDetailActivity.class);
-                    intent.putExtra("company_id", company.getMaCongTy());
-                    context.startActivity(intent);
+                    // Chuyển sang sử dụng Fragment thay vì Activity
+                    if (context instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) context;
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("company_id", company.getMaCongTy());
+
+                        CompanyDetailFragment companyDetailFragment = new CompanyDetailFragment();
+                        companyDetailFragment.setArguments(bundle);
+
+                        mainActivity.getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.content_frame, companyDetailFragment)
+                            .addToBackStack(null)
+                            .commit();
+                    }
                 }
             });
         }

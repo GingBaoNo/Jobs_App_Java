@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F4F6F9"
-    tools:context=".CompanyDetailActivity">
+    tools:context=".fragments.CompanyDetailFragment">
 
     <!-- 1. App Bar (Header) - Using Toolbar for standard Android app bar -->
     <androidx.appcompat.widget.Toolbar

@@ -47,36 +47,6 @@
         <activity
             android:name=".activities.ResetPasswordActivity"
             android:exported="false" />
-        <activity
-            android:name=".activities.JobDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.CompanyDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.AppliedJobsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.SavedJobsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.ChatDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.AdvancedSearchActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.MapActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.CompaniesMapActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.CvProfileManagementActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.CreateEditCvProfileActivity"
-            android:exported="false" />
     </application>
 
 </manifest>

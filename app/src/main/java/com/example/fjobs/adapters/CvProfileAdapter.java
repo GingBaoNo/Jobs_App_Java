@@ -12,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fjobs.R;
-import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.CvProfile;
@@ -34,10 +33,10 @@ public class CvProfileAdapter extends RecyclerView.Adapter<CvProfileAdapter.CvPr
         void onSetAsDefault(int cvProfileId);
     }
 
-    public CvProfileAdapter(List<CvProfile> cvProfiles, OnCvProfileActionListener listener) {
+    public CvProfileAdapter(List<CvProfile> cvProfiles, OnCvProfileActionListener listener, ApiService apiService) {
         this.cvProfiles = cvProfiles;
         this.listener = listener;
-        this.apiService = ApiClient.getApiService();
+        this.apiService = apiService;
     }
 
     @NonNull
