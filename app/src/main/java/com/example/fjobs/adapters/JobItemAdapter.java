@@ -11,7 +11,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import com.example.fjobs.activities.JobDetailActivity;
 import com.example.fjobs.R;
 import com.example.fjobs.models.JobDetail;
 import com.example.fjobs.utils.ServerConfig;

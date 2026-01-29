@@ -121,16 +121,26 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Trình độ học vấn -->
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:text="Trình độ học vấn"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_education_level"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_education"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Chọn trình độ học vấn"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+            <AutoCompleteTextView
+                android:id="@+id/actv_education"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Trình độ học vấn" />
+                android:inputType="none" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -222,44 +232,74 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Loại thời gian làm việc -->
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:text="Loại thời gian làm việc"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_work_time_type"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_work_schedule_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Chọn loại thời gian làm việc"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+            <AutoCompleteTextView
+                android:id="@+id/actv_work_schedule_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Loại thời gian làm việc" />
+                android:inputType="none" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Hình thức làm việc -->
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:text="Hình thức làm việc"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_work_form"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_work_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Chọn hình thức làm việc"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+            <AutoCompleteTextView
+                android:id="@+id/actv_work_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Hình thức làm việc" />
+                android:inputType="none" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Loại lương mong muốn -->
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:text="Loại lương mong muốn"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_expected_salary_type"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_expected_salary_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Chọn loại lương mong muốn"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+            <AutoCompleteTextView
+                android:id="@+id/actv_expected_salary_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Loại lương mong muốn" />
+                android:inputType="none" />
 
         </com.google.android.material.textfield.TextInputLayout>
 

@@ -17,6 +17,8 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.android.material.textfield.TextInputEditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,8 +44,11 @@ import retrofit2.Response;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class CreateEditCvProfileFragment extends Fragment {
@@ -53,9 +58,10 @@ public class CreateEditCvProfileFragment extends Fragment {
     private static final int REQUEST_CODE_PERMISSION = 1003;
 
     private EditText etCvProfileName, etCvProfileDescription, etFullName, etDateOfBirth,
-            etPhone, etEducationLevel, etEducationStatus, etExperience, etTotalExperienceYears,
-            etSelfIntroduction, etDesiredPosition, etDesiredTime, etWorkTimeType,
-            etWorkForm, etExpectedSalaryType, etExpectedSalary;
+            etPhone, etEducationStatus, etExperience, etTotalExperienceYears,
+            etSelfIntroduction, etDesiredPosition, etDesiredTime, etExpectedSalary;
+    private TextInputLayout tilEducation, tilWorkScheduleType, tilWorkType, tilExpectedSalaryType;
+    private com.google.android.material.textfield.MaterialAutoCompleteTextView actvEducation, actvWorkScheduleType, actvWorkType, actvExpectedSalaryType;
     private RadioGroup rgGender;
     private RadioButton rbMale, rbFemale;
     private ImageView ivAvatarPreview;
@@ -76,6 +82,7 @@ public class CreateEditCvProfileFragment extends Fragment {
 
         initViews(view);
         setupClickListeners();
+        setupSpinners();
         apiService = ApiClient.getApiService();
 
         // Nhận dữ liệu từ arguments
@@ -110,16 +117,20 @@ public class CreateEditCvProfileFragment extends Fragment {
         rbFemale = view.findViewById(R.id.rb_female);
         etDateOfBirth = view.findViewById(R.id.et_date_of_birth);
         etPhone = view.findViewById(R.id.et_phone);
-        etEducationLevel = view.findViewById(R.id.et_education_level);
+        tilEducation = view.findViewById(R.id.til_education);
+        actvEducation = view.findViewById(R.id.actv_education);
         etEducationStatus = view.findViewById(R.id.et_education_status);
         etExperience = view.findViewById(R.id.et_experience);
         etTotalExperienceYears = view.findViewById(R.id.et_total_experience_years);
         etSelfIntroduction = view.findViewById(R.id.et_self_introduction);
         etDesiredPosition = view.findViewById(R.id.et_desired_position);
         etDesiredTime = view.findViewById(R.id.et_desired_time);
-        etWorkTimeType = view.findViewById(R.id.et_work_time_type);
-        etWorkForm = view.findViewById(R.id.et_work_form);
-        etExpectedSalaryType = view.findViewById(R.id.et_expected_salary_type);
+        tilWorkScheduleType = view.findViewById(R.id.til_work_schedule_type);
+        actvWorkScheduleType = view.findViewById(R.id.actv_work_schedule_type);
+        tilWorkType = view.findViewById(R.id.til_work_type);
+        actvWorkType = view.findViewById(R.id.actv_work_type);
+        tilExpectedSalaryType = view.findViewById(R.id.til_expected_salary_type);
+        actvExpectedSalaryType = view.findViewById(R.id.actv_expected_salary_type);
         etExpectedSalary = view.findViewById(R.id.et_expected_salary);
         ivAvatarPreview = view.findViewById(R.id.iv_avatar_preview);
         tvCvFilename = view.findViewById(R.id.tv_cv_filename);
@@ -158,6 +169,32 @@ public class CreateEditCvProfileFragment extends Fragment {
         });
     }
 
+    private void setupSpinners() {
+        // Setup education AutoCompleteTextView
+        String[] educations = {"Trung học", "Trung cấp", "Cao đẳng", "Đại học", "Thạc sĩ", "Tiến sĩ", "Khác"};
+        android.widget.ArrayAdapter<String> educationAdapter = new android.widget.ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, educations);
+        actvEducation.setAdapter(educationAdapter);
+
+        // Setup work schedule type AutoCompleteTextView
+        String[] workScheduleTypes = {"5 ngày/tuần", "6 ngày/tuần", "7 ngày/tuần", "Linh hoạt"};
+        android.widget.ArrayAdapter<String> workScheduleTypeAdapter = new android.widget.ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, workScheduleTypes);
+        actvWorkScheduleType.setAdapter(workScheduleTypeAdapter);
+
+        // Setup work type AutoCompleteTextView
+        String[] workTypes = {"Toàn thời gian", "Bán thời gian", "Làm việc từ xa", "Làm việc bán thời gian", "Thực tập"};
+        android.widget.ArrayAdapter<String> workTypeAdapter = new android.widget.ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, workTypes);
+        actvWorkType.setAdapter(workTypeAdapter);
+
+        // Setup expected salary type AutoCompleteTextView
+        String[] salaryTypes = {"Theo tháng", "Theo năm", "Theo giờ", "Theo dự án"};
+        android.widget.ArrayAdapter<String> salaryTypeAdapter = new android.widget.ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, salaryTypes);
+        actvExpectedSalaryType.setAdapter(salaryTypeAdapter);
+    }
+
     private void populateFormData() {
         if (currentCvProfile != null) {
             etCvProfileName.setText(currentCvProfile.getTenHoSo());
@@ -173,7 +210,12 @@ public class CreateEditCvProfileFragment extends Fragment {
 
             etDateOfBirth.setText(currentCvProfile.getNgaySinh());
             etPhone.setText(currentCvProfile.getSoDienThoai());
-            etEducationLevel.setText(currentCvProfile.getTrinhDoHocVan());
+
+            // Thiết lập trình độ học vấn
+            if (currentCvProfile.getTrinhDoHocVan() != null) {
+                actvEducation.setText(currentCvProfile.getTrinhDoHocVan(), false);
+            }
+
             etEducationStatus.setText(currentCvProfile.getTinhTrangHocVan());
             etExperience.setText(currentCvProfile.getKinhNghiem());
 
@@ -184,9 +226,21 @@ public class CreateEditCvProfileFragment extends Fragment {
             etSelfIntroduction.setText(currentCvProfile.getGioiThieuBanThan());
             etDesiredPosition.setText(currentCvProfile.getViTriMongMuon());
             etDesiredTime.setText(currentCvProfile.getThoiGianMongMuon());
-            etWorkTimeType.setText(currentCvProfile.getLoaiThoiGianLamViec());
-            etWorkForm.setText(currentCvProfile.getHinhThucLamViec());
-            etExpectedSalaryType.setText(currentCvProfile.getLoaiLuongMongMuon());
+
+            // Thiết lập loại thời gian làm việc
+            if (currentCvProfile.getLoaiThoiGianLamViec() != null) {
+                actvWorkScheduleType.setText(currentCvProfile.getLoaiThoiGianLamViec(), false);
+            }
+
+            // Thiết lập hình thức làm việc
+            if (currentCvProfile.getHinhThucLamViec() != null) {
+                actvWorkType.setText(currentCvProfile.getHinhThucLamViec(), false);
+            }
+
+            // Thiết lập loại lương mong muốn
+            if (currentCvProfile.getLoaiLuongMongMuon() != null) {
+                actvExpectedSalaryType.setText(currentCvProfile.getLoaiLuongMongMuon(), false);
+            }
 
             if (currentCvProfile.getMucLuongMongMuon() != null) {
                 etExpectedSalary.setText(String.valueOf(currentCvProfile.getMucLuongMongMuon()));
@@ -358,7 +412,7 @@ public class CreateEditCvProfileFragment extends Fragment {
 
         cvProfile.setNgaySinh(etDateOfBirth.getText().toString().trim());
         cvProfile.setSoDienThoai(etPhone.getText().toString().trim());
-        cvProfile.setTrinhDoHocVan(etEducationLevel.getText().toString().trim());
+        cvProfile.setTrinhDoHocVan(actvEducation.getText().toString().trim());
         cvProfile.setTinhTrangHocVan(etEducationStatus.getText().toString().trim());
         cvProfile.setKinhNghiem(etExperience.getText().toString().trim());
 
@@ -370,9 +424,9 @@ public class CreateEditCvProfileFragment extends Fragment {
         cvProfile.setGioiThieuBanThan(etSelfIntroduction.getText().toString().trim());
         cvProfile.setViTriMongMuon(etDesiredPosition.getText().toString().trim());
         cvProfile.setThoiGianMongMuon(etDesiredTime.getText().toString().trim());
-        cvProfile.setLoaiThoiGianLamViec(etWorkTimeType.getText().toString().trim());
-        cvProfile.setHinhThucLamViec(etWorkForm.getText().toString().trim());
-        cvProfile.setLoaiLuongMongMuon(etExpectedSalaryType.getText().toString().trim());
+        cvProfile.setLoaiThoiGianLamViec(actvWorkScheduleType.getText().toString().trim());
+        cvProfile.setHinhThucLamViec(actvWorkType.getText().toString().trim());
+        cvProfile.setLoaiLuongMongMuon(actvExpectedSalaryType.getText().toString().trim());
 
         String expectedSalaryStr = etExpectedSalary.getText().toString().trim();
         if (!expectedSalaryStr.isEmpty()) {
