@@ -196,6 +196,70 @@ public interface ApiService {
     @PUT("v1/cv-profiles/{id}/set-default")
     Call<ApiResponse> setCvProfileAsDefault(@Path("id") int cvProfileId);
 
+    // Create CV Profile with files
+    @Multipart
+    @POST("v1/cv-profiles/create-with-files")
+    Call<ApiResponse> createCvProfileWithFiles(
+            @Part("tenHoSo") RequestBody tenHoSo,
+            @Part("moTa") RequestBody moTa,
+            @Part("hoTen") RequestBody hoTen,
+            @Part("gioiTinh") RequestBody gioiTinh,
+            @Part("ngaySinh") RequestBody ngaySinh,
+            @Part("soDienThoai") RequestBody soDienThoai,
+            @Part("trinhDoHocVan") RequestBody trinhDoHocVan,
+            @Part("tinhTrangHocVan") RequestBody tinhTrangHocVan,
+            @Part("kinhNghiem") RequestBody kinhNghiem,
+            @Part("tongNamKinhNghiem") RequestBody tongNamKinhNghiem,
+            @Part("gioiThieuBanThan") RequestBody gioiThieuBanThan,
+            @Part("congKhai") RequestBody congKhai,
+            @Part("viTriMongMuon") RequestBody viTriMongMuon,
+            @Part("thoiGianMongMuon") RequestBody thoiGianMongMuon,
+            @Part("loaiThoiGianLamViec") RequestBody loaiThoiGianLamViec,
+            @Part("hinhThucLamViec") RequestBody hinhThucLamViec,
+            @Part("loaiLuongMongMuon") RequestBody loaiLuongMongMuon,
+            @Part("mucLuongMongMuon") RequestBody mucLuongMongMuon,
+            @Part("laMacDinh") RequestBody laMacDinh,
+            @Part MultipartBody.Part avatar,
+            @Part MultipartBody.Part cvFile
+    );
+
+    // Update CV Profile with files
+    @Multipart
+    @PUT("v1/cv-profiles/{id}/update-with-files")
+    Call<ApiResponse> updateCvProfileWithFiles(
+            @Path("id") int cvProfileId,
+            @Part("tenHoSo") RequestBody tenHoSo,
+            @Part("moTa") RequestBody moTa,
+            @Part("hoTen") RequestBody hoTen,
+            @Part("gioiTinh") RequestBody gioiTinh,
+            @Part("ngaySinh") RequestBody ngaySinh,
+            @Part("soDienThoai") RequestBody soDienThoai,
+            @Part("trinhDoHocVan") RequestBody trinhDoHocVan,
+            @Part("tinhTrangHocVan") RequestBody tinhTrangHocVan,
+            @Part("kinhNghiem") RequestBody kinhNghiem,
+            @Part("tongNamKinhNghiem") RequestBody tongNamKinhNghiem,
+            @Part("gioiThieuBanThan") RequestBody gioiThieuBanThan,
+            @Part("congKhai") RequestBody congKhai,
+            @Part("viTriMongMuon") RequestBody viTriMongMuon,
+            @Part("thoiGianMongMuon") RequestBody thoiGianMongMuon,
+            @Part("loaiThoiGianLamViec") RequestBody loaiThoiGianLamViec,
+            @Part("hinhThucLamViec") RequestBody hinhThucLamViec,
+            @Part("loaiLuongMongMuon") RequestBody loaiLuongMongMuon,
+            @Part("mucLuongMongMuon") RequestBody mucLuongMongMuon,
+            @Part("laMacDinh") RequestBody laMacDinh,
+            @Part MultipartBody.Part avatar,
+            @Part MultipartBody.Part cvFile
+    );
+
+    // Upload APIs cho hồ sơ CV cụ thể
+    @Multipart
+    @POST("v1/cv-profiles/{id}/upload-avatar")
+    Call<ApiResponse> uploadCvProfileAvatar(@Path("id") int cvProfileId, @Part MultipartBody.Part file);
+
+    @Multipart
+    @POST("v1/cv-profiles/{id}/upload-cv")
+    Call<ApiResponse> uploadCvProfileCv(@Path("id") int cvProfileId, @Part MultipartBody.Part file);
+
     // Apply for job with specific CV profile
     @POST("v1/applied-jobs/apply-with-cv-profile")
     Call<ApiResponse> applyForJobWithCvProfile(@Body AppliedJobWithCvProfileRequest request);

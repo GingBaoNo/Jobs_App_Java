@@ -5,6 +5,7 @@ import com.example.demo.entity.User;
 import com.example.demo.service.CvProfileService;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.ApiResponseUtil;
+import com.example.demo.utils.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -222,11 +223,15 @@ public class ApiCvProfileController {
                 try {
                     CvProfile cvProfile = cvProfileService.getCvProfileById(id, user.get());
                     if (cvProfile != null) {
-                        // Cập nhật đường dẫn file CV - cần có phương thức xử lý upload file trong service
-                        // Tạm thời chỉ cập nhật đường dẫn
-                        String filePath = "/uploads/cv/" + cvFile.getOriginalFilename(); // Đường dẫn tạm
-                        cvProfile.setUrlCv(filePath);
-                        
+                        // Upload file CV thực tế và cập nhật đường dẫn
+                        String uploadDir = "uploads/cvs/";
+                        String fileName = cvFile.getOriginalFilename();
+                        String savedFileName = FileUploadUtil.saveFile(uploadDir, fileName, cvFile);
+                        String cvUrl = "/uploads/cvs/" + savedFileName;
+
+                        // Cập nhật đường dẫn file CV cho hồ sơ
+                        cvProfile.setUrlCv(cvUrl);
+
                         CvProfile updatedCvProfile = cvProfileService.updateCvProfile(id, cvProfile, user.get());
                         Map<String, Object> cvProfileMap = convertCvProfileToMap(updatedCvProfile);
                         return ApiResponseUtil.success("CV uploaded successfully", cvProfileMap);
@@ -235,6 +240,157 @@ public class ApiCvProfileController {
                     }
                 } catch (Exception e) {
                     return ApiResponseUtil.error("Error uploading CV: " + e.getMessage());
+                }
+            } else {
+                return ApiResponseUtil.error("User not found");
+            }
+        } else {
+            return ApiResponseUtil.error("User not authenticated");
+        }
+    }
+
+    // API: Upload avatar cho hồ sơ CV cụ thể
+    @PostMapping("/{id}/upload-avatar")
+    public ResponseEntity<?> uploadAvatar(@PathVariable Integer id, @RequestParam("avatar") MultipartFile avatarFile) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String username = authentication.getName();
+            Optional<User> user = userService.getUserByTaiKhoan(username);
+            if (user.isPresent()) {
+                try {
+                    CvProfile cvProfile = cvProfileService.getCvProfileById(id, user.get());
+                    if (cvProfile != null) {
+                        // Upload file avatar thực tế và cập nhật đường dẫn
+                        String uploadDir = "uploads/avatars/";
+                        String fileName = avatarFile.getOriginalFilename();
+                        String savedFileName = FileUploadUtil.saveFile(uploadDir, fileName, avatarFile);
+                        String avatarUrl = "/uploads/avatars/" + savedFileName;
+
+                        // Cập nhật đường dẫn avatar cho hồ sơ
+                        cvProfile.setUrlAnhDaiDien(avatarUrl);
+
+                        CvProfile updatedCvProfile = cvProfileService.updateCvProfile(id, cvProfile, user.get());
+                        Map<String, Object> cvProfileMap = convertCvProfileToMap(updatedCvProfile);
+                        return ApiResponseUtil.success("Avatar uploaded successfully", cvProfileMap);
+                    } else {
+                        return ApiResponseUtil.error("CV Profile not found with id: " + id);
+                    }
+                } catch (Exception e) {
+                    return ApiResponseUtil.error("Error uploading avatar: " + e.getMessage());
+                }
+            } else {
+                return ApiResponseUtil.error("User not found");
+            }
+        } else {
+            return ApiResponseUtil.error("User not authenticated");
+        }
+    }
+
+    // API: Cập nhật hồ sơ CV cùng với upload avatar và CV
+    @PutMapping(value = "/{id}/update-with-files", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateCvProfileWithFiles(
+            @PathVariable Integer id,
+            @RequestParam(value = "tenHoSo", required = false) String tenHoSo,
+            @RequestParam(value = "moTa", required = false) String moTa,
+            @RequestParam(value = "hoTen", required = false) String hoTen,
+            @RequestParam(value = "gioiTinh", required = false) String gioiTinh,
+            @RequestParam(value = "ngaySinh", required = false) String ngaySinhStr,
+            @RequestParam(value = "soDienThoai", required = false) String soDienThoai,
+            @RequestParam(value = "trinhDoHocVan", required = false) String trinhDoHocVan,
+            @RequestParam(value = "tinhTrangHocVan", required = false) String tinhTrangHocVan,
+            @RequestParam(value = "kinhNghiem", required = false) String kinhNghiem,
+            @RequestParam(value = "tongNamKinhNghiem", required = false) String tongNamKinhNghiemStr,
+            @RequestParam(value = "gioiThieuBanThan", required = false) String gioiThieuBanThan,
+            @RequestParam(value = "congKhai", required = false) Boolean congKhai,
+            @RequestParam(value = "viTriMongMuon", required = false) String viTriMongMuon,
+            @RequestParam(value = "thoiGianMongMuon", required = false) String thoiGianMongMuon,
+            @RequestParam(value = "loaiThoiGianLamViec", required = false) String loaiThoiGianLamViec,
+            @RequestParam(value = "hinhThucLamViec", required = false) String hinhThucLamViec,
+            @RequestParam(value = "loaiLuongMongMuon", required = false) String loaiLuongMongMuon,
+            @RequestParam(value = "mucLuongMongMuon", required = false) Integer mucLuongMongMuon,
+            @RequestParam(value = "laMacDinh", required = false) Boolean laMacDinh,
+            @RequestParam(value = "avatar", required = false) MultipartFile avatarFile,
+            @RequestParam(value = "cvFile", required = false) MultipartFile cvFile) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String username = authentication.getName();
+            Optional<User> user = userService.getUserByTaiKhoan(username);
+            if (user.isPresent()) {
+                try {
+                    // Lấy hồ sơ hiện tại
+                    CvProfile existingCvProfile = cvProfileService.getCvProfileById(id, user.get());
+                    if (existingCvProfile == null) {
+                        return ApiResponseUtil.error("CV Profile not found with id: " + id);
+                    }
+
+                    // Cập nhật các trường nếu có
+                    if (tenHoSo != null) existingCvProfile.setTenHoSo(tenHoSo);
+                    if (moTa != null) existingCvProfile.setMoTa(moTa);
+                    if (hoTen != null) existingCvProfile.setHoTen(hoTen);
+                    if (gioiTinh != null) existingCvProfile.setGioiTinh(gioiTinh);
+
+                    if (ngaySinhStr != null && !ngaySinhStr.isEmpty()) {
+                        java.time.LocalDate ngaySinh = java.time.LocalDate.parse(ngaySinhStr);
+                        existingCvProfile.setNgaySinh(ngaySinh);
+                    }
+
+                    if (soDienThoai != null) existingCvProfile.setSoDienThoai(soDienThoai);
+                    if (trinhDoHocVan != null) existingCvProfile.setTrinhDoHocVan(trinhDoHocVan);
+                    if (tinhTrangHocVan != null) existingCvProfile.setTinhTrangHocVan(tinhTrangHocVan);
+                    if (kinhNghiem != null) existingCvProfile.setKinhNghiem(kinhNghiem);
+
+                    if (tongNamKinhNghiemStr != null && !tongNamKinhNghiemStr.isEmpty()) {
+                        java.math.BigDecimal tongNamKinhNghiem = new java.math.BigDecimal(tongNamKinhNghiemStr);
+                        existingCvProfile.setTongNamKinhNghiem(tongNamKinhNghiem);
+                    }
+
+                    if (gioiThieuBanThan != null) existingCvProfile.setGioiThieuBanThan(gioiThieuBanThan);
+                    if (congKhai != null) existingCvProfile.setCongKhai(congKhai);
+                    if (viTriMongMuon != null) existingCvProfile.setViTriMongMuon(viTriMongMuon);
+                    if (thoiGianMongMuon != null) existingCvProfile.setThoiGianMongMuon(thoiGianMongMuon);
+                    if (loaiThoiGianLamViec != null) existingCvProfile.setLoaiThoiGianLamViec(loaiThoiGianLamViec);
+                    if (hinhThucLamViec != null) existingCvProfile.setHinhThucLamViec(hinhThucLamViec);
+                    if (loaiLuongMongMuon != null) existingCvProfile.setLoaiLuongMongMuon(loaiLuongMongMuon);
+                    if (mucLuongMongMuon != null) existingCvProfile.setMucLuongMongMuon(mucLuongMongMuon);
+                    if (laMacDinh != null) existingCvProfile.setLaMacDinh(laMacDinh);
+
+                    // Xử lý upload avatar nếu có
+                    if (avatarFile != null && !avatarFile.isEmpty()) {
+                        // Xóa avatar cũ nếu tồn tại
+                        if (existingCvProfile.getUrlAnhDaiDien() != null && !existingCvProfile.getUrlAnhDaiDien().isEmpty()) {
+                            String oldFileName = existingCvProfile.getUrlAnhDaiDien().substring(existingCvProfile.getUrlAnhDaiDien().lastIndexOf("/") + 1);
+                            FileUploadUtil.deleteFile("uploads/avatars/", oldFileName);
+                        }
+
+                        String uploadDir = "uploads/avatars/";
+                        String fileName = avatarFile.getOriginalFilename();
+                        String savedFileName = FileUploadUtil.saveFile(uploadDir, fileName, avatarFile);
+                        String avatarUrl = "/uploads/avatars/" + savedFileName;
+                        existingCvProfile.setUrlAnhDaiDien(avatarUrl);
+                    }
+
+                    // Xử lý upload CV nếu có
+                    if (cvFile != null && !cvFile.isEmpty()) {
+                        // Xóa CV cũ nếu tồn tại
+                        if (existingCvProfile.getUrlCv() != null && !existingCvProfile.getUrlCv().isEmpty()) {
+                            String oldFileName = existingCvProfile.getUrlCv().substring(existingCvProfile.getUrlCv().lastIndexOf("/") + 1);
+                            FileUploadUtil.deleteFile("uploads/cvs/", oldFileName);
+                        }
+
+                        String uploadDir = "uploads/cvs/";
+                        String fileName = cvFile.getOriginalFilename();
+                        String savedFileName = FileUploadUtil.saveFile(uploadDir, fileName, cvFile);
+                        String cvUrl = "/uploads/cvs/" + savedFileName;
+                        existingCvProfile.setUrlCv(cvUrl);
+                    }
+
+                    // Gọi service để cập nhật hồ sơ CV
+                    CvProfile updatedCvProfile = cvProfileService.updateCvProfile(id, existingCvProfile, user.get());
+                    Map<String, Object> cvProfileMap = convertCvProfileToMap(updatedCvProfile);
+                    return ApiResponseUtil.success("CV Profile updated successfully", cvProfileMap);
+                } catch (Exception e) {
+                    return ApiResponseUtil.error("Error updating CV profile with files: " + e.getMessage());
                 }
             } else {
                 return ApiResponseUtil.error("User not found");

@@ -234,30 +234,62 @@ public class CreateEditCvProfileFragment extends Fragment {
     }
 
     private boolean checkPermission() {
-        return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        // Trên Android 13+, kiểm tra quyền READ_MEDIA_IMAGES và READ_MEDIA_VIDEO
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED;
+        }
+        // Trên các phiên bản cũ hơn, kiểm tra READ_EXTERNAL_STORAGE
+        else {
+            return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
     }
 
     private void requestPermission() {
-        if (getParentFragment() != null) {
-            getParentFragment().requestPermissions(
-                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                REQUEST_CODE_PERMISSION);
-        } else if (getActivity() != null) {
-            ActivityCompat.requestPermissions(getActivity(),
-                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                REQUEST_CODE_PERMISSION);
+        // Trên Android 13+, yêu cầu quyền READ_MEDIA_IMAGES và READ_MEDIA_VIDEO
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (getParentFragment() != null) {
+                getParentFragment().requestPermissions(
+                    new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO},
+                    REQUEST_CODE_PERMISSION);
+            } else if (getActivity() != null) {
+                ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO},
+                    REQUEST_CODE_PERMISSION);
+            }
+        }
+        // Trên các phiên bản cũ hơn, yêu cầu READ_EXTERNAL_STORAGE
+        else {
+            if (getParentFragment() != null) {
+                getParentFragment().requestPermissions(
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_CODE_PERMISSION);
+            } else if (getActivity() != null) {
+                ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_CODE_PERMISSION);
+            }
         }
     }
 
     private void openImagePicker(int requestCode) {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        Intent intent = new Intent();
+        if (requestCode == REQUEST_CODE_PICK_AVATAR) {
+            intent.setAction(Intent.ACTION_PICK);
+            intent.setData(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        } else {
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+        }
         intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/jpeg", "image/png", "image/webp"});
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivityForResult(intent, requestCode);
     }
 
     private void openDocumentPicker(int requestCode) {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("application/pdf");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivityForResult(intent, requestCode);
     }
 
@@ -286,10 +318,19 @@ public class CreateEditCvProfileFragment extends Fragment {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (allGranted) {
                 // Quyền được cấp, có thể thực hiện hành động
+                Toast.makeText(requireContext(), "Đã cấp quyền truy cập", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(requireContext(), "Cần quyền truy cập bộ nhớ để chọn ảnh và file", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Cần quyền truy cập để chọn ảnh và file", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -350,19 +391,119 @@ public class CreateEditCvProfileFragment extends Fragment {
     }
 
     private void createCvProfile(CvProfile cvProfile) {
-        Call<ApiResponse> call = apiService.createCvProfile(cvProfile);
+        // Nếu có file ảnh hoặc CV, sử dụng phương thức upload với file
+        if ((avatarFilePath != null && !avatarFilePath.isEmpty()) || (cvFilePath != null && !cvFilePath.isEmpty())) {
+            createCvProfileWithFiles(cvProfile);
+        } else {
+            // Nếu không có file, sử dụng phương thức JSON thông thường
+            Call<ApiResponse> call = apiService.createCvProfile(cvProfile);
+            call.enqueue(new retrofit2.Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse apiResponse = response.body();
+                        if (apiResponse.isSuccess()) {
+                            // Upload ảnh đại diện và CV nếu có
+                            Integer cvProfileId = extractCvProfileId(apiResponse);
+                            if (cvProfileId != null) {
+                                handleFileUploads(cvProfileId);
+
+                                // Kiểm tra xem có jobId được truyền từ JobDetailFragment không
+                                Bundle args = getArguments();
+                                if (args != null && args.containsKey("job_id_to_apply")) {
+                                    int jobId = args.getInt("job_id_to_apply");
+
+                                    // Sau khi tạo hồ sơ thành công, tiến hành ứng tuyển
+                                    applyForJobWithCvProfile(cvProfileId, jobId);
+                                }
+                            }
+                            Toast.makeText(requireContext(), "Tạo hồ sơ thành công", Toast.LENGTH_SHORT).show();
+
+                            // Quay lại màn hình trước đó
+                            if (getFragmentManager() != null) {
+                                getFragmentManager().popBackStack();
+                            }
+                        } else {
+                            String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Tạo hồ sơ thất bại";
+                            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "Không thể tạo hồ sơ", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void createCvProfileWithFiles(CvProfile cvProfile) {
+        // Tạo các RequestBody cho các trường văn bản
+        RequestBody tenHoSo = createRequestBody(cvProfile.getTenHoSo());
+        RequestBody moTa = createRequestBody(cvProfile.getMoTa());
+        RequestBody hoTen = createRequestBody(cvProfile.getHoTen());
+        RequestBody gioiTinh = createRequestBody(cvProfile.getGioiTinh());
+        RequestBody ngaySinh = createRequestBody(cvProfile.getNgaySinh() != null ? cvProfile.getNgaySinh() : "");
+        RequestBody soDienThoai = createRequestBody(cvProfile.getSoDienThoai());
+        RequestBody trinhDoHocVan = createRequestBody(cvProfile.getTrinhDoHocVan());
+        RequestBody tinhTrangHocVan = createRequestBody(cvProfile.getTinhTrangHocVan());
+        RequestBody kinhNghiem = createRequestBody(cvProfile.getKinhNghiem());
+        RequestBody tongNamKinhNghiem = createRequestBody(cvProfile.getTongNamKinhNghiem() != null ? cvProfile.getTongNamKinhNghiem().toString() : "");
+        RequestBody gioiThieuBanThan = createRequestBody(cvProfile.getGioiThieuBanThan());
+        RequestBody congKhai = createRequestBody(cvProfile.getCongKhai() != null ? cvProfile.getCongKhai().toString() : "false");
+        RequestBody viTriMongMuon = createRequestBody(cvProfile.getViTriMongMuon());
+        RequestBody thoiGianMongMuon = createRequestBody(cvProfile.getThoiGianMongMuon());
+        RequestBody loaiThoiGianLamViec = createRequestBody(cvProfile.getLoaiThoiGianLamViec());
+        RequestBody hinhThucLamViec = createRequestBody(cvProfile.getHinhThucLamViec());
+        RequestBody loaiLuongMongMuon = createRequestBody(cvProfile.getLoaiLuongMongMuon());
+        RequestBody mucLuongMongMuon = createRequestBody(cvProfile.getMucLuongMongMuon() != null ? cvProfile.getMucLuongMongMuon().toString() : "");
+        RequestBody laMacDinh = createRequestBody(cvProfile.getLaMacDinh() != null ? cvProfile.getLaMacDinh().toString() : "false");
+
+        // Tạo các Part cho file nếu có
+        MultipartBody.Part avatarPart = null;
+        if (avatarFilePath != null && !avatarFilePath.isEmpty()) {
+            File file = new File(avatarFilePath);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
+            avatarPart = MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
+        }
+
+        MultipartBody.Part cvPart = null;
+        if (cvFilePath != null && !cvFilePath.isEmpty()) {
+            File file = new File(cvFilePath);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("application/pdf"), file);
+            cvPart = MultipartBody.Part.createFormData("cvFile", file.getName(), requestFile);
+        }
+
+        Call<ApiResponse> call = apiService.createCvProfileWithFiles(
+                tenHoSo, moTa, hoTen, gioiTinh, ngaySinh, soDienThoai, trinhDoHocVan, tinhTrangHocVan,
+                kinhNghiem, tongNamKinhNghiem, gioiThieuBanThan, congKhai, viTriMongMuon, thoiGianMongMuon,
+                loaiThoiGianLamViec, hinhThucLamViec, loaiLuongMongMuon, mucLuongMongMuon, laMacDinh,
+                avatarPart, cvPart
+        );
+
         call.enqueue(new retrofit2.Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
-                        // Upload ảnh đại diện và CV nếu có
-                        Integer cvProfileId = extractCvProfileId(apiResponse);
-                        if (cvProfileId != null) {
-                            handleFileUploads(cvProfileId);
+                        // Kiểm tra xem có jobId được truyền từ JobDetailFragment không
+                        Bundle args = getArguments();
+                        if (args != null && args.containsKey("job_id_to_apply")) {
+                            int jobId = args.getInt("job_id_to_apply");
+                            // Trích xuất ID hồ sơ từ phản hồi
+                            Integer cvProfileId = extractCvProfileId(apiResponse);
+                            if (cvProfileId != null) {
+                                // Sau khi tạo hồ sơ thành công, tiến hành ứng tuyển
+                                applyForJobWithCvProfile(cvProfileId, jobId);
+                            }
                         }
                         Toast.makeText(requireContext(), "Tạo hồ sơ thành công", Toast.LENGTH_SHORT).show();
+
+                        // Quay lại màn hình trước đó
                         if (getFragmentManager() != null) {
                             getFragmentManager().popBackStack();
                         }
@@ -382,27 +523,155 @@ public class CreateEditCvProfileFragment extends Fragment {
         });
     }
 
-    private void updateCvProfile(CvProfile cvProfile) {
-        if (currentCvProfile == null) return;
+    private void applyForJobWithCvProfile(int cvProfileId, int jobId) {
+        // Gọi API ứng tuyển với hồ sơ cụ thể
+        ApiService apiService = ApiClient.getApiService();
 
-        cvProfile.setMaHoSoCv(currentCvProfile.getMaHoSoCv());
+        // Tạo request object
+        ApiService.AppliedJobWithCvProfileRequest request = new ApiService.AppliedJobWithCvProfileRequest();
+        request.setJobDetailId(jobId);
+        request.setCvProfileId(cvProfileId);
 
-        Call<ApiResponse> call = apiService.updateCvProfile(currentCvProfile.getMaHoSoCv(), cvProfile);
+        Call<ApiResponse> call = apiService.applyForJobWithCvProfile(request);
         call.enqueue(new retrofit2.Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
-                        // Upload ảnh đại diện và CV nếu có
-                        Integer cvProfileId = extractCvProfileId(apiResponse);
-                        if (cvProfileId != null) {
-                            handleFileUploads(cvProfileId);
+                        Toast.makeText(requireContext(), "Ứng tuyển thành công!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Ứng tuyển thất bại";
+                        Toast.makeText(requireContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Không thể ứng tuyển", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateCvProfile(CvProfile cvProfile) {
+        // Nếu có file ảnh hoặc CV mới, sử dụng phương thức upload với file
+        if ((avatarFilePath != null && !avatarFilePath.isEmpty()) || (cvFilePath != null && !cvFilePath.isEmpty())) {
+            updateCvProfileWithFiles(currentCvProfile.getMaHoSoCv(), cvProfile);
+        } else {
+            // Nếu không có file mới, sử dụng phương thức JSON thông thường
+            if (currentCvProfile == null) return;
+
+            cvProfile.setMaHoSoCv(currentCvProfile.getMaHoSoCv());
+
+            Call<ApiResponse> call = apiService.updateCvProfile(currentCvProfile.getMaHoSoCv(), cvProfile);
+            call.enqueue(new retrofit2.Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse apiResponse = response.body();
+                        if (apiResponse.isSuccess()) {
+                            // Upload ảnh đại diện và CV nếu có
+                            Integer cvProfileId = extractCvProfileId(apiResponse);
+                            if (cvProfileId != null) {
+                                handleFileUploads(cvProfileId);
+                            } else {
+                                // Nếu không thể trích xuất ID từ phản hồi, sử dụng ID hiện tại
+                                handleFileUploads(currentCvProfile.getMaHoSoCv());
+                            }
+
+                            // Kiểm tra xem có jobId được truyền từ JobDetailFragment không
+                            Bundle args = getArguments();
+                            if (args != null && args.containsKey("job_id_to_apply")) {
+                                int jobId = args.getInt("job_id_to_apply");
+
+                                // Sau khi cập nhật hồ sơ thành công, tiến hành ứng tuyển
+                                applyForJobWithCvProfile(currentCvProfile.getMaHoSoCv(), jobId);
+                            }
+
+                            Toast.makeText(requireContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
+                            if (getFragmentManager() != null) {
+                                getFragmentManager().popBackStack();
+                            }
                         } else {
-                            // Nếu không thể trích xuất ID từ phản hồi, sử dụng ID hiện tại
-                            handleFileUploads(currentCvProfile.getMaHoSoCv());
+                            String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Cập nhật hồ sơ thất bại";
+                            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "Không thể cập nhật hồ sơ", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void updateCvProfileWithFiles(int cvProfileId, CvProfile cvProfile) {
+        // Tạo các RequestBody cho các trường văn bản
+        RequestBody tenHoSo = createRequestBody(cvProfile.getTenHoSo());
+        RequestBody moTa = createRequestBody(cvProfile.getMoTa());
+        RequestBody hoTen = createRequestBody(cvProfile.getHoTen());
+        RequestBody gioiTinh = createRequestBody(cvProfile.getGioiTinh());
+        RequestBody ngaySinh = createRequestBody(cvProfile.getNgaySinh() != null ? cvProfile.getNgaySinh() : "");
+        RequestBody soDienThoai = createRequestBody(cvProfile.getSoDienThoai());
+        RequestBody trinhDoHocVan = createRequestBody(cvProfile.getTrinhDoHocVan());
+        RequestBody tinhTrangHocVan = createRequestBody(cvProfile.getTinhTrangHocVan());
+        RequestBody kinhNghiem = createRequestBody(cvProfile.getKinhNghiem());
+        RequestBody tongNamKinhNghiem = createRequestBody(cvProfile.getTongNamKinhNghiem() != null ? cvProfile.getTongNamKinhNghiem().toString() : "");
+        RequestBody gioiThieuBanThan = createRequestBody(cvProfile.getGioiThieuBanThan());
+        RequestBody congKhai = createRequestBody(cvProfile.getCongKhai() != null ? cvProfile.getCongKhai().toString() : "false");
+        RequestBody viTriMongMuon = createRequestBody(cvProfile.getViTriMongMuon());
+        RequestBody thoiGianMongMuon = createRequestBody(cvProfile.getThoiGianMongMuon());
+        RequestBody loaiThoiGianLamViec = createRequestBody(cvProfile.getLoaiThoiGianLamViec());
+        RequestBody hinhThucLamViec = createRequestBody(cvProfile.getHinhThucLamViec());
+        RequestBody loaiLuongMongMuon = createRequestBody(cvProfile.getLoaiLuongMongMuon());
+        RequestBody mucLuongMongMuon = createRequestBody(cvProfile.getMucLuongMongMuon() != null ? cvProfile.getMucLuongMongMuon().toString() : "");
+        RequestBody laMacDinh = createRequestBody(cvProfile.getLaMacDinh() != null ? cvProfile.getLaMacDinh().toString() : "false");
+
+        // Tạo các Part cho file nếu có
+        MultipartBody.Part avatarPart = null;
+        if (avatarFilePath != null && !avatarFilePath.isEmpty()) {
+            File file = new File(avatarFilePath);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
+            avatarPart = MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
+        }
+
+        MultipartBody.Part cvPart = null;
+        if (cvFilePath != null && !cvFilePath.isEmpty()) {
+            File file = new File(cvFilePath);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("application/pdf"), file);
+            cvPart = MultipartBody.Part.createFormData("cvFile", file.getName(), requestFile);
+        }
+
+        Call<ApiResponse> call = apiService.updateCvProfileWithFiles(
+                cvProfileId, tenHoSo, moTa, hoTen, gioiTinh, ngaySinh, soDienThoai, trinhDoHocVan, tinhTrangHocVan,
+                kinhNghiem, tongNamKinhNghiem, gioiThieuBanThan, congKhai, viTriMongMuon, thoiGianMongMuon,
+                loaiThoiGianLamViec, hinhThucLamViec, loaiLuongMongMuon, mucLuongMongMuon, laMacDinh,
+                avatarPart, cvPart
+        );
+
+        call.enqueue(new retrofit2.Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        // Kiểm tra xem có jobId được truyền từ JobDetailFragment không
+                        Bundle args = getArguments();
+                        if (args != null && args.containsKey("job_id_to_apply")) {
+                            int jobId = args.getInt("job_id_to_apply");
+                            // Sau khi cập nhật hồ sơ thành công, tiến hành ứng tuyển
+                            applyForJobWithCvProfile(cvProfileId, jobId);
                         }
                         Toast.makeText(requireContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
+
+                        // Quay lại màn hình trước đó
                         if (getFragmentManager() != null) {
                             getFragmentManager().popBackStack();
                         }
@@ -443,7 +712,7 @@ public class CreateEditCvProfileFragment extends Fragment {
         RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
         MultipartBody.Part multipartBody = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
 
-        Call<ApiResponse> call = apiService.uploadAvatar(multipartBody);
+        Call<ApiResponse> call = apiService.uploadCvProfileAvatar(cvProfileId, multipartBody);
         call.enqueue(new retrofit2.Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
@@ -469,7 +738,7 @@ public class CreateEditCvProfileFragment extends Fragment {
         RequestBody requestFile = RequestBody.create(MediaType.parse("application/pdf"), file);
         MultipartBody.Part multipartBody = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
 
-        Call<ApiResponse> call = apiService.uploadCv(multipartBody);
+        Call<ApiResponse> call = apiService.uploadCvProfileCv(cvProfileId, multipartBody);
         call.enqueue(new retrofit2.Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
@@ -486,6 +755,14 @@ public class CreateEditCvProfileFragment extends Fragment {
                 Toast.makeText(requireContext(), "Lỗi upload CV: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    // Phương thức tiện ích để tạo RequestBody từ chuỗi
+    private RequestBody createRequestBody(String value) {
+        if (value == null) {
+            value = "";
+        }
+        return RequestBody.create(okhttp3.MediaType.parse("text/plain"), value);
     }
 
     private Integer extractCvProfileId(ApiResponse apiResponse) {

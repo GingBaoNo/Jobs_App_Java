@@ -13,7 +13,9 @@ import java.nio.file.StandardCopyOption;
 public class FileUploadUtil {
 
     public static String saveFile(String uploadDir, String fileName, MultipartFile multipartFile) throws IOException {
-        Path uploadPath = Paths.get(uploadDir);
+        // Sử dụng thư mục làm việc hiện tại của ứng dụng để tạo đường dẫn tuyệt đối
+        String projectPath = System.getProperty("user.dir");
+        Path uploadPath = Paths.get(projectPath, uploadDir);
 
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
@@ -21,7 +23,7 @@ public class FileUploadUtil {
 
         String fileCode = System.currentTimeMillis() / 1000 + "_" + fileName;
         Path filePath = uploadPath.resolve(fileCode);
-        
+
         try (InputStream inputStream = multipartFile.getInputStream()) {
             Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
@@ -32,7 +34,9 @@ public class FileUploadUtil {
     }
 
     public static boolean deleteFile(String uploadDir, String fileName) {
-        Path filePath = Paths.get(uploadDir).resolve(fileName);
+        // Sử dụng thư mục làm việc hiện tại của ứng dụng để tạo đường dẫn tuyệt đối
+        String projectPath = System.getProperty("user.dir");
+        Path filePath = Paths.get(projectPath, uploadDir, fileName);
         try {
             return Files.deleteIfExists(filePath);
         } catch (IOException e) {
