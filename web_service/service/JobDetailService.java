@@ -12,7 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 public class JobDetailService {
@@ -109,7 +111,8 @@ public class JobDetailService {
 
     public List<JobDetail> getFeaturedJobs() {
         // Lấy các công việc nổi bật: những công việc được duyệt, còn hiệu lực và có nhiều lượt xem
-        return jobDetailRepository.findTop10ByTrangThaiDuyetAndTrangThaiTinTuyenOrderByLuotXemDesc("Đã duyệt", "Mở");
+        Pageable pageable = PageRequest.of(0, 10);
+        return jobDetailRepository.findTop10ByTrangThaiDuyetAndTrangThaiTinTuyenOrderByLuotXemDesc("Đã duyệt", "Mở", pageable);
     }
 
     public void incrementViewCount(JobDetail jobDetail) {
@@ -341,5 +344,33 @@ public class JobDetailService {
         }
 
         return relatedJobs;
+    }
+
+    // Phương thức lấy công việc mới nhất
+    public List<JobDetail> getLatestJobs(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return jobDetailRepository.findTopByTrangThaiDuyetAndTrangThaiTinTuyenOrderByNgayDangDesc("Đã duyệt", "Mở", pageable);
+    }
+
+    // Phương thức lấy công việc nổi bật theo lượt xem (giữ lại cho mục đích khác nếu cần)
+    public List<JobDetail> getFeaturedJobsByViews() {
+        Pageable pageable = PageRequest.of(0, 10);
+        return jobDetailRepository.findTop10ByTrangThaiDuyetAndTrangThaiTinTuyenOrderByLuotXemDesc("Đã duyệt", "Mở", pageable);
+    }
+
+    // Phương thức lấy công việc theo lĩnh vực phổ biến
+    public List<JobDetail> getJobsByPopularWorkFields(int limit) {
+        // Lấy các lĩnh vực có nhiều công việc nhất
+        List<Object[]> popularFields = jobDetailRepository.countJobsByWorkField();
+
+        // Lấy danh sách ID của các lĩnh vực phổ biến
+        List<Integer> fieldIds = new ArrayList<>();
+        for (int i = 0; i < Math.min(limit, popularFields.size()); i++) {
+            Object[] fieldData = popularFields.get(i);
+            fieldIds.add(((Number) fieldData[0]).intValue());
+        }
+
+        // Lấy công việc từ các lĩnh vực phổ biến
+        return jobDetailRepository.findByWorkFieldIdIn(fieldIds);
     }
 }

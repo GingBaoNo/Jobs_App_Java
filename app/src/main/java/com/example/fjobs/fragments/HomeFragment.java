@@ -16,10 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.fjobs.R;
 import com.example.fjobs.adapters.FeaturedCompanyAdapter;
 import com.example.fjobs.adapters.HorizontalJobAdapter;
+import com.example.fjobs.adapters.LatestJobAdapter;
+import com.example.fjobs.adapters.CategoryJobAdapter;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.Company;
 import com.example.fjobs.models.JobDetail;
+import com.example.fjobs.models.WorkField;
 import com.example.fjobs.models.ApiResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,12 +36,20 @@ public class HomeFragment extends Fragment {
     private ImageButton searchButton;
     private RecyclerView rvFeaturedJobs;
     private RecyclerView rvFeaturedCompanies;
+    private RecyclerView rvLatestJobs;
+    private RecyclerView rvPopularCategories;
     private HorizontalJobAdapter horizontalJobAdapter;
     private FeaturedCompanyAdapter featuredCompanyAdapter;
+    private LatestJobAdapter latestJobAdapter;
+    private CategoryJobAdapter categoryJobAdapter;
     private List<JobDetail> featuredJobList;
     private List<Company> featuredCompanyList;
+    private List<JobDetail> latestJobList;
+    private List<WorkField> popularCategoryList;
     private TextView tvFeaturedJobsTitle;
     private TextView tvFeaturedCompaniesTitle;
+    private TextView tvTotalJobs;
+    private TextView tvTotalCompanies;
 
     @Nullable
     @Override
@@ -49,6 +60,9 @@ public class HomeFragment extends Fragment {
         setupRecyclerViews();
         loadFeaturedJobs();
         loadFeaturedCompanies();
+        loadLatestJobs();
+        loadPopularCategories();
+        loadMarketStatistics();
         setupSearchFunctionality();
 
         return view;
@@ -59,8 +73,12 @@ public class HomeFragment extends Fragment {
         searchButton = view.findViewById(R.id.button_search);
         rvFeaturedJobs = view.findViewById(R.id.rv_featured_jobs);
         rvFeaturedCompanies = view.findViewById(R.id.rv_featured_companies);
+        rvLatestJobs = view.findViewById(R.id.rv_latest_jobs);
+        rvPopularCategories = view.findViewById(R.id.rv_popular_categories);
         tvFeaturedJobsTitle = view.findViewById(R.id.tv_featured_jobs_title);
         tvFeaturedCompaniesTitle = view.findViewById(R.id.tv_featured_companies_title);
+        tvTotalJobs = view.findViewById(R.id.tv_total_jobs);
+        tvTotalCompanies = view.findViewById(R.id.tv_total_companies);
     }
 
     private void setupRecyclerViews() {
@@ -75,6 +93,18 @@ public class HomeFragment extends Fragment {
         featuredCompanyAdapter = new FeaturedCompanyAdapter(featuredCompanyList, requireContext());
         rvFeaturedCompanies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         rvFeaturedCompanies.setAdapter(featuredCompanyAdapter);
+
+        // Thiết lập RecyclerView cho công việc mới nhất
+        latestJobList = new ArrayList<>();
+        latestJobAdapter = new LatestJobAdapter(latestJobList, getContext());
+        rvLatestJobs.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvLatestJobs.setAdapter(latestJobAdapter);
+
+        // Thiết lập RecyclerView cho danh mục công việc phổ biến
+        popularCategoryList = new ArrayList<>();
+        categoryJobAdapter = new CategoryJobAdapter(popularCategoryList, getContext());
+        rvPopularCategories.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvPopularCategories.setAdapter(categoryJobAdapter);
     }
 
     private void setupSearchFunctionality() {
@@ -621,5 +651,266 @@ public class HomeFragment extends Fragment {
         featuredJobList.add(job2);
         featuredJobList.add(job3);
         horizontalJobAdapter.notifyDataSetChanged();
+    }
+
+    private void loadLatestJobs() {
+        // Gọi API để lấy danh sách công việc mới nhất
+        Call<ApiResponse> call = ApiClient.getRetrofitInstance().create(ApiService.class).getLatestJobs();
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                Log.d("HomeFragment", "Latest jobs response code: " + response.code());
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("HomeFragment", "Latest jobs response body: " + response.body().toString());
+                    Object data = response.body().getData();
+                    if (data != null) {
+                        List<JobDetail> jobs = new ArrayList<>();
+
+                        // Chuyển đổi dữ liệu từ Object sang JobDetail
+                        if (data instanceof List) {
+                            List<?> rawData = (List<?>) data;
+                            for (Object item : rawData) {
+                                if (item instanceof java.util.Map) {
+                                    JobDetail job = convertMapToJobDetail((java.util.Map<String, Object>) item);
+                                    if (job != null) {
+                                        jobs.add(job);
+                                    }
+                                } else if (item instanceof JobDetail) {
+                                    jobs.add((JobDetail) item);
+                                }
+                            }
+                        }
+
+                        latestJobList.clear();
+                        latestJobList.addAll(jobs);
+                        latestJobAdapter.notifyDataSetChanged();
+
+                        // Kiểm tra nếu không có dữ liệu sau khi xử lý
+                        if (jobs.isEmpty()) {
+                            Log.w("HomeFragment", "No latest jobs received from API, using sample data");
+                            loadSampleLatestJobs();
+                        } else {
+                            Log.d("HomeFragment", "Loaded " + jobs.size() + " latest jobs from API");
+                        }
+                    } else {
+                        // Nếu không có dữ liệu thì dùng dữ liệu mẫu
+                        Log.w("HomeFragment", "No latest jobs data in response, using sample data");
+                        loadSampleLatestJobs();
+                    }
+                } else {
+                    // Trong trường hợp phản hồi không thành công, dùng dữ liệu mẫu
+                    Log.e("HomeFragment", "Failed to load latest jobs: " + response.code() + " - " + (response.body() != null ? response.body().getMessage() : "No body"));
+                    loadSampleLatestJobs();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Khi không thể kết nối API, dùng dữ liệu mẫu
+                Log.e("HomeFragment", "Error loading latest jobs", t);
+                loadSampleLatestJobs();
+            }
+        });
+    }
+
+    private void loadSampleLatestJobs() {
+        // Dữ liệu mẫu cho mục đích demo
+        JobDetail job1 = new JobDetail();
+        job1.setTieuDe("Lập trình viên Java");
+        job1.setLuong(20000000);
+        job1.setLoaiLuong("Tháng");
+        job1.setChiTiet("Phát triển ứng dụng backend với Java Spring Boot...");
+        job1.setNgayDang("2024-10-15");
+        job1.setTrangThaiDuyet("Đã duyệt");
+        job1.setTrangThaiTinTuyen("Mở");
+
+        // Tạo công ty mẫu
+        com.example.fjobs.models.Company company1 = new com.example.fjobs.models.Company();
+        company1.setTenCongTy("Công ty FPT");
+        job1.setCompany(company1);
+
+        JobDetail job2 = new JobDetail();
+        job2.setTieuDe("Nhân viên Marketing");
+        job2.setLuong(15000000);
+        job2.setLoaiLuong("Tháng");
+        job2.setChiTiet("Thực hiện chiến dịch marketing online và offline...");
+        job2.setNgayDang("2024-10-14");
+        job2.setTrangThaiDuyet("Đã duyệt");
+        job2.setTrangThaiTinTuyen("Mở");
+
+        com.example.fjobs.models.Company company2 = new com.example.fjobs.models.Company();
+        company2.setTenCongTy("Công ty VinGroup");
+        job2.setCompany(company2);
+
+        JobDetail job3 = new JobDetail();
+        job3.setTieuDe("Kỹ sư AI");
+        job3.setLuong(35000000);
+        job3.setLoaiLuong("Tháng");
+        job3.setChiTiet("Phát triển mô hình học máy và trí tuệ nhân tạo...");
+        job3.setNgayDang("2024-10-13");
+        job3.setTrangThaiDuyet("Đã duyệt");
+        job3.setTrangThaiTinTuyen("Mở");
+
+        com.example.fjobs.models.Company company3 = new com.example.fjobs.models.Company();
+        company3.setTenCongTy("Công ty Samsung");
+        job3.setCompany(company3);
+
+        latestJobList.clear();
+        latestJobList.add(job1);
+        latestJobList.add(job2);
+        latestJobList.add(job3);
+        latestJobAdapter.notifyDataSetChanged();
+    }
+
+    private void loadPopularCategories() {
+        // Gọi API để lấy danh sách lĩnh vực công việc phổ biến
+        Call<ApiResponse> call = ApiClient.getRetrofitInstance().create(ApiService.class).getPopularWorkFields();
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                Log.d("HomeFragment", "Popular categories response code: " + response.code());
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("HomeFragment", "Popular categories response body: " + response.body().toString());
+                    Object data = response.body().getData();
+                    if (data != null) {
+                        List<WorkField> categories = new ArrayList<>();
+
+                        // Chuyển đổi dữ liệu từ Object sang WorkField
+                        if (data instanceof List) {
+                            List<?> rawData = (List<?>) data;
+                            for (Object item : rawData) {
+                                if (item instanceof java.util.Map) {
+                                    WorkField category = convertMapToWorkField((java.util.Map<String, Object>) item);
+                                    if (category != null) {
+                                        categories.add(category);
+                                    }
+                                } else if (item instanceof WorkField) {
+                                    categories.add((WorkField) item);
+                                }
+                            }
+                        }
+
+                        popularCategoryList.clear();
+                        popularCategoryList.addAll(categories);
+                        categoryJobAdapter.notifyDataSetChanged();
+
+                        // Kiểm tra nếu không có dữ liệu sau khi xử lý
+                        if (categories.isEmpty()) {
+                            Log.w("HomeFragment", "No popular categories received from API, using sample data");
+                            loadSampleCategories();
+                        } else {
+                            Log.d("HomeFragment", "Loaded " + categories.size() + " popular categories from API");
+                        }
+                    } else {
+                        // Nếu không có dữ liệu thì dùng dữ liệu mẫu
+                        Log.w("HomeFragment", "No popular categories data in response, using sample data");
+                        loadSampleCategories();
+                    }
+                } else {
+                    // Trong trường hợp phản hồi không thành công, dùng dữ liệu mẫu
+                    Log.e("HomeFragment", "Failed to load popular categories: " + response.code() + " - " + (response.body() != null ? response.body().getMessage() : "No body"));
+                    loadSampleCategories();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Khi không thể kết nối API, dùng dữ liệu mẫu
+                Log.e("HomeFragment", "Error loading popular categories", t);
+                loadSampleCategories();
+            }
+        });
+    }
+
+    private void loadSampleCategories() {
+        // Dữ liệu mẫu cho lĩnh vực công việc
+        WorkField field1 = new WorkField();
+        field1.setMaLinhVuc(1);
+        field1.setTenLinhVuc("Công nghệ thông tin");
+
+        WorkField field2 = new WorkField();
+        field2.setMaLinhVuc(2);
+        field2.setTenLinhVuc("Marketing");
+
+        WorkField field3 = new WorkField();
+        field3.setMaLinhVuc(3);
+        field3.setTenLinhVuc("Tài chính");
+
+        WorkField field4 = new WorkField();
+        field4.setMaLinhVuc(4);
+        field4.setTenLinhVuc("Nhân sự");
+
+        popularCategoryList.clear();
+        popularCategoryList.add(field1);
+        popularCategoryList.add(field2);
+        popularCategoryList.add(field3);
+        popularCategoryList.add(field4);
+        categoryJobAdapter.notifyDataSetChanged();
+    }
+
+    private void loadMarketStatistics() {
+        // Gọi API để lấy thống kê thị trường
+        Call<ApiResponse> call = ApiClient.getRetrofitInstance().create(ApiService.class).getMarketStatistics();
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                Log.d("HomeFragment", "Market statistics response code: " + response.code());
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("HomeFragment", "Market statistics response body: " + response.body().toString());
+                    Object data = response.body().getData();
+                    if (data != null) {
+                        // Giả sử dữ liệu trả về là một Map chứa các thống kê
+                        if (data instanceof java.util.Map) {
+                            java.util.Map<String, Object> stats = (java.util.Map<String, Object>) data;
+
+                            // Cập nhật số lượng công việc
+                            if (stats.containsKey("totalJobs")) {
+                                Object totalJobsObj = stats.get("totalJobs");
+                                int totalJobs = 0;
+                                if (totalJobsObj instanceof Integer) {
+                                    totalJobs = (Integer) totalJobsObj;
+                                } else if (totalJobsObj instanceof Double) {
+                                    totalJobs = ((Double) totalJobsObj).intValue();
+                                } else {
+                                    totalJobs = Integer.parseInt(totalJobsObj.toString());
+                                }
+                                tvTotalJobs.setText(String.valueOf(totalJobs));
+                            }
+
+                            // Cập nhật số lượng công ty
+                            if (stats.containsKey("totalCompanies")) {
+                                Object totalCompaniesObj = stats.get("totalCompanies");
+                                int totalCompanies = 0;
+                                if (totalCompaniesObj instanceof Integer) {
+                                    totalCompanies = (Integer) totalCompaniesObj;
+                                } else if (totalCompaniesObj instanceof Double) {
+                                    totalCompanies = ((Double) totalCompaniesObj).intValue();
+                                } else {
+                                    totalCompanies = Integer.parseInt(totalCompaniesObj.toString());
+                                }
+                                tvTotalCompanies.setText(String.valueOf(totalCompanies));
+                            }
+                        }
+                    }
+                } else {
+                    // Trong trường hợp phản hồi không thành công, sử dụng dữ liệu mẫu
+                    Log.e("HomeFragment", "Failed to load market statistics: " + response.code() + " - " + (response.body() != null ? response.body().getMessage() : "No body"));
+                    loadSampleStatistics();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Khi không thể kết nối API, sử dụng dữ liệu mẫu
+                Log.e("HomeFragment", "Error loading market statistics", t);
+                loadSampleStatistics();
+            }
+        });
+    }
+
+    private void loadSampleStatistics() {
+        // Dữ liệu mẫu cho thống kê thị trường
+        tvTotalJobs.setText("1,234");
+        tvTotalCompanies.setText("567");
     }
 }

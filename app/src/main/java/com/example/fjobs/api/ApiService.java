@@ -407,4 +407,14 @@ public interface ApiService {
             this.jobDetailId = jobDetailId;
         }
     }
+
+    // APIs mới cho trang chủ - cập nhật đúng endpoint
+    @GET("v1/home/latest-jobs")
+    Call<ApiResponse> getLatestJobs();
+
+    @GET("v1/home/popular-work-fields")
+    Call<ApiResponse> getPopularWorkFields();
+
+    @GET("v1/home/market-overview")
+    Call<ApiResponse> getMarketStatistics();
 }

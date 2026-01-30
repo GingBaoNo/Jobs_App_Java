@@ -69,6 +69,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/experience-levels/**").permitAll()
                 .requestMatchers("/api/v1/work-types").permitAll()
                 .requestMatchers("/api/v1/work-types/**").permitAll()
+                .requestMatchers("/api/v1/home/**").permitAll() // <-- Thêm dòng này
                 // All other API endpoints - need authentication via JWT
                 .requestMatchers("/api/v1/**").authenticated()
                 // Web pages with role-based access

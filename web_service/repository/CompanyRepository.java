@@ -18,4 +18,7 @@ public interface CompanyRepository extends JpaRepository<Company, Integer> {
     Page<Company> findByDaXacThuc(Boolean daXacThuc, Pageable pageable);
     Page<Company> findByTrangThai(String trangThai, Pageable pageable);
     boolean existsByTenCongTy(String tenCongTy);
+
+    // Phương thức đếm số lượng công ty đã xác thực
+    int countByDaXacThucTrue();
 }

@@ -5,6 +5,7 @@ import com.example.demo.entity.JobDetail;
 import com.example.demo.entity.WorkField;
 import com.example.demo.entity.JobPosition;
 import com.example.demo.entity.ExperienceLevel;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -252,4 +253,23 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
     // Phương thức tìm kiếm công việc cùng lĩnh vực (ngoại trừ công việc hiện tại)
     @Query("SELECT j FROM JobDetail j WHERE j.workField = :workField AND j.maCongViec != :currentJobId AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở'")
     List<JobDetail> findByWorkFieldAndNotId(@Param("workField") WorkField workField, @Param("currentJobId") Integer currentJobId);
+
+    // Phương thức tìm kiếm công việc mới nhất
+    @Query("SELECT j FROM JobDetail j WHERE j.trangThaiDuyet = :trangThaiDuyet AND j.trangThaiTinTuyen = :trangThaiTinTuyen ORDER BY j.ngayDang DESC")
+    List<JobDetail> findTopByTrangThaiDuyetAndTrangThaiTinTuyenOrderByNgayDangDesc(@Param("trangThaiDuyet") String trangThaiDuyet, @Param("trangThaiTinTuyen") String trangThaiTinTuyen, Pageable pageable);
+
+    // Phương thức tìm kiếm top 10 công việc nổi bật theo lượt xem (giữ lại cho các mục đích khác nếu cần)
+    @Query("SELECT j FROM JobDetail j WHERE j.trangThaiDuyet = :trangThaiDuyet AND j.trangThaiTinTuyen = :trangThaiTinTuyen ORDER BY j.luotXem DESC")
+    List<JobDetail> findTop10ByTrangThaiDuyetAndTrangThaiTinTuyenOrderByLuotXemDesc(@Param("trangThaiDuyet") String trangThaiDuyet, @Param("trangThaiTinTuyen") String trangThaiTinTuyen, Pageable pageable);
+
+    // Phương thức đếm số lượng công việc theo lĩnh vực
+    @Query("SELECT j.workField.maLinhVuc, COUNT(j) FROM JobDetail j WHERE j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở' GROUP BY j.workField.maLinhVuc ORDER BY COUNT(j) DESC")
+    List<Object[]> countJobsByWorkField();
+
+    // Phương thức tìm kiếm công việc theo danh sách ID lĩnh vực
+    @Query("SELECT j FROM JobDetail j WHERE j.workField.maLinhVuc IN :fieldIds AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở'")
+    List<JobDetail> findByWorkFieldIdIn(@Param("fieldIds") List<Integer> fieldIds);
+
+    // Phương thức đếm số lượng công việc theo trạng thái
+    int countByTrangThaiDuyetAndTrangThaiTinTuyen(@Param("trangThaiDuyet") String trangThaiDuyet, @Param("trangThaiTinTuyen") String trangThaiTinTuyen);
 }
