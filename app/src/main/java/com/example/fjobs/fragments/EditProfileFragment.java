@@ -20,7 +20,7 @@ import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.Profile;
-import com.example.fjobs.ConnectionChecker;
+import com.example.fjobs.api.ConnectionChecker;
 
 import retrofit2.Call;
 import retrofit2.Callback;

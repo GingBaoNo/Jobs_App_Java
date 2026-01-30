@@ -1,4 +1,4 @@
-package com.example.fjobs;
+package com.example.fjobs.api;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

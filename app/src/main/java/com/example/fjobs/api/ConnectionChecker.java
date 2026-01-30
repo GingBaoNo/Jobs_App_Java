@@ -1,4 +1,4 @@
-package com.example.fjobs;
+package com.example.fjobs.api;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

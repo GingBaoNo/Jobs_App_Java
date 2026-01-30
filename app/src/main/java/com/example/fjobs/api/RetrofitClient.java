@@ -1,4 +1,4 @@
-package com.example.fjobs;
+package com.example.fjobs.api;
 
 import com.example.fjobs.utils.ServerConfig;
 import retrofit2.Retrofit;
