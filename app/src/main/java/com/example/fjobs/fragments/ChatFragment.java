@@ -278,6 +278,7 @@ public class ChatFragment extends Fragment implements ChatUserAdapter.OnChatUser
         bundle.putInt("OTHER_USER_ID", chatUser.getUser().getMaNguoiDung());
         bundle.putString("OTHER_USER_NAME", chatUser.getUser().getTenHienThi() != null ?
             chatUser.getUser().getTenHienThi() : chatUser.getUser().getTaiKhoan());
+        bundle.putString("OTHER_USER_AVATAR_URL", chatUser.getUser().getUrlAnhDaiDien()); // Truyền avatar URL
 
         ChatDetailFragment chatDetailFragment = new ChatDetailFragment();
         chatDetailFragment.setArguments(bundle);

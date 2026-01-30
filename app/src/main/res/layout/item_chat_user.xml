@@ -11,8 +11,7 @@
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
+    app:cardCornerRadius="16dp"
     app:cardBackgroundColor="@color/white">
 
     <LinearLayout
@@ -22,6 +21,15 @@
         android:padding="16dp">
 
         <!-- Avatar -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/default_avatar" />
+
+        <!-- Nếu không dùng CircleImageView, giữ nguyên FrameLayout như hiện tại nhưng có thể cập nhật drawable -->
+        <!--
         <FrameLayout
             android:layout_width="52dp"
             android:layout_height="52dp"
@@ -40,6 +48,7 @@
                 android:textStyle="bold" />
 
         </FrameLayout>
+        -->
 
         <LinearLayout
             android:layout_width="0dp"

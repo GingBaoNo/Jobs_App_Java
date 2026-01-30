@@ -25,8 +25,14 @@ import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.Message;
 import com.example.fjobs.models.StandardChatMessage;
 import com.example.fjobs.utils.ChatUtils;
+import com.example.fjobs.utils.ServerConfig;
 import com.example.fjobs.utils.SessionManager;
 import com.example.fjobs.utils.WebSocketManager;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import de.hdodenhof.circleimageview.CircleImageView; // Import CircleImageView
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,12 +53,14 @@ public class ChatDetailFragment extends Fragment implements WebSocketManager.Web
     private Button btnSend;
     private ImageButton btnBack;
     private TextView tvToolbarTitle;
+    private CircleImageView ivAvatarHeader; // Thêm view avatar header
     private ApiService apiService;
     private SessionManager sessionManager;
     private WebSocketManager webSocketManager;
 
     private int otherUserId;
     private String otherUserName;
+    private String otherUserAvatarUrl; // Thêm URL avatar
 
     // Thêm các trường cho việc kiểm tra tin nhắn mới định kỳ
     private Handler handler;
@@ -82,6 +90,7 @@ public class ChatDetailFragment extends Fragment implements WebSocketManager.Web
         btnSend = view.findViewById(R.id.btn_send);
         btnBack = view.findViewById(R.id.btn_back);
         tvToolbarTitle = view.findViewById(R.id.tv_toolbar_title);
+        ivAvatarHeader = view.findViewById(R.id.iv_avatar_header); // Ánh xạ avatar header
 
         apiService = ApiClient.getApiService();
         sessionManager = new SessionManager(requireContext());
@@ -93,9 +102,26 @@ public class ChatDetailFragment extends Fragment implements WebSocketManager.Web
         if (args != null) {
             otherUserId = args.getInt("OTHER_USER_ID", -1);
             otherUserName = args.getString("OTHER_USER_NAME", "Người dùng");
-        }
+            otherUserAvatarUrl = args.getString("OTHER_USER_AVATAR_URL", ""); // Nhận URL avatar từ bundle
 
-        tvToolbarTitle.setText(otherUserName);
+            tvToolbarTitle.setText(otherUserName);
+
+            // Load avatar người nhận vào header
+            if (otherUserAvatarUrl != null && !otherUserAvatarUrl.isEmpty()) {
+                 if (otherUserAvatarUrl.startsWith("/")) {
+                    otherUserAvatarUrl = ServerConfig.getBaseUrl() + otherUserAvatarUrl;
+                }
+                Glide.with(this) // Sử dụng Fragment context
+                    .load(otherUserAvatarUrl)
+                    .placeholder(R.drawable.default_avatar)
+                    .error(R.drawable.default_avatar)
+                    .apply(RequestOptions.bitmapTransform(new CenterCrop()).transform(new RoundedCorners(50)))
+                    .into(ivAvatarHeader);
+            } else {
+                // Nếu không có avatar, có thể để trống hoặc đặt ảnh mặc định
+                ivAvatarHeader.setImageResource(R.drawable.default_avatar);
+            }
+        }
     }
 
     private void setupRecyclerView() {

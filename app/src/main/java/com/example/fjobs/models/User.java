@@ -21,6 +21,9 @@ public class User {
     @SerializedName("maVaiTro")
     private Integer maVaiTro;
 
+    @SerializedName("urlAnhDaiDien")
+    private String urlAnhDaiDien;
+
     // Constructors
     public User() {}
 
@@ -50,4 +53,7 @@ public class User {
 
     public Integer getMaVaiTro() { return maVaiTro; }
     public void setMaVaiTro(Integer maVaiTro) { this.maVaiTro = maVaiTro; }
+
+    public String getUrlAnhDaiDien() { return urlAnhDaiDien; }
+    public void setUrlAnhDaiDien(String urlAnhDaiDien) { this.urlAnhDaiDien = urlAnhDaiDien; }
 }

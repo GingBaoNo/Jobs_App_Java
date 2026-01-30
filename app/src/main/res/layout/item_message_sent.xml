@@ -6,52 +6,56 @@
     android:padding="4dp"
     android:layout_marginTop="4dp">
 
+    <!-- Spacer đẩy bubble sang phải -->
     <View
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <androidx.cardview.widget.CardView
+    <!-- Bubble chat -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="8dp"
-        android:elevation="4dp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
-        android:layout_gravity="end">
+        android:orientation="vertical"
+        android:background="@drawable/message_sent_background_new"
+        android:padding="12dp"
+        android:minWidth="80dp"
+        android:maxWidth="300dp">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tv_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/message_sent_background"
-            android:padding="12dp"
-            android:minWidth="80dp"
-            android:maxWidth="300dp">
+            android:text="Nội dung tin nhắn"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:lineSpacingMultiplier="1.1" />
 
-            <TextView
-                android:id="@+id/tv_message"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Nội dung tin nhắn"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:lineSpacingMultiplier="1.1" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
 
             <TextView
                 android:id="@+id/tv_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
                 android:layout_marginTop="4dp"
                 android:text="12:30"
                 android:textColor="@color/white"
                 android:textSize="10sp"
                 android:alpha="0.8" />
 
+            <!-- icon trạng thái nếu cần -->
+            <!-- <ImageView android:id="@+id/iv_status" ... /> -->
+
         </LinearLayout>
 
-    </androidx.cardview.widget.CardView>
+    </LinearLayout>
 
 </LinearLayout>

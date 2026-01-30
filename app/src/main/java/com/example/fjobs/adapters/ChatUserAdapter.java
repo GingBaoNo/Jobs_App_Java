@@ -9,6 +9,12 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.fjobs.R;
 import com.example.fjobs.models.ChatUser;
+import com.example.fjobs.utils.ServerConfig;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import de.hdodenhof.circleimageview.CircleImageView; // Import CircleImageView
 import java.util.List;
 
 public class ChatUserAdapter extends RecyclerView.Adapter<ChatUserAdapter.ChatUserViewHolder> {
@@ -55,7 +61,7 @@ public class ChatUserAdapter extends RecyclerView.Adapter<ChatUserAdapter.ChatUs
     public class ChatUserViewHolder extends RecyclerView.ViewHolder {
 
         private CardView cardView;
-        private TextView tvAvatarInitial;
+        private CircleImageView ivAvatar; // CircleImageView cho avatar
         private TextView tvUsername;
         private TextView tvLastMessage;
         private TextView tvTime;
@@ -64,7 +70,7 @@ public class ChatUserAdapter extends RecyclerView.Adapter<ChatUserAdapter.ChatUs
         public ChatUserViewHolder(@NonNull View itemView) {
             super(itemView);
             cardView = itemView.findViewById(R.id.card_view);
-            tvAvatarInitial = itemView.findViewById(R.id.tv_avatar_initial);
+            ivAvatar = itemView.findViewById(R.id.iv_avatar); // Ánh xạ CircleImageView
             tvUsername = itemView.findViewById(R.id.tv_username);
             tvLastMessage = itemView.findViewById(R.id.tv_last_message);
             tvTime = itemView.findViewById(R.id.tv_time);
@@ -73,16 +79,31 @@ public class ChatUserAdapter extends RecyclerView.Adapter<ChatUserAdapter.ChatUs
 
         public void bind(ChatUser chatUser) {
             // Thiết lập tên người dùng
-            String displayName = chatUser.getUser().getTenHienThi() != null ? 
+            String displayName = chatUser.getUser().getTenHienThi() != null ?
                 chatUser.getUser().getTenHienThi() : chatUser.getUser().getTaiKhoan();
             tvUsername.setText(displayName);
 
-            // Lấy ký tự đầu tiên để hiển thị trên avatar
-            String firstChar = "?";
-            if (displayName != null && !displayName.isEmpty()) {
-                firstChar = String.valueOf(displayName.charAt(0)).toUpperCase();
+            // Load avatar từ URL nếu có, nếu không thì hiển thị placeholder/error drawable
+            String avatarUrl = chatUser.getUser().getUrlAnhDaiDien(); // Giả sử có field này trong User
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                // Nếu URL là đường dẫn tương đối, thêm baseUrl
+                if (avatarUrl.startsWith("/")) {
+                    avatarUrl = ServerConfig.getBaseUrl() + avatarUrl;
+                }
+                Glide.with(itemView.getContext())
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.default_avatar) // Ảnh mặc định nếu load lỗi hoặc chưa xong
+                    .error(R.drawable.default_avatar)       // Ảnh mặc định nếu lỗi
+                    .apply(RequestOptions.bitmapTransform(new CenterCrop()).transform(new RoundedCorners(50))) // Bo góc
+                    .into(ivAvatar);
+            } else {
+                // Nếu không có URL, Glide sẽ tự động hiển thị placeholder/error drawable
+                // Không cần xử lý TextView nữa
+                Glide.with(itemView.getContext())
+                    .load(R.drawable.default_avatar) // Load placeholder mặc định
+                    .apply(RequestOptions.bitmapTransform(new CenterCrop()).transform(new RoundedCorners(50))) // Bo góc
+                    .into(ivAvatar);
             }
-            tvAvatarInitial.setText(firstChar);
 
             // Thiết lập tin nhắn cuối cùng
             if (chatUser.getLastMessage() != null && !chatUser.getLastMessage().isEmpty()) {

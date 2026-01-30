@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/design_default_color_surface">
+    android:background="@color/primary_50"> <!-- Thay đổi màu nền chính -->
 
     <!-- Header -->
     <LinearLayout
@@ -11,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@color/design_default_color_primary"
+        android:background="@color/primary_100"
         android:elevation="4dp"
         android:padding="16dp">
 
@@ -22,7 +23,15 @@
             android:layout_gravity="center_vertical"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
-            android:tint="@color/white" />
+            app:tint="@color/gray_900" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/iv_avatar_header"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/default_avatar" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -37,8 +46,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Tên người nhận"
-                android:textColor="@color/white"
-                android:textSize="18sp"
+                android:textColor="@color/gray_900"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -46,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Đang hoạt động"
-                android:textColor="@color/white"
+                android:textColor="@color/gray_900"
                 android:textSize="12sp"
                 android:alpha="0.8" />
 
@@ -70,33 +79,35 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="12dp"
-        android:background="@color/white"
-        android:elevation="4dp">
+        android:background="@color/primary_100"> <!-- Thay đổi màu nền -->
 
         <EditText
             android:id="@+id/et_message"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Nhập tin nhắn..."
-            android:padding="12dp"
-            android:background="@drawable/message_input_background"
+            android:layout_height="60dp"
             android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/message_input_background_new"
+            android:hint="Nhập tin nhắn..."
             android:inputType="textMultiLine|textCapSentences"
             android:maxLines="4"
-            android:scrollbars="vertical"
-            android:backgroundTint="@color/design_default_color_surface" />
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:scrollbars="vertical" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_send"
+            style="@style/Widget.MaterialComponents.Button.Icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="12dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
             android:text="Gửi"
-            android:background="@drawable/send_button_background"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            android:layout_gravity="bottom" />
+            android:layout_gravity="bottom"
+            app:icon="@drawable/ic_send"
+            app:iconTint="@color/white"
+            app:backgroundTint="@color/primary_500" /> <!-- Thay đổi màu nền nút -->
 
     </LinearLayout>
 

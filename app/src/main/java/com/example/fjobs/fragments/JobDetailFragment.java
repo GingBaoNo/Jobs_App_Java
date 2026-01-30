@@ -676,11 +676,7 @@ public class JobDetailFragment extends Fragment {
         }
 
         // Hiển thị mô tả công việc
-        if (job.getChiTiet() != null) {
-            tvJobDescriptionDetail.setText(job.getChiTiet());
-        } else {
-            tvJobDescriptionDetail.setText("Chưa có mô tả chi tiết.");
-        }
+        tvJobDescriptionDetail.setText(formatListText(job.getChiTiet()));
 
         // Hiển thị thông tin công ty
         if (job.getCompany() != null) {
@@ -711,13 +707,21 @@ public class JobDetailFragment extends Fragment {
 
     private void displayAdditionalInfo(JobDetail job) {
         // Cập nhật các hàng thông tin
-        infoRowPositionValue.setText(job.getJobPosition() != null ? job.getJobPosition().getTenViTri() : "N/A");
+        infoRowPositionTitle.setText("Tên công việc"); // Cập nhật tiêu đề
+        infoRowPositionValue.setText(job.getTieuDe() != null ? job.getTieuDe() : "N/A");
+        infoRowSalaryTitle.setText("Lương"); // Cập nhật tiêu đề
         infoRowSalaryValue.setText(job.getLuong() != null ? String.format("%,d VNĐ", job.getLuong()) : "Thương lượng");
+        infoRowFormTitle.setText("Công ty"); // Cập nhật tiêu đề cho Form (nếu trước đây là "Hình thức")
         infoRowFormValue.setText(job.getCompany() != null ? job.getCompany().getTenCongTy() : "N/A");
+        infoRowExperienceLevelTitle.setText("Cấp độ kinh nghiệm"); // Cập nhật tiêu đề
         infoRowExperienceLevelValue.setText(job.getExperienceLevel() != null ? job.getExperienceLevel().getTenCapDo() : "N/A");
+        infoRowQuantityTitle.setText("Số lượng tuyển"); // Cập nhật tiêu đề
         infoRowQuantityValue.setText(job.getSoLuongTuyen() != null ? job.getSoLuongTuyen().toString() : "N/A");
+        infoRowGenderTitle.setText("Giới tính yêu cầu"); // Cập nhật tiêu đề
         infoRowGenderValue.setText(job.getGioiTinhYeuCau() != null ? job.getGioiTinhYeuCau() : "N/A");
+        infoRowPostDateTitle.setText("Ngày đăng"); // Cập nhật tiêu đề
         infoRowPostDateValue.setText(job.getNgayDang() != null ? job.getNgayDang() : "N/A");
+        infoRowDeadlineTitle.setText("Hạn nộp"); // Cập nhật tiêu đề
         infoRowDeadlineValue.setText(job.getNgayKetThucTuyenDung() != null ? job.getNgayKetThucTuyenDung() : "N/A");
     }
 
@@ -761,7 +765,38 @@ public class JobDetailFragment extends Fragment {
 
     private TextView createInfoTextView(String text) {
         TextView textView = new TextView(requireContext());
-        textView.setText("• " + text);
+
+        // Tạo SpannableStringBuilder cho dòng văn bản này
+        android.text.SpannableStringBuilder lineWithIcon = new android.text.SpannableStringBuilder();
+
+        // Lấy drawable từ resource
+        android.graphics.drawable.Drawable bulletDrawable = androidx.core.content.ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_circle_filled);
+        if (bulletDrawable != null) {
+            // Tô màu cho icon
+            androidx.core.graphics.drawable.DrawableCompat.setTint(bulletDrawable, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.primary_500)); // Thay đổi màu
+
+            // Điều chỉnh kích thước icon (80% chiều cao chữ)
+            float textSize = textView.getTextSize(); // Lấy kích thước chữ hiện tại của TextView
+            if (textSize <= 0) textSize = 14 * getResources().getDisplayMetrics().scaledDensity; // Fallback nếu textSize chưa được set
+            int iconSize = (int) (textSize * 0.8);
+            bulletDrawable.setBounds(0, 0, iconSize, iconSize);
+
+            // Tạo ImageSpan
+            android.text.style.ImageSpan bulletSpan = new android.text.style.ImageSpan(bulletDrawable, android.text.style.ImageSpan.ALIGN_BOTTOM);
+
+            // Thêm icon vào StringBuilder
+            int start = lineWithIcon.length();
+            lineWithIcon.append("  "); // Thêm một khoảng trắng sau icon để tạo khoảng cách
+            lineWithIcon.setSpan(bulletSpan, start, start + 1, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            // Thêm nội dung dòng
+            lineWithIcon.append(text);
+        } else {
+            // Nếu không tìm thấy drawable, quay lại dùng ký tự
+            lineWithIcon.append("• ").append(text);
+        }
+
+        textView.setText(lineWithIcon);
         textView.setTextSize(14);
         textView.setPadding(16, 8, 16, 8);
         return textView;
@@ -1179,5 +1214,61 @@ public class JobDetailFragment extends Fragment {
             Intent intent = new Intent(getActivity(), com.example.fjobs.activities.LoginActivity.class);
             startActivity(intent);
         }
+    }
+
+    /**
+     * Formats a string containing list items separated by newlines into a Spanned text
+     * with custom icons for each item, suitable for displaying in a TextView.
+     *
+     * @param rawText The raw text string, with items separated by '\n'.
+     * @return A Spanned object with ImageSpans applied, or a default message if input is null/empty.
+     */
+    private android.text.Spanned formatListText(String rawText) {
+        if (rawText == null || rawText.isEmpty()) {
+            return android.text.Html.fromHtml("Không có dữ liệu.", androidx.core.text.HtmlCompat.FROM_HTML_MODE_COMPACT);
+        }
+
+        // Split the text by newline character
+        String[] lines = rawText.split("\n");
+
+        android.text.SpannableStringBuilder formattedText = new android.text.SpannableStringBuilder();
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i].trim();
+            if (!line.isEmpty()) {
+                // Lấy drawable từ resource
+                android.graphics.drawable.Drawable bulletDrawable = androidx.core.content.ContextCompat.getDrawable(requireContext(), R.drawable.ic_check_circle_filled);
+                if (bulletDrawable != null) {
+                    // Tô màu cho icon (ví dụ: màu primary)
+                    androidx.core.graphics.drawable.DrawableCompat.setTint(bulletDrawable, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.primary_500)); // Thay đổi màu
+
+                    // Điều chỉnh kích thước icon (80% chiều cao chữ)
+                    float textSize = 14 * getResources().getDisplayMetrics().scaledDensity; // Fallback nếu textSize chưa được set
+                    int iconSize = (int) (textSize * 0.8);
+                    bulletDrawable.setBounds(0, 0, iconSize, iconSize);
+
+                    // Tạo ImageSpan
+                    android.text.style.ImageSpan bulletSpan = new android.text.style.ImageSpan(bulletDrawable, android.text.style.ImageSpan.ALIGN_BOTTOM);
+
+                    // Thêm icon vào StringBuilder
+                    int start = formattedText.length();
+                    formattedText.append("  "); // Thêm một khoảng trắng sau icon để tạo khoảng cách
+                    formattedText.setSpan(bulletSpan, start, start + 1, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // Thêm nội dung dòng
+                    formattedText.append(line);
+                } else {
+                    // Nếu không tìm thấy drawable, quay lại dùng ký tự
+                    formattedText.append("• ").append(line);
+                }
+
+                // Thêm dòng mới nếu không phải là dòng cuối cùng
+                if (i < lines.length - 1) {
+                    formattedText.append("\n");
+                }
+            }
+        }
+
+        // Trả về SpannableStringBuilder đã được định dạng
+        return formattedText;
     }
 }
