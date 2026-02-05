@@ -5,7 +5,7 @@ import android.content.res.Resources;
 
 public class ServerConfig {
     // Địa chỉ máy chủ - được thiết lập từ tài nguyên
-    private static String SERVER_IP = "192.168.1.8"; // Giá trị mặc định, sẽ được thay thế từ tài nguyên
+    private static String SERVER_IP = "192.168.102.31"; // Giá trị mặc định, sẽ được thay thế từ tài nguyên
 
     public static String getBaseUrl() {
         return String.format("http://%s:8080", SERVER_IP);
