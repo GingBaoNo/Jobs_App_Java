@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -48,6 +49,8 @@ public class AdvancedSearchFragment extends Fragment {
     private Button btnSearchAdvanced;
     private Button btnClearFilters;
     private RecyclerView recyclerView;
+    private TextView tvResultsTitle;
+    private View dividerSearchResults;
     private HorizontalJobAdapter jobAdapter;
     private List<JobDetail> jobList;
 
@@ -85,6 +88,22 @@ public class AdvancedSearchFragment extends Fragment {
         // Load dữ liệu từ API cho các dropdown
         loadDropdownDataFromApi();
 
+        // Kiểm tra nếu có work_field_id từ bundle (click từ trang chủ)
+        Bundle bundle = getArguments();
+        if (bundle != null && bundle.containsKey("work_field_id")) {
+            int workFieldId = bundle.getInt("work_field_id", -1);
+            String workFieldName = bundle.getString("work_field_name", "");
+            
+            if (workFieldId != -1) {
+                // Lưu ID để sử dụng sau khi load dữ liệu
+                selectedWorkFieldId = workFieldId;
+                // Set từ khóa tìm kiếm theo tên lĩnh vực
+                if (editTextKeyword != null) {
+                    editTextKeyword.setText(workFieldName);
+                }
+            }
+        }
+
         return view;
     }
 
@@ -98,6 +117,8 @@ public class AdvancedSearchFragment extends Fragment {
         btnSearchAdvanced = view.findViewById(R.id.btn_search_advanced);
         btnClearFilters = view.findViewById(R.id.btn_clear_filters);
         recyclerView = view.findViewById(R.id.rv_search_results); // RecyclerView mới trong layout
+        tvResultsTitle = view.findViewById(R.id.tv_results_title); // Tiêu đề kết quả
+        dividerSearchResults = view.findViewById(R.id.divider_search_results); // Divider ngăn cách
     }
 
     private void setupRecyclerView(View view) {
@@ -323,9 +344,20 @@ public class AdvancedSearchFragment extends Fragment {
                                 jobAdapter.notifyDataSetChanged();
                             }
 
-                            // Hiển thị RecyclerView và cập nhật giao diện
+                            // Hiển thị RecyclerView, divider và tiêu đề
                             if (recyclerView != null) {
                                 recyclerView.setVisibility(jobs.isEmpty() ? View.GONE : View.VISIBLE);
+                            }
+                            
+                            // Hiển thị divider và tiêu đề kết quả khi có kết quả
+                            if (dividerSearchResults != null) {
+                                dividerSearchResults.setVisibility(jobs.isEmpty() ? View.GONE : View.VISIBLE);
+                            }
+                            if (tvResultsTitle != null) {
+                                tvResultsTitle.setVisibility(jobs.isEmpty() ? View.GONE : View.VISIBLE);
+                                if (!jobs.isEmpty()) {
+                                    tvResultsTitle.setText("KẾT QUẢ TÌM KIẾM (" + jobs.size() + " công việc)");
+                                }
                             }
 
                             // Hiển thị thông báo
@@ -812,6 +844,11 @@ public class AdvancedSearchFragment extends Fragment {
                             }
                             workFields = fields;
                             updateWorkFieldSpinner();
+                            
+                            // Sau khi cập nhật spinner, chọn lĩnh vực đã lưu từ bundle
+                            if (selectedWorkFieldId != null) {
+                                selectWorkFieldById(selectedWorkFieldId);
+                            }
                         }
                     }
                 }
@@ -938,9 +975,42 @@ public class AdvancedSearchFragment extends Fragment {
         selectedWorkTypeId = null;
         selectedKeyword = "";
 
-        // Ẩn RecyclerView
+        // Ẩn RecyclerView, divider và tiêu đề kết quả
         if (recyclerView != null) {
             recyclerView.setVisibility(View.GONE);
+        }
+        if (dividerSearchResults != null) {
+            dividerSearchResults.setVisibility(View.GONE);
+        }
+        if (tvResultsTitle != null) {
+            tvResultsTitle.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Chọn lĩnh vực theo ID và thực hiện tìm kiếm
+     */
+    private void selectWorkFieldById(int workFieldId) {
+        if (workFields != null && spinnerWorkField != null) {
+            // Tìm vị trí của lĩnh vực trong danh sách (cộng 1 vì vị trí 0 là "Tất cả")
+            int position = 0;
+            for (int i = 0; i < workFields.size(); i++) {
+                if (workFields.get(i).getMaLinhVuc() == workFieldId) {
+                    position = i + 1; // +1 vì có mục "Tất cả" ở đầu
+                    break;
+                }
+            }
+            
+            if (position > 0) {
+                // Chọn vị trí trong spinner
+                spinnerWorkField.setSelection(position);
+                
+                // Tự động thực hiện tìm kiếm sau khi chọn
+                // Đợi một chút để spinner cập nhật xong
+                spinnerWorkField.postDelayed(() -> {
+                    performAdvancedSearch();
+                }, 300);
+            }
         }
     }
 }

@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.fjobs.R;
 import com.example.fjobs.activities.MainActivity;
-import com.example.fjobs.fragments.SearchResultFragment;
+import com.example.fjobs.fragments.AdvancedSearchFragment;
 import com.example.fjobs.models.WorkField;
 
 import android.os.Bundle;
@@ -72,19 +72,19 @@ public class CategoryJobAdapter extends RecyclerView.Adapter<CategoryJobAdapter.
                 if (position != RecyclerView.NO_POSITION) {
                     WorkField category = categoryList.get(position);
                     if (category != null && category.getMaLinhVuc() != null) {
-                        // Điều hướng đến trang tìm kiếm với bộ lọc lĩnh vực
+                        // Điều hướng đến trang tìm kiếm nâng cao với bộ lọc lĩnh vực
                         if (context instanceof MainActivity) {
                             MainActivity mainActivity = (MainActivity) context;
                             Bundle bundle = new Bundle();
                             bundle.putInt("work_field_id", category.getMaLinhVuc());
                             bundle.putString("work_field_name", category.getTenLinhVuc());
 
-                            SearchResultFragment searchResultFragment = new SearchResultFragment();
-                            searchResultFragment.setArguments(bundle);
+                            AdvancedSearchFragment advancedSearchFragment = new AdvancedSearchFragment();
+                            advancedSearchFragment.setArguments(bundle);
 
                             mainActivity.getSupportFragmentManager()
                                 .beginTransaction()
-                                .replace(R.id.content_frame, searchResultFragment)
+                                .replace(R.id.content_frame, advancedSearchFragment)
                                 .addToBackStack(null)
                                 .commit();
                         }

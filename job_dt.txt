@@ -1,0 +1,278 @@
+-- Bước 1: Chọn Database
+USE job_dt;
+GO
+
+-- Bước 2: Xóa các bảng nếu chúng tồn tại (theo thứ tự khóa ngoại ngược)
+IF OBJECT_ID('messages', 'U') IS NOT NULL DROP TABLE messages;
+IF OBJECT_ID('saved_jobs', 'U') IS NOT NULL DROP TABLE saved_jobs;
+IF OBJECT_ID('applied_jobs', 'U') IS NOT NULL DROP TABLE applied_jobs;
+IF OBJECT_ID('job_alerts', 'U') IS NOT NULL DROP TABLE job_alerts;
+IF OBJECT_ID('company_followers', 'U') IS NOT NULL DROP TABLE company_followers;
+IF OBJECT_ID('profile', 'U') IS NOT NULL DROP TABLE profile;
+IF OBJECT_ID('jobdetails', 'U') IS NOT NULL DROP TABLE jobdetails;
+IF OBJECT_ID('company', 'U') IS NOT NULL DROP TABLE company;
+IF OBJECT_ID('job_positions', 'U') IS NOT NULL DROP TABLE job_positions;
+IF OBJECT_ID('work_disciplines', 'U') IS NOT NULL DROP TABLE work_disciplines;
+IF OBJECT_ID('work_types', 'U') IS NOT NULL DROP TABLE work_types;
+IF OBJECT_ID('experience_levels', 'U') IS NOT NULL DROP TABLE experience_levels;
+IF OBJECT_ID('work_fields', 'U') IS NOT NULL DROP TABLE work_fields;
+IF OBJECT_ID('user', 'U') IS NOT NULL DROP TABLE [user];
+IF OBJECT_ID('roles', 'U') IS NOT NULL DROP TABLE roles;
+GO
+
+---
+## 1. CÁC BẢNG CHUẨN HÓA DỮ LIỆU (LOOKUP TABLES)
+---
+
+CREATE TABLE roles (
+    ma_vai_tro INT PRIMARY KEY IDENTITY(1,1),
+    ten_vai_tro NVARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE work_fields (
+    ma_linh_vuc INT PRIMARY KEY IDENTITY(1,1),
+    ten_linh_vuc NVARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE work_types (
+    ma_hinh_thuc INT PRIMARY KEY IDENTITY(1,1),
+    ten_hinh_thuc NVARCHAR(100) NOT NULL UNIQUE
+);
+
+-- >> Cấp độ kinh nghiệm (Intern, Fresher,...)
+CREATE TABLE experience_levels (
+    ma_cap_do INT PRIMARY KEY IDENTITY(1,1),
+    ten_cap_do NVARCHAR(50) NOT NULL UNIQUE
+);
+
+-- >> Ngành cụ thể (VD: Software Engineering thuộc CNTT)
+CREATE TABLE work_disciplines (
+    ma_nganh INT PRIMARY KEY IDENTITY(1,1),
+    ma_linh_vuc INT NOT NULL, 
+    ten_nganh NVARCHAR(100) NOT NULL UNIQUE,
+    CONSTRAINT fk_discipline_field FOREIGN KEY (ma_linh_vuc) REFERENCES work_fields (ma_linh_vuc) ON DELETE CASCADE
+);
+
+-- >> Vị trí công việc (VD: Backend Developer thuộc Software Engineering)
+CREATE TABLE job_positions (
+    ma_vi_tri INT PRIMARY KEY IDENTITY(1,1),
+    ma_nganh INT NOT NULL, 
+    ten_vi_tri NVARCHAR(100) NOT NULL UNIQUE,
+    CONSTRAINT fk_position_discipline FOREIGN KEY (ma_nganh) REFERENCES work_disciplines (ma_nganh) ON DELETE CASCADE
+);
+
+GO
+
+---
+## 2. CÁC BẢNG CHÍNH (CORE TABLES)
+---
+
+CREATE TABLE [user] (
+    ma_nguoi_dung INT PRIMARY KEY IDENTITY(1,1),
+    ma_vai_tro INT NOT NULL,
+    tai_khoan NVARCHAR(255) NOT NULL UNIQUE,
+    mat_khau NVARCHAR(255) NOT NULL,
+    ten_hien_thi NVARCHAR(255) NULL,
+    email NVARCHAR(255) NOT NULL,
+    so_dien_thoai NVARCHAR(20) NULL,
+    trang_thai_hoat_dong BIT NOT NULL DEFAULT 1,
+    da_xac_minh BIT NOT NULL DEFAULT 0,
+    lan_cuoi_dang_nhap DATETIME NULL,
+    ngay_tao DATETIME NULL DEFAULT GETDATE(),
+    CONSTRAINT fk_user_role FOREIGN KEY (ma_vai_tro) REFERENCES roles (ma_vai_tro)
+);
+
+CREATE TABLE company (
+    ma_cong_ty INT PRIMARY KEY IDENTITY(1,1),
+    ma_nha_tuyen_dung INT NOT NULL,
+    ten_cong_ty NVARCHAR(255) NOT NULL,
+    ten_nguoi_dai_dien NVARCHAR(MAX),
+    ma_so_thue NVARCHAR(50),
+    dia_chi NVARCHAR(MAX),
+    email_cty NVARCHAR(255),
+    so_dien_thoai_cty NVARCHAR(20),
+    hinh_anh_cty NVARCHAR(MAX), -- URL ảnh công ty
+    da_xac_thuc BIT NOT NULL DEFAULT 0,
+    ngay_tao DATETIME NULL DEFAULT GETDATE(),
+    mo_ta_cong_ty NVARCHAR(MAX) NULL, -- Trường nâng cấp 1
+    trang_thai NVARCHAR(20) NOT NULL DEFAULT N'Đang hoạt động',
+    kinh_do DECIMAL(12, 8) NULL, 
+    vi_do DECIMAL(11, 8) NULL,   
+    CONSTRAINT fk_company_employer FOREIGN KEY (ma_nha_tuyen_dung) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE
+);
+
+CREATE TABLE jobdetails (
+    ma_cong_viec INT PRIMARY KEY IDENTITY(1,1),
+    ma_cong_ty INT NOT NULL,
+    ma_linh_vuc INT NOT NULL,
+    ma_hinh_thuc INT NOT NULL,
+    ma_vi_tri_cong_viec INT NULL,
+    ma_cap_do_kinh_nghiem INT NULL, 
+
+    tieu_de NVARCHAR(255) NOT NULL,
+    luong INT NULL,
+    loai_luong NVARCHAR(50),
+    gio_bat_dau TIME NULL,
+    gio_ket_thuc TIME NULL,
+    co_the_thuong_luong_gio NVARCHAR(3) CHECK (co_the_thuong_luong_gio IN (N'Có',N'Không')),
+    gioi_tinh_yeu_cau NVARCHAR(20),
+    so_luong_tuyen INT NULL,
+    ngay_lam_viec NVARCHAR(255),
+    thoi_han_lam_viec NVARCHAR(255),
+    co_the_thuong_luong_ngay NVARCHAR(3) CHECK (co_the_thuong_luong_ngay IN (N'Có',N'Không')),
+    chi_tiet NVARCHAR(MAX),
+    yeu_cau_cong_viec NVARCHAR(MAX) NULL,
+    quyen_loi NVARCHAR(MAX) NULL,
+    ngay_ket_thuc_tuyen_dung DATE NULL,
+    ngay_dang DATETIME NOT NULL DEFAULT GETDATE(),
+    luot_xem INT NOT NULL DEFAULT 0,
+    trang_thai_duyet NVARCHAR(20) NOT NULL DEFAULT N'Chờ duyệt' CHECK (trang_thai_duyet IN (N'Chờ duyệt', N'Đã duyệt', N'Từ chối')),
+    trang_thai_tin_tuyen NVARCHAR(10) NOT NULL DEFAULT N'Mở' CHECK (trang_thai_tin_tuyen IN (N'Mở', N'Đã đóng', N'Tạm dừng')),
+
+    kinh_do DECIMAL(12, 8) NULL, 
+    vi_do DECIMAL(11, 8) NULL,   
+
+    CONSTRAINT fk_job_company FOREIGN KEY (ma_cong_ty) REFERENCES company (ma_cong_ty) ON DELETE CASCADE,
+    CONSTRAINT fk_job_field FOREIGN KEY (ma_linh_vuc) REFERENCES work_fields (ma_linh_vuc) ON DELETE NO ACTION,
+    CONSTRAINT fk_job_type FOREIGN KEY (ma_hinh_thuc) REFERENCES work_types (ma_hinh_thuc) ON DELETE NO ACTION,
+    CONSTRAINT fk_job_position FOREIGN KEY (ma_vi_tri_cong_viec) REFERENCES job_positions (ma_vi_tri) ON DELETE NO ACTION,
+    CONSTRAINT fk_job_experience_level FOREIGN KEY (ma_cap_do_kinh_nghiem) REFERENCES experience_levels (ma_cap_do) ON DELETE NO ACTION
+);
+
+CREATE TABLE profile (
+    ma_ho_so INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_tim_viec INT NOT NULL UNIQUE,
+    url_anh_dai_dien NVARCHAR(MAX),
+    ho_ten NVARCHAR(255) NOT NULL,
+    gioi_tinh NVARCHAR(20) NOT NULL,
+    ngay_sinh DATE NULL,
+    so_dien_thoai NVARCHAR(20) NULL,
+    trinh_do_hoc_van NVARCHAR(45) NULL,
+    tinh_trang_hoc_van NVARCHAR(20) NULL,
+    kinh_nghiem NVARCHAR(MAX),
+    tong_nam_kinh_nghiem DECIMAL(4, 2) DEFAULT 0,
+    gioi_thieu_ban_than NVARCHAR(MAX),
+    url_cv NVARCHAR(MAX),
+    cong_khai BIT NOT NULL DEFAULT 0,
+    vi_tri_mong_muon NVARCHAR(255) NULL,
+    thoi_gian_mong_muon NVARCHAR(255) NULL,
+    loai_thoi_gian_lam_viec NVARCHAR(45) NULL,
+    hinh_thuc_lam_viec NVARCHAR(255) NULL,
+    loai_luong_mong_muon NVARCHAR(50) NULL,
+    muc_luong_mong_muon INT NULL,
+    ngay_tao DATETIME NULL DEFAULT GETDATE(),
+    ngay_cap_nhat DATETIME NULL DEFAULT GETDATE(),
+    CONSTRAINT fk_profile_employee FOREIGN KEY (ma_nguoi_tim_viec) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE
+);
+
+GO
+
+---
+## 3. CÁC BẢNG LIÊN KẾT (RELATIONSHIP TABLES)
+---
+
+CREATE TABLE cv_profiles (
+    ma_ho_so_cv INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_tim_viec INT NOT NULL,
+    ten_ho_so NVARCHAR(255) NOT NULL, 
+    mo_ta NVARCHAR(MAX),              
+    url_anh_dai_dien NVARCHAR(MAX),
+    ho_ten NVARCHAR(255) NOT NULL,
+    gioi_tinh NVARCHAR(20) NOT NULL,
+    ngay_sinh DATE NULL,
+    so_dien_thoai NVARCHAR(20) NULL,
+    trinh_do_hoc_van NVARCHAR(45) NULL,
+    tinh_trang_hoc_van NVARCHAR(20) NULL,
+    kinh_nghiem NVARCHAR(MAX),
+    tong_nam_kinh_nghiem DECIMAL(4, 2) DEFAULT 0,
+    gioi_thieu_ban_than NVARCHAR(MAX),
+    url_cv NVARCHAR(MAX),            
+    cong_khai BIT NOT NULL DEFAULT 0,
+    vi_tri_mong_muon NVARCHAR(255) NULL,
+    thoi_gian_mong_muon NVARCHAR(255) NULL,
+    loai_thoi_gian_lam_viec NVARCHAR(45) NULL,
+    hinh_thuc_lam_viec NVARCHAR(255) NULL,
+    loai_luong_mong_muon NVARCHAR(50) NULL,
+    muc_luong_mong_muon INT NULL,
+    ngay_tao DATETIME NULL DEFAULT GETDATE(),
+    ngay_cap_nhat DATETIME NULL DEFAULT GETDATE(),
+    la_mac_dinh BIT NOT NULL DEFAULT 0, 
+    CONSTRAINT fk_cv_profile_employee FOREIGN KEY (ma_nguoi_tim_viec) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE
+);
+
+CREATE TABLE applied_jobs (
+    ma_ung_tuyen INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_tim_viec INT NOT NULL,
+    ma_cong_viec INT NOT NULL,
+    trang_thai_ung_tuyen NVARCHAR(20) NOT NULL DEFAULT N'Đã gửi'
+        CHECK (trang_thai_ung_tuyen IN (N'Đã gửi', N'Đã xem', N'Phỏng vấn', N'Tuyển dụng', N'Từ chối')),
+    danh_gia_ntd TINYINT NULL,
+    ngay_ung_tuyen DATETIME NULL DEFAULT GETDATE(),
+    url_cv_ung_tuyen NVARCHAR(MAX) NULL,
+    ma_ho_so_cv INT NULL, 
+    CONSTRAINT uk_employee_job UNIQUE (ma_nguoi_tim_viec, ma_cong_viec),
+    CONSTRAINT fk_applied_jobs_employee FOREIGN KEY (ma_nguoi_tim_viec) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE,
+    CONSTRAINT fk_applied_jobs_job FOREIGN KEY (ma_cong_viec) REFERENCES jobdetails (ma_cong_viec) ON DELETE NO ACTION,
+    CONSTRAINT fk_applied_jobs_cv_profile FOREIGN KEY (ma_ho_so_cv) REFERENCES cv_profiles (ma_ho_so_cv) ON DELETE NO ACTION
+);
+
+CREATE TABLE saved_jobs (
+    ma_cv_da_luu INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_dung INT NOT NULL,
+    ma_cong_viec INT NOT NULL,
+    ngay_luu DATETIME NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT uk_saved_user_job UNIQUE (ma_nguoi_dung, ma_cong_viec),
+    CONSTRAINT fk_saved_jobs_user FOREIGN KEY (ma_nguoi_dung) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE,
+    CONSTRAINT fk_saved_jobs_job FOREIGN KEY (ma_cong_viec) REFERENCES jobdetails (ma_cong_viec) ON DELETE NO ACTION
+);
+
+CREATE TABLE messages (
+    ma_tin_nhan INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_gui INT NOT NULL,
+    ma_nguoi_nhan INT NOT NULL,
+    noi_dung NVARCHAR(MAX) NOT NULL,
+    da_doc BIT NOT NULL DEFAULT 0,
+    thoi_gian_gui DATETIME NULL DEFAULT GETDATE(),
+    CONSTRAINT fk_messages_sender FOREIGN KEY (ma_nguoi_gui) REFERENCES [user] (ma_nguoi_dung) ON DELETE NO ACTION,
+    CONSTRAINT fk_messages_receiver FOREIGN KEY (ma_nguoi_nhan) REFERENCES [user] (ma_nguoi_dung) ON DELETE NO ACTION
+);
+
+CREATE TABLE company_followers (
+    ma_theo_doi INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_dung INT NOT NULL,
+    ma_cong_ty INT NOT NULL,
+    ngay_theo_doi DATETIME NULL DEFAULT GETDATE(),
+    CONSTRAINT uk_user_company UNIQUE (ma_nguoi_dung, ma_cong_ty),
+    CONSTRAINT fk_company_followers_user FOREIGN KEY (ma_nguoi_dung) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE,
+    CONSTRAINT fk_company_followers_company FOREIGN KEY (ma_cong_ty) REFERENCES company (ma_cong_ty) ON DELETE NO ACTION 
+);
+
+CREATE TABLE job_alerts (
+    ma_thong_bao_viec_lam INT PRIMARY KEY IDENTITY(1,1),
+    ma_nguoi_dung INT NOT NULL,
+    tieu_de NVARCHAR(255) NOT NULL,
+    tu_khoa NVARCHAR(255) NULL,
+    ma_linh_vuc INT NULL,
+    ma_hinh_thuc INT NULL,
+    tinh_thanh_pho NVARCHAR(100) NULL,
+    vi_tri_cong_viec NVARCHAR(255) NULL,
+    kinh_nghiem_lam_viec NVARCHAR(50) NULL,
+    gioi_tinh NVARCHAR(20) NULL,
+    thoi_gian_tao DATETIME NULL DEFAULT GETDATE(),
+    trang_thai BIT NOT NULL DEFAULT 1,
+    CONSTRAINT fk_job_alerts_user FOREIGN KEY (ma_nguoi_dung) REFERENCES [user] (ma_nguoi_dung) ON DELETE CASCADE,
+    CONSTRAINT fk_job_alerts_field FOREIGN KEY (ma_linh_vuc) REFERENCES work_fields (ma_linh_vuc),
+    CONSTRAINT fk_job_alerts_type FOREIGN KEY (ma_hinh_thuc) REFERENCES work_types (ma_hinh_thuc)
+);
+
+-- Bảng lưu trữ mã OTP cho chức năng quên mật khẩu
+CREATE TABLE otp_codes (
+    ma_otp INT PRIMARY KEY IDENTITY(1,1),
+    email NVARCHAR(255) NOT NULL,
+    otp_code NVARCHAR(6) NOT NULL,
+    ngay_tao DATETIME2 NOT NULL DEFAULT GETDATE(),
+    da_su_dung BIT NOT NULL DEFAULT 0,
+    han_su_dung DATETIME2 NOT NULL
+);
+
+-- HẾT MÃ SQL HOÀN CHỈNH

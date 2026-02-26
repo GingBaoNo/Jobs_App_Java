@@ -1,6 +1,8 @@
 package com.example.fjobs.fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +20,7 @@ import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.JobDetail;
+import com.example.fjobs.utils.Constants;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -143,6 +146,21 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
 
     // Phương thức kiểm tra trạng thái lưu cho một công việc
     private void checkSavedStatusForSingleJob(JobDetail job, int position) {
+        // Chỉ kiểm tra nếu user đã đăng nhập (có token)
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences(
+            Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        String token = sharedPreferences.getString(Constants.KEY_TOKEN, null);
+        
+        if (token == null) {
+            // User chưa đăng nhập, mặc định là chưa lưu
+            job.setSaved(false);
+            if (position < jobList.size()) {
+                jobList.set(position, job);
+                jobAdapter.notifyItemChanged(position);
+            }
+            return;
+        }
+        
         Call<ApiResponse> call = apiService.checkIfJobSaved(job.getMaCongViec());
         call.enqueue(new Callback<ApiResponse>() {
             @Override
@@ -152,6 +170,13 @@ public class JobsFragment extends Fragment implements com.example.fjobs.adapters
                     job.setSaved(response.body().isSuccess());
 
                     // Cập nhật lại adapter
+                    if (position < jobList.size()) {
+                        jobList.set(position, job);
+                        jobAdapter.notifyItemChanged(position);
+                    }
+                } else if (response.code() == 401) {
+                    // User chưa đăng nhập hoặc token hết hạn
+                    job.setSaved(false);
                     if (position < jobList.size()) {
                         jobList.set(position, job);
                         jobAdapter.notifyItemChanged(position);

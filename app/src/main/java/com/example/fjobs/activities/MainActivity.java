@@ -1,7 +1,10 @@
 package com.example.fjobs.activities;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -71,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         setupBottomNavigation();
         loadFragment(new HomeFragment());
+        
+        // Register broadcast receiver for session expired
+        registerSessionExpiredReceiver();
     }
 
     @Override
@@ -377,6 +383,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         finish();
     }
 
+    /**
+     * Xử lý khi token hết hạn hoặc bị xóa tự động
+     * Gọi từ AuthInterceptor hoặc các nơi cần thiết
+     */
+    public void handleSessionExpired() {
+        runOnUiThread(() -> {
+            // Clear user data from shared preferences
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear();
+            editor.apply();
+
+            // Show message and redirect to login
+            Toast.makeText(this, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+            
+            // Navigate to login activity
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        });
+    }
+
     @SuppressLint("GestureBackNavigation")
     @Override
     public void onBackPressed() {
@@ -384,6 +410,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+        }
+    }
+    
+    // Broadcast receiver để xử lý khi session hết hạn
+    private BroadcastReceiver sessionExpiredReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            handleSessionExpired();
+        }
+    };
+    
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    private void registerSessionExpiredReceiver() {
+        IntentFilter filter = new IntentFilter("com.example.fjobs.SESSION_EXPIRED");
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            registerReceiver(sessionExpiredReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(sessionExpiredReceiver, filter);
+        }
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (sessionExpiredReceiver != null) {
+            unregisterReceiver(sessionExpiredReceiver);
         }
     }
 }

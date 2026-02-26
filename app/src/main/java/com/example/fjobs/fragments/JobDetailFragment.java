@@ -1146,9 +1146,17 @@ public class JobDetailFragment extends Fragment {
     }
 
     private void checkJobSavedStatus() {
+        // Chỉ kiểm tra nếu user đã đăng nhập
+        if (!isUserLoggedIn()) {
+            // User chưa đăng nhập, ẩn nút lưu hoặc hiển thị "Đăng nhập để lưu"
+            isJobSaved = false;
+            updateSaveButtonState();
+            return;
+        }
+        
         // Kiểm tra trạng thái lưu công việc
         ApiService apiService = ApiClient.getApiService();
-        
+
         Call<ApiResponse> call = apiService.checkIfJobSaved(jobId);
         call.enqueue(new Callback<ApiResponse>() {
             @Override
@@ -1162,6 +1170,10 @@ public class JobDetailFragment extends Fragment {
                             updateSaveButtonState();
                         }
                     }
+                } else if (response.code() == 401) {
+                    // User chưa đăng nhập hoặc token hết hạn
+                    isJobSaved = false;
+                    updateSaveButtonState();
                 }
             }
 

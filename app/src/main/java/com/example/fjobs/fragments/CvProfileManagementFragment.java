@@ -314,11 +314,22 @@ public class CvProfileManagementFragment extends Fragment implements CvProfileAd
         call.enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                int code = response.code();
+                
+                // HTTP 204 No Content - xóa thành công
+                if (code == 204) {
+                    if (position >= 0 && position < cvProfiles.size()) {
+                        cvProfiles.remove(position);
+                        cvProfileAdapter.notifyItemRemoved(position);
+                    }
+                    Toast.makeText(requireContext(), "Xóa hồ sơ thành công", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
+                // Các trường hợp thành công khác (200, 201...)
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
-                        // Xóa thành công từ phía server
-                        // Cập nhật danh sách cục bộ
                         if (position >= 0 && position < cvProfiles.size()) {
                             cvProfiles.remove(position);
                             cvProfileAdapter.notifyItemRemoved(position);
@@ -329,10 +340,9 @@ public class CvProfileManagementFragment extends Fragment implements CvProfileAd
                         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    // Xử lý trường hợp phản hồi không thành công
                     try {
-                        String errorBody = response.errorBody().string();
-                        Toast.makeText(requireContext(), "Lỗi từ server: " + errorBody, Toast.LENGTH_LONG).show();
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+                        Toast.makeText(requireContext(), "Lỗi: " + errorBody, Toast.LENGTH_LONG).show();
                     } catch (Exception e) {
                         Toast.makeText(requireContext(), "Không thể xóa hồ sơ", Toast.LENGTH_SHORT).show();
                     }

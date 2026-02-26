@@ -172,6 +172,29 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
+    <!-- Divider ngăn cách giữa phần lọc và kết quả -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="@drawable/bg_divider_gradient"
+        android:visibility="gone"
+        android:id="@+id/divider_search_results" />
+
+    <!-- Tiêu đề kết quả tìm kiếm -->
+    <TextView
+        android:id="@+id/tv_results_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="KẾT QUẢ TÌM KIẾM"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#1976D2"
+        android:gravity="center"
+        android:padding="12dp"
+        android:background="#E3F2FD"
+        android:visibility="gone"
+        android:layout_marginHorizontal="16dp" />
+
     <!-- RecyclerView để hiển thị kết quả tìm kiếm -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_search_results"

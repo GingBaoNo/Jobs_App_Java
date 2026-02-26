@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fjobs.R;
-import com.example.fjobs.adapters.HorizontalJobAdapter;
+import com.example.fjobs.adapters.JobAdapter;
 import com.example.fjobs.api.ApiClient;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
@@ -31,18 +31,18 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SearchResultFragment extends Fragment {
+public class SearchResultFragment extends Fragment implements JobAdapter.OnJobClickListener {
 
     private EditText editTextSearchResults;
     private ImageButton buttonSearchResults;
     private RecyclerView rvSearchResults;
     private TextView tvSearchResultsTitle;
     private Button btnAdvancedSearch;
-    
-    private HorizontalJobAdapter searchResultsAdapter;
+
+    private JobAdapter searchResultsAdapter;
     private List<JobDetail> searchResultsList;
     private ApiService apiService;
-    
+
     private String currentSearchKeyword = "";
 
     @Nullable
@@ -53,10 +53,22 @@ public class SearchResultFragment extends Fragment {
         initViews(view);
         setupRecyclerView();
         initApiService();
-        
-        // Lấy từ khóa tìm kiếm từ bundle nếu có
+
+        // Lấy từ khóa tìm kiếm hoặc work_field_id từ bundle nếu có
         Bundle bundle = getArguments();
         if (bundle != null) {
+            // Kiểm tra nếu có work_field_id (tìm kiếm theo lĩnh vực)
+            if (bundle.containsKey("work_field_id")) {
+                int workFieldId = bundle.getInt("work_field_id", -1);
+                String workFieldName = bundle.getString("work_field_name", "");
+                
+                if (workFieldId != -1) {
+                    // Tìm kiếm theo lĩnh vực
+                    performSearchByField(workFieldId, workFieldName);
+                }
+            }
+            
+            // Kiểm tra nếu có keyword (tìm kiếm thông thường)
             String keyword = bundle.getString("keyword");
             if (keyword != null && !keyword.isEmpty()) {
                 currentSearchKeyword = keyword;
@@ -80,7 +92,7 @@ public class SearchResultFragment extends Fragment {
 
     private void setupRecyclerView() {
         searchResultsList = new ArrayList<>();
-        searchResultsAdapter = new HorizontalJobAdapter(searchResultsList, getContext());
+        searchResultsAdapter = new JobAdapter(getContext(), searchResultsList, this);
         rvSearchResults.setLayoutManager(new LinearLayoutManager(getContext()));
         rvSearchResults.setAdapter(searchResultsAdapter);
     }
@@ -178,6 +190,75 @@ public class SearchResultFragment extends Fragment {
                             tvSearchResultsTitle.setText("Không tìm thấy kết quả cho: \"" + keyword + "\"");
                         } else {
                             tvSearchResultsTitle.setText("Kết quả tìm kiếm cho: \"" + keyword + "\" (" + searchResults.size() + " kết quả)");
+                        }
+                    } else {
+                        String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Tìm kiếm thất bại";
+                        System.out.println("Lỗi API: " + message);
+                        Toast.makeText(getContext(), "Lỗi: " + message, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    System.out.println("Tìm kiếm thất bại, response code: " + response.code());
+                    Toast.makeText(getContext(), "Tìm kiếm thất bại, vui lòng thử lại", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                System.out.println("Lỗi kết nối: " + t.getMessage());
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Phương thức tìm kiếm theo lĩnh vực
+    public void performSearchByField(int workFieldId, String workFieldName) {
+        tvSearchResultsTitle.setText("Việc làm lĩnh vực: " + workFieldName);
+        System.out.println("Gọi API tìm kiếm theo lĩnh vực ID: " + workFieldId);
+
+        Call<ApiResponse> call = apiService.searchJobsByField(workFieldId);
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                System.out.println("Response code: " + response.code());
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    System.out.println("API Response isSuccess: " + apiResponse.isSuccess());
+                    System.out.println("API Response data: " + apiResponse.getData());
+
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Chuyển đổi dữ liệu từ API
+                        Object data = apiResponse.getData();
+                        List<JobDetail> searchResults = new ArrayList<>();
+
+                        if (data instanceof List) {
+                            List<?> rawData = (List<?>) data;
+                            System.out.println("Số lượng kết quả nhận được: " + rawData.size());
+
+                            for (Object item : rawData) {
+                                System.out.println("Xử lý item: " + item);
+                                if (item instanceof java.util.Map) {
+                                    JobDetail job = convertMapToJobDetail((java.util.Map<String, Object>) item);
+                                    if (job != null) {
+                                        System.out.println("Tìm thấy công việc: " + job.getTieuDe());
+                                        searchResults.add(job);
+                                    }
+                                } else if (item instanceof JobDetail) {
+                                    System.out.println("Tìm thấy công việc (JobDetail): " + ((JobDetail) item).getTieuDe());
+                                    searchResults.add((JobDetail) item);
+                                }
+                            }
+                        }
+
+                        // Cập nhật danh sách kết quả tìm kiếm
+                        searchResultsList.clear();
+                        searchResultsList.addAll(searchResults);
+                        searchResultsAdapter.notifyDataSetChanged();
+
+                        // Hiển thị thông báo nếu không có kết quả
+                        if (searchResults.isEmpty()) {
+                            tvSearchResultsTitle.setText("Không tìm thấy việc làm trong lĩnh vực: " + workFieldName);
+                        } else {
+                            tvSearchResultsTitle.setText("Việc làm lĩnh vực: " + workFieldName + " (" + searchResults.size() + " kết quả)");
                         }
                     } else {
                         String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Tìm kiếm thất bại";
@@ -554,5 +635,23 @@ public class SearchResultFragment extends Fragment {
     public void searchForKeyword(String keyword) {
         editTextSearchResults.setText(keyword);
         performSearch(keyword);
+    }
+
+    @Override
+    public void onJobClick(JobDetail job) {
+        // Chuyển đến màn hình chi tiết công việc
+        Bundle bundle = new Bundle();
+        bundle.putInt("job_id", job.getMaCongViec());
+
+        JobDetailFragment jobDetailFragment = new JobDetailFragment();
+        jobDetailFragment.setArguments(bundle);
+
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.content_frame, jobDetailFragment)
+                .addToBackStack(null)
+                .commit();
+        }
     }
 }

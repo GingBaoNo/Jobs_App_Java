@@ -1,0 +1,194 @@
+package com.example.demo.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "company")
+public class Company {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ma_cong_ty")
+    private Integer maCongTy;
+
+    @OneToOne
+    @JoinColumn(name = "ma_nha_tuyen_dung", nullable = false)
+    @JsonIgnore
+    private User user;
+
+    @Column(name = "ten_cong_ty", nullable = false)
+    private String tenCongTy;
+
+    @Column(name = "ten_nguoi_dai_dien")
+    private String tenNguoiDaiDien;
+
+    @Column(name = "ma_so_thue")
+    private String maSoThue;
+
+    @Column(name = "dia_chi")
+    private String diaChi;
+
+    @Column(name = "email_cty")
+    private String emailCty;
+
+    @Column(name = "so_dien_thoai_cty")
+    private String soDienThoaiCty;
+
+    @Column(name = "hinh_anh_cty")
+    private String hinhAnhCty;
+
+    @Column(name = "da_xac_thuc")
+    private Boolean daXacThuc = false;
+
+    @Column(name = "trang_thai")
+    private String trangThai = "PENDING"; // PENDING, APPROVED, REJECTED
+
+    @Column(name = "mo_ta_cong_ty", columnDefinition = "NVARCHAR(2000)")
+    private String moTaCongTy;
+
+    @Column(name = "ngay_tao")
+    private LocalDateTime ngayTao;
+
+    @Column(name = "kinh_do", precision = 10, scale = 8)
+    private BigDecimal kinhDo;
+
+    @Column(name = "vi_do", precision = 11, scale = 8)
+    private BigDecimal viDo;
+
+    // Constructors
+    public Company() {}
+
+    public Company(User user, String tenCongTy) {
+        this.user = user;
+        this.tenCongTy = tenCongTy;
+    }
+
+    public Company(User user, String tenCongTy, String moTaCongTy) {
+        this.user = user;
+        this.tenCongTy = tenCongTy;
+        this.moTaCongTy = moTaCongTy;
+    }
+
+    // Getters and Setters
+    public Integer getMaCongTy() {
+        return maCongTy;
+    }
+
+    public void setMaCongTy(Integer maCongTy) {
+        this.maCongTy = maCongTy;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getTenCongTy() {
+        return tenCongTy;
+    }
+
+    public void setTenCongTy(String tenCongTy) {
+        this.tenCongTy = tenCongTy;
+    }
+
+    public String getTenNguoiDaiDien() {
+        return tenNguoiDaiDien;
+    }
+
+    public void setTenNguoiDaiDien(String tenNguoiDaiDien) {
+        this.tenNguoiDaiDien = tenNguoiDaiDien;
+    }
+
+    public String getMaSoThue() {
+        return maSoThue;
+    }
+
+    public void setMaSoThue(String maSoThue) {
+        this.maSoThue = maSoThue;
+    }
+
+    public String getDiaChi() {
+        return diaChi;
+    }
+
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
+    }
+
+    public String getEmailCty() {
+        return emailCty;
+    }
+
+    public void setEmailCty(String emailCty) {
+        this.emailCty = emailCty;
+    }
+
+    public String getSoDienThoaiCty() {
+        return soDienThoaiCty;
+    }
+
+    public void setSoDienThoaiCty(String soDienThoaiCty) {
+        this.soDienThoaiCty = soDienThoaiCty;
+    }
+
+    public String getHinhAnhCty() {
+        return hinhAnhCty;
+    }
+
+    public void setHinhAnhCty(String hinhAnhCty) {
+        this.hinhAnhCty = hinhAnhCty;
+    }
+
+    public Boolean getDaXacThuc() {
+        return daXacThuc;
+    }
+
+    public void setDaXacThuc(Boolean daXacThuc) {
+        this.daXacThuc = daXacThuc;
+    }
+
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    public LocalDateTime getNgayTao() {
+        return ngayTao;
+    }
+
+    public void setNgayTao(LocalDateTime ngayTao) {
+        this.ngayTao = ngayTao;
+    }
+
+    public String getMoTaCongTy() {
+        return moTaCongTy;
+    }
+
+    public void setMoTaCongTy(String moTaCongTy) {
+        this.moTaCongTy = moTaCongTy;
+    }
+
+    public BigDecimal getKinhDo() {
+        return kinhDo;
+    }
+
+    public void setKinhDo(BigDecimal kinhDo) {
+        this.kinhDo = kinhDo;
+    }
+
+    public BigDecimal getViDo() {
+        return viDo;
+    }
+
+    public void setViDo(BigDecimal viDo) {
+        this.viDo = viDo;
+    }
+}

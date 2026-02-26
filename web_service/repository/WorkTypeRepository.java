@@ -1,0 +1,10 @@
+package com.example.demo.repository;
+
+import com.example.demo.entity.WorkType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface WorkTypeRepository extends JpaRepository<WorkType, Integer> {
+    java.util.List<WorkType> findByTenHinhThucContainingIgnoreCase(String tenHinhThuc);
+}
