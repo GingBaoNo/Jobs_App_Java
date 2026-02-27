@@ -16,7 +16,7 @@ public class ServerConfig {
     }
 
     public static String getWebSocketUrl() {
-        return String.format("ws://%s:8080/ws", SERVER_IP);
+        return String.format("ws://%s:8080/websocket", SERVER_IP);
     }
 
     public static String getServerIp() {
