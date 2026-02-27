@@ -86,6 +86,9 @@ public class JobDetail {
     @SerializedName("workField")
     private WorkField workField; // Lĩnh vực công việc
 
+    @SerializedName("workType")
+    private WorkType workType; // Hình thức làm việc
+
     // Thêm thuộc tính để theo dõi trạng thái lưu việc làm
     private Boolean saved = false;
 
@@ -183,6 +186,9 @@ public class JobDetail {
 
     public WorkField getWorkField() { return workField; }
     public void setWorkField(WorkField workField) { this.workField = workField; }
+
+    public WorkType getWorkType() { return workType; }
+    public void setWorkType(WorkType workType) { this.workType = workType; }
 
     // Getter và setter cho thuộc tính saved
     public Boolean isSaved() { return saved; }

@@ -44,7 +44,7 @@ public class CompanyDetailFragment extends Fragment {
     private TextView tvCompanyPhone, tvCompanyPhone1, tvCompanyEmail, tvCompanyEmailDisplay;
     private TextView tvCompanyInfo;
     private TextView tvContactPerson, tvCompanyContact, tvTaxCode, tvCompanyAddress;
-    private Button btnViewJobs, btnViewOnMap;
+    private Button btnViewOnMap;
 
     // RecyclerView và Adapter cho danh sách công việc
     private RecyclerView rvCompanyJobs;
@@ -104,9 +104,6 @@ public class CompanyDetailFragment extends Fragment {
         tvTaxCode = view.findViewById(R.id.tv_tax_code);
         tvCompanyAddress = view.findViewById(R.id.tv_company_address);
 
-        // Footer button
-        btnViewJobs = view.findViewById(R.id.sticky_footer);
-
         // View on map button
         btnViewOnMap = view.findViewById(R.id.btn_view_on_map);
 
@@ -148,12 +145,6 @@ public class CompanyDetailFragment extends Fragment {
         shareButton.setOnClickListener(v -> {
             Toast.makeText(requireContext(), "Chức năng chia sẻ", Toast.LENGTH_SHORT).show();
             // Thêm chức năng chia sẻ nếu cần
-        });
-
-        // View jobs button
-        btnViewJobs.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Hiển thị danh sách công việc đang tuyển", Toast.LENGTH_SHORT).show();
-            // Có thể chuyển sang một activity mới để hiển thị danh sách công việc của công ty
         });
 
         // View on map button

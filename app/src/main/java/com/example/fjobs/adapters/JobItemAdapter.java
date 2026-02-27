@@ -53,32 +53,16 @@ public class JobItemAdapter extends RecyclerView.Adapter<JobItemAdapter.JobItemV
         private ImageView ivCompanyLogo;
         private TextView tvJobTitle;
         private TextView tvCompanyName;
-        private TextView tvStatusBadge;
         private TextView tvSalary;
         private TextView tvShortDescription;
-        private TextView btnTagApproved;
-        private TextView btnTagOpen;
-        private Button btnViewDetails;
 
         public JobItemViewHolder(@NonNull View itemView) {
             super(itemView);
             ivCompanyLogo = itemView.findViewById(R.id.iv_company_logo);
             tvJobTitle = itemView.findViewById(R.id.tv_job_title);
             tvCompanyName = itemView.findViewById(R.id.tv_company_name);
-            tvStatusBadge = itemView.findViewById(R.id.tv_status_badge);
             tvSalary = itemView.findViewById(R.id.tv_salary);
             tvShortDescription = itemView.findViewById(R.id.tv_short_description);
-            btnTagApproved = itemView.findViewById(R.id.btn_tag_approved);
-            btnTagOpen = itemView.findViewById(R.id.btn_tag_open);
-            btnViewDetails = itemView.findViewById(R.id.btn_view_details);
-
-            btnViewDetails.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    JobDetail job = jobList.get(position);
-                    listener.onJobClick(job);
-                }
-            });
 
             // Thêm click listener cho toàn bộ item
             itemView.setOnClickListener(v -> {
@@ -111,10 +95,6 @@ public class JobItemAdapter extends RecyclerView.Adapter<JobItemAdapter.JobItemV
                 }
             }
 
-            // Set job status
-            String status = job.getTrangThaiTinTuyen();
-            tvStatusBadge.setText(status);
-
             // Set salary
             if (job.getLuong() != null && job.getLuong() > 0) {
                 String salaryText = String.format("%,d", job.getLuong()) + " VNĐ";
@@ -132,14 +112,6 @@ public class JobItemAdapter extends RecyclerView.Adapter<JobItemAdapter.JobItemV
             } else {
                 tvShortDescription.setText(job.getChiTiet());
             }
-
-            // Set approval status
-            String approvalStatus = job.getTrangThaiDuyet();
-            btnTagApproved.setText(approvalStatus.equals("Đã duyệt") ? "Đã duyệt" : "Chờ duyệt");
-            btnTagApproved.setVisibility(approvalStatus.equals("Đã duyệt") ? View.VISIBLE : View.GONE);
-
-            // Set the open tag text
-            btnTagOpen.setText(job.getTrangThaiTinTuyen());
         }
     }
 }

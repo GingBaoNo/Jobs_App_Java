@@ -195,11 +195,15 @@
                     <!-- SỬ DỤNG LAYOUT MỚI: item_title_value_row -->
                     <!-- Vị trí làm việc (thay đổi thành vị trí công việc cụ thể) -->
                     <include layout="@layout/item_title_value_row" android:id="@+id/info_row_position" />
+                    <!-- Ngành (thêm mới) -->
+                    <include layout="@layout/item_title_value_row" android:id="@+id/info_row_discipline" />
                     <!-- Mức lương -->
                     <include layout="@layout/item_title_value_row" android:id="@+id/info_row_salary" />
-                    <!-- Hình thức -->
-                    <include layout="@layout/item_title_value_row" android:id="@+id/info_row_form" />
-                    <!-- Cấp độ kinh nghiệm (thêm mới) -->
+                    <!-- Công ty -->
+                    <include layout="@layout/item_title_value_row" android:id="@+id/info_row_company" />
+                    <!-- Hình thức làm việc -->
+                    <include layout="@layout/item_title_value_row" android:id="@+id/info_row_work_type" />
+                    <!-- Cấp độ kinh nghiệm -->
                     <include layout="@layout/item_title_value_row" android:id="@+id/info_row_experience_level" />
                     <!-- Số lượng -->
                     <include layout="@layout/item_title_value_row" android:id="@+id/info_row_quantity" />

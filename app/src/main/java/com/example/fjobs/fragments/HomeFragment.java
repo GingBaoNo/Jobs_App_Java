@@ -50,6 +50,8 @@ public class HomeFragment extends Fragment {
     private TextView tvFeaturedCompaniesTitle;
     private TextView tvTotalJobs;
     private TextView tvTotalCompanies;
+    private View cardTotalJobs;
+    private View cardTotalCompanies;
 
     @Nullable
     @Override
@@ -58,6 +60,7 @@ public class HomeFragment extends Fragment {
 
         initViews(view);
         setupRecyclerViews();
+        setupStatsClickListeners();
         loadFeaturedJobs();
         loadFeaturedCompanies();
         loadLatestJobs();
@@ -79,6 +82,8 @@ public class HomeFragment extends Fragment {
         tvFeaturedCompaniesTitle = view.findViewById(R.id.tv_featured_companies_title);
         tvTotalJobs = view.findViewById(R.id.tv_total_jobs);
         tvTotalCompanies = view.findViewById(R.id.tv_total_companies);
+        cardTotalJobs = view.findViewById(R.id.card_total_jobs);
+        cardTotalCompanies = view.findViewById(R.id.card_total_companies);
     }
 
     private void setupRecyclerViews() {
@@ -105,6 +110,36 @@ public class HomeFragment extends Fragment {
         categoryJobAdapter = new CategoryJobAdapter(popularCategoryList, getContext());
         rvPopularCategories.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         rvPopularCategories.setAdapter(categoryJobAdapter);
+    }
+
+    private void setupStatsClickListeners() {
+        // Click vào card "Công việc" -> chuyển sang danh sách việc làm
+        if (cardTotalJobs != null) {
+            cardTotalJobs.setOnClickListener(v -> {
+                JobsFragment jobsFragment = new JobsFragment();
+                if (getActivity() != null) {
+                    getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.content_frame, jobsFragment)
+                        .addToBackStack(null)
+                        .commit();
+                }
+            });
+        }
+
+        // Click vào card "Công ty" -> chuyển sang danh sách công ty
+        if (cardTotalCompanies != null) {
+            cardTotalCompanies.setOnClickListener(v -> {
+                CompaniesFragment companiesFragment = new CompaniesFragment();
+                if (getActivity() != null) {
+                    getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.content_frame, companiesFragment)
+                        .addToBackStack(null)
+                        .commit();
+                }
+            });
+        }
     }
 
     private void setupSearchFunctionality() {

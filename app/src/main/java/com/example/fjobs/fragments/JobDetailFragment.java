@@ -45,9 +45,11 @@ public class JobDetailFragment extends Fragment {
 
     // Các view cho hàng tiêu đề-giá trị
     private TextView infoRowPositionTitle, infoRowPositionValue;
+    private TextView infoRowDisciplineTitle, infoRowDisciplineValue;    // Ngành
     private TextView infoRowSalaryTitle, infoRowSalaryValue;
-    private TextView infoRowFormTitle, infoRowFormValue;
-    private TextView infoRowExperienceLevelTitle, infoRowExperienceLevelValue; // Thêm mới
+    private TextView infoRowCompanyTitle, infoRowCompanyValue;          // Công ty
+    private TextView infoRowWorkTypeTitle, infoRowWorkTypeValue;        // Hình thức làm việc
+    private TextView infoRowExperienceLevelTitle, infoRowExperienceLevelValue;
     private TextView infoRowQuantityTitle, infoRowQuantityValue;
     private TextView infoRowGenderTitle, infoRowGenderValue;
     private TextView infoRowPostDateTitle, infoRowPostDateValue;
@@ -132,13 +134,21 @@ public class JobDetailFragment extends Fragment {
         infoRowPositionTitle = infoRowPosition.findViewById(R.id.text1);
         infoRowPositionValue = infoRowPosition.findViewById(R.id.text2);
 
+        LinearLayout infoRowDiscipline = view.findViewById(R.id.info_row_discipline);
+        infoRowDisciplineTitle = infoRowDiscipline.findViewById(R.id.text1);
+        infoRowDisciplineValue = infoRowDiscipline.findViewById(R.id.text2);
+
         LinearLayout infoRowSalary = view.findViewById(R.id.info_row_salary);
         infoRowSalaryTitle = infoRowSalary.findViewById(R.id.text1);
         infoRowSalaryValue = infoRowSalary.findViewById(R.id.text2);
 
-        LinearLayout infoRowForm = view.findViewById(R.id.info_row_form);
-        infoRowFormTitle = infoRowForm.findViewById(R.id.text1);
-        infoRowFormValue = infoRowForm.findViewById(R.id.text2);
+        LinearLayout infoRowCompany = view.findViewById(R.id.info_row_company);
+        infoRowCompanyTitle = infoRowCompany.findViewById(R.id.text1);
+        infoRowCompanyValue = infoRowCompany.findViewById(R.id.text2);
+
+        LinearLayout infoRowWorkType = view.findViewById(R.id.info_row_work_type);
+        infoRowWorkTypeTitle = infoRowWorkType.findViewById(R.id.text1);
+        infoRowWorkTypeValue = infoRowWorkType.findViewById(R.id.text2);
 
         LinearLayout infoRowExperienceLevel = view.findViewById(R.id.info_row_experience_level);
         infoRowExperienceLevelTitle = infoRowExperienceLevel.findViewById(R.id.text1);
@@ -410,6 +420,15 @@ public class JobDetailFragment extends Fragment {
                 }
             }
 
+            // Xử lý hình thức làm việc nếu có
+            if (map.containsKey("workType") && map.get("workType") != null) {
+                java.util.Map<String, Object> workTypeMap = (java.util.Map<String, Object>) map.get("workType");
+                if (workTypeMap != null) {
+                    com.example.fjobs.models.WorkType workType = convertMapToWorkType(workTypeMap);
+                    job.setWorkType(workType);
+                }
+            }
+
             // Xử lý tọa độ công việc nếu có
             if (map.containsKey("kinhDo") && map.get("kinhDo") != null) {
                 Object kinhDoObj = map.get("kinhDo");
@@ -651,6 +670,32 @@ public class JobDetailFragment extends Fragment {
         }
     }
 
+    private com.example.fjobs.models.WorkType convertMapToWorkType(java.util.Map<String, Object> map) {
+        try {
+            com.example.fjobs.models.WorkType workType = new com.example.fjobs.models.WorkType();
+
+            if (map.containsKey("maHinhThuc") && map.get("maHinhThuc") != null) {
+                Object maHinhThucObj = map.get("maHinhThuc");
+                if (maHinhThucObj instanceof Integer) {
+                    workType.setMaHinhThuc((Integer) maHinhThucObj);
+                } else if (maHinhThucObj instanceof Double) {
+                    workType.setMaHinhThuc(((Double) maHinhThucObj).intValue());
+                } else {
+                    workType.setMaHinhThuc(Integer.parseInt(maHinhThucObj.toString()));
+                }
+            }
+
+            if (map.containsKey("tenHinhThuc") && map.get("tenHinhThuc") != null) {
+                workType.setTenHinhThuc(map.get("tenHinhThuc").toString());
+            }
+
+            return workType;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private void displayJobDetails(JobDetail job) {
         // Cập nhật biến currentJob
         this.currentJob = job;
@@ -707,21 +752,52 @@ public class JobDetailFragment extends Fragment {
 
     private void displayAdditionalInfo(JobDetail job) {
         // Cập nhật các hàng thông tin
-        infoRowPositionTitle.setText("Tên công việc"); // Cập nhật tiêu đề
+        infoRowPositionTitle.setText("Tên công việc");
         infoRowPositionValue.setText(job.getTieuDe() != null ? job.getTieuDe() : "N/A");
-        infoRowSalaryTitle.setText("Lương"); // Cập nhật tiêu đề
+
+        // Ngành (Work Discipline) - lấy từ jobPosition -> workDiscipline
+        infoRowDisciplineTitle.setText("Ngành");
+        if (job.getJobPosition() != null && job.getJobPosition().getWorkDiscipline() != null 
+                && job.getJobPosition().getWorkDiscipline().getTenNganh() != null) {
+            infoRowDisciplineValue.setText(job.getJobPosition().getWorkDiscipline().getTenNganh());
+        } else {
+            infoRowDisciplineValue.setText("N/A");
+        }
+
+        // Lương
+        infoRowSalaryTitle.setText("Lương");
         infoRowSalaryValue.setText(job.getLuong() != null ? String.format("%,d VNĐ", job.getLuong()) : "Thương lượng");
-        infoRowFormTitle.setText("Công ty"); // Cập nhật tiêu đề cho Form (nếu trước đây là "Hình thức")
-        infoRowFormValue.setText(job.getCompany() != null ? job.getCompany().getTenCongTy() : "N/A");
-        infoRowExperienceLevelTitle.setText("Cấp độ kinh nghiệm"); // Cập nhật tiêu đề
+
+        // Công ty
+        infoRowCompanyTitle.setText("Công ty");
+        infoRowCompanyValue.setText(job.getCompany() != null ? job.getCompany().getTenCongTy() : "N/A");
+
+        // Hình thức làm việc (Work Type)
+        infoRowWorkTypeTitle.setText("Hình thức làm việc");
+        if (job.getWorkType() != null && job.getWorkType().getTenHinhThuc() != null) {
+            infoRowWorkTypeValue.setText(job.getWorkType().getTenHinhThuc());
+        } else {
+            infoRowWorkTypeValue.setText("N/A");
+        }
+
+        // Cấp độ kinh nghiệm
+        infoRowExperienceLevelTitle.setText("Cấp độ kinh nghiệm");
         infoRowExperienceLevelValue.setText(job.getExperienceLevel() != null ? job.getExperienceLevel().getTenCapDo() : "N/A");
-        infoRowQuantityTitle.setText("Số lượng tuyển"); // Cập nhật tiêu đề
+
+        // Số lượng tuyển
+        infoRowQuantityTitle.setText("Số lượng tuyển");
         infoRowQuantityValue.setText(job.getSoLuongTuyen() != null ? job.getSoLuongTuyen().toString() : "N/A");
-        infoRowGenderTitle.setText("Giới tính yêu cầu"); // Cập nhật tiêu đề
+
+        // Giới tính yêu cầu
+        infoRowGenderTitle.setText("Giới tính yêu cầu");
         infoRowGenderValue.setText(job.getGioiTinhYeuCau() != null ? job.getGioiTinhYeuCau() : "N/A");
-        infoRowPostDateTitle.setText("Ngày đăng"); // Cập nhật tiêu đề
+
+        // Ngày đăng
+        infoRowPostDateTitle.setText("Ngày đăng");
         infoRowPostDateValue.setText(job.getNgayDang() != null ? job.getNgayDang() : "N/A");
-        infoRowDeadlineTitle.setText("Hạn nộp"); // Cập nhật tiêu đề
+
+        // Hạn nộp
+        infoRowDeadlineTitle.setText("Hạn nộp");
         infoRowDeadlineValue.setText(job.getNgayKetThucTuyenDung() != null ? job.getNgayKetThucTuyenDung() : "N/A");
     }
 
