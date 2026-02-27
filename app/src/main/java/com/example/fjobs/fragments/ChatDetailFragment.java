@@ -5,9 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +39,9 @@ import retrofit2.Response;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,8 +51,8 @@ public class ChatDetailFragment extends Fragment implements WebSocketManager.Web
     private MessageAdapter messageAdapter;
     private List<Message> messageList;
     private EditText etMessage;
-    private Button btnSend;
-    private ImageButton btnBack;
+    private FloatingActionButton btnSend;
+    private MaterialButton btnBack;
     private TextView tvToolbarTitle;
     private CircleImageView ivAvatarHeader; // Thêm view avatar header
     private ApiService apiService;

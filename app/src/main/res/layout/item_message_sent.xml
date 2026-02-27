@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="4dp"
-    android:layout_marginTop="4dp">
+    android:padding="6dp"
+    android:gravity="end">
 
     <!-- Spacer đẩy bubble sang phải -->
     <View
@@ -12,50 +13,56 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Bubble chat -->
-    <LinearLayout
+    <!-- Bubble chat gửi đi -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        android:orientation="vertical"
-        android:background="@drawable/message_sent_background_new"
-        android:padding="12dp"
-        android:minWidth="80dp"
-        android:maxWidth="300dp">
-
-        <TextView
-            android:id="@+id/tv_message"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nội dung tin nhắn"
-            android:textColor="@color/white"
-            android:textSize="14sp"
-            android:lineSpacingMultiplier="1.1" />
+        app:cardCornerRadius="18dp"
+        app:cardElevation="1dp"
+        app:cardBackgroundColor="@color/primary_500"
+        app:strokeWidth="0dp"
+        app:cardUseCompatPadding="false">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end">
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:minWidth="80dp"
+            android:maxWidth="280dp">
 
             <TextView
-                android:id="@+id/tv_time"
+                android:id="@+id/tv_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="12:30"
+                android:text="Nội dung tin nhắn"
                 android:textColor="@color/white"
-                android:textSize="10sp"
-                android:alpha="0.8" />
+                android:textSize="14sp"
+                android:lineSpacingMultiplier="1.2" />
 
-            <!-- icon trạng thái nếu cần -->
-            <!-- <ImageView android:id="@+id/iv_status" ... /> -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end|bottom"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tv_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12:30"
+                    android:textColor="@color/primary_100"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>
