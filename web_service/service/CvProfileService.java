@@ -16,6 +16,9 @@ public class CvProfileService {
     @Autowired
     private CvProfileRepository cvProfileRepository;
 
+    // Flag để tránh vòng lặp khi đồng bộ
+    private final ThreadLocal<Boolean> syncingToProfile = new ThreadLocal<>();
+
     public List<CvProfile> getAllCvProfilesByUser(User user) {
         return cvProfileRepository.findByNguoiTimViec(user);
     }
@@ -102,8 +105,11 @@ public class CvProfileService {
             CvProfile savedCvProfile = cvProfileRepository.save(existingCvProfile);
 
             // Nếu đây là hồ sơ mặc định, đồng bộ thông tin sang hồ sơ cá nhân
-            if (savedCvProfile.getLaMacDinh()) {
+            // Chỉ đồng bộ nếu chưa có flag tránh vòng lặp
+            if (savedCvProfile.getLaMacDinh() && !Boolean.TRUE.equals(syncingToProfile.get())) {
+                syncingToProfile.set(true);
                 syncCvProfileToProfile(savedCvProfile);
+                syncingToProfile.set(false);
             }
 
             return savedCvProfile;

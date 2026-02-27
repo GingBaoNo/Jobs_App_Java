@@ -137,15 +137,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Set default avatar with proper handling for CircleImageView
         de.hdodenhof.circleimageview.CircleImageView imgAvt = headerView.findViewById(R.id.img_avt);
         if (imgAvt != null) {
-            // Sử dụng Glide để đảm bảo ảnh được tải an toàn tránh lỗi width/height = 0
-            imgAvt.post(() -> {
-                com.bumptech.glide.Glide.with(this)
-                        .load(R.drawable.avt)  // Ảnh mặc định
-                        .placeholder(R.drawable.avt)  // Ảnh placeholder
-                        .error(R.drawable.avt)  // Ảnh khi lỗi
-                        .into(imgAvt);
-            });
-
+            // Set ảnh mặc định trực tiếp cho CircleImageView
+            imgAvt.setImageResource(R.drawable.avt);
+            
             // Set click listener to login
             imgAvt.setOnClickListener(v -> {
                 startActivity(new Intent(this, LoginActivity.class));

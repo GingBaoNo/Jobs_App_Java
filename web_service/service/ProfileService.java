@@ -22,6 +22,9 @@ public class ProfileService {
     @Autowired
     private CvProfileService cvProfileService;
 
+    // Flag để tránh vòng lặp khi đồng bộ
+    private final ThreadLocal<Boolean> syncingToCv = new ThreadLocal<>();
+
     public List<Profile> getAllProfiles() {
         return profileRepository.findAll();
     }
@@ -42,7 +45,12 @@ public class ProfileService {
         Profile updatedProfile = profileRepository.save(profile);
 
         // Đồng bộ thông tin sang hồ sơ CV mặc định nếu có
-        syncProfileToDefaultCvProfile(updatedProfile);
+        // Chỉ đồng bộ nếu chưa có flag tránh vòng lặp
+        if (!Boolean.TRUE.equals(syncingToCv.get())) {
+            syncingToCv.set(true);
+            syncProfileToDefaultCvProfile(updatedProfile);
+            syncingToCv.set(false);
+        }
 
         return updatedProfile;
     }

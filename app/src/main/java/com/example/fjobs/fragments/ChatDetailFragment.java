@@ -91,7 +91,12 @@ public class ChatDetailFragment extends Fragment implements WebSocketManager.Web
         btnSend = view.findViewById(R.id.btn_send);
         btnBack = view.findViewById(R.id.btn_back);
         tvToolbarTitle = view.findViewById(R.id.tv_toolbar_title);
-        ivAvatarHeader = view.findViewById(R.id.iv_avatar_header); // Ánh xạ avatar header
+        ivAvatarHeader = view.findViewById(R.id.iv_avatar_header);
+
+        // Set padding bottom cho RecyclerView để không bị che bởi input container
+        int paddingBottom = (int) (8 * getResources().getDisplayMetrics().density);
+        recyclerMessages.setPadding(0, 0, 0, paddingBottom);
+        recyclerMessages.setClipToPadding(false);
 
         apiService = ApiClient.getApiService();
         sessionManager = new SessionManager(requireContext());

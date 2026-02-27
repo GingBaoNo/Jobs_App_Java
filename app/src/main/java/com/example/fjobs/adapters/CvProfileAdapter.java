@@ -4,7 +4,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +14,7 @@ import com.example.fjobs.R;
 import com.example.fjobs.api.ApiService;
 import com.example.fjobs.models.ApiResponse;
 import com.example.fjobs.models.CvProfile;
+import com.google.android.material.chip.Chip;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -66,8 +66,7 @@ public class CvProfileAdapter extends RecyclerView.Adapter<CvProfileAdapter.CvPr
     public class CvProfileViewHolder extends RecyclerView.ViewHolder {
         private TextView tvCvProfileName;
         private TextView tvCvProfileDescription;
-        private TextView tvCvProfilePosition;
-        private CheckBox cbIsDefault;
+        private Chip chipDefault;
         private Button btnEditCv;
         private Button btnDeleteCv;
         private Button btnSetDefault;
@@ -76,8 +75,7 @@ public class CvProfileAdapter extends RecyclerView.Adapter<CvProfileAdapter.CvPr
             super(itemView);
             tvCvProfileName = itemView.findViewById(R.id.tv_cv_profile_name);
             tvCvProfileDescription = itemView.findViewById(R.id.tv_cv_profile_description);
-            tvCvProfilePosition = itemView.findViewById(R.id.tv_cv_profile_position);
-            cbIsDefault = itemView.findViewById(R.id.cb_is_default);
+            chipDefault = itemView.findViewById(R.id.chip_default);
             btnEditCv = itemView.findViewById(R.id.btn_edit_cv);
             btnDeleteCv = itemView.findViewById(R.id.btn_delete_cv);
             btnSetDefault = itemView.findViewById(R.id.btn_set_default);
@@ -86,10 +84,9 @@ public class CvProfileAdapter extends RecyclerView.Adapter<CvProfileAdapter.CvPr
         public void bind(CvProfile cvProfile) {
             tvCvProfileName.setText(cvProfile.getTenHoSo());
             tvCvProfileDescription.setText(cvProfile.getMoTa() != null ? cvProfile.getMoTa() : "Không có mô tả");
-            tvCvProfilePosition.setText(cvProfile.getViTriMongMuon() != null ? cvProfile.getViTriMongMuon() : "Chưa cập nhật vị trí");
 
             boolean isDefault = cvProfile.getLaMacDinh() != null && cvProfile.getLaMacDinh();
-            cbIsDefault.setChecked(isDefault);
+            chipDefault.setVisibility(isDefault ? View.VISIBLE : View.GONE);
             btnSetDefault.setVisibility(isDefault ? View.GONE : View.VISIBLE);
 
             btnEditCv.setOnClickListener(v -> {

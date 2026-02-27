@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/gray_50">
+    android:background="@color/gray_50"
+    android:paddingBottom="56dp">
 
     <!-- Header với Material Design -->
     <com.google.android.material.appbar.AppBarLayout
@@ -101,14 +102,20 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:padding="12dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:background="@color/white"
+        android:fitsSystemWindows="false"
+        android:transcriptMode="alwaysScroll"
+        app:layout_constrainedHeight="true"
         app:layout_constraintTop_toBottomOf="@id/appbar"
         app:layout_constraintBottom_toTopOf="@id/message_input_container"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Message Input Container -->
+    <!-- Message Input Container - Cố định ở dưới -->
     <LinearLayout
         android:id="@+id/message_input_container"
         android:layout_width="0dp"

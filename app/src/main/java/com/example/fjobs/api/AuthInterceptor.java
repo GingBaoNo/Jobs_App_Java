@@ -56,8 +56,9 @@ public class AuthInterceptor implements Interceptor {
         // Gọi chain.proceed một lần duy nhất và trả về kết quả
         Response response = chain.proceed(request);
 
-        // Kiểm tra nếu response là lỗi xác thực (401) hoặc redirect (302)
-        if (response.code() == 401 || response.code() == 302) {
+        // Kiểm tra nếu response là lỗi xác thực (401) 
+        // Không kiểm tra 302 vì có thể là redirect thành công sau POST
+        if (response.code() == 401) {
             // Token có thể đã hết hạn, xóa token để user đăng nhập lại
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.remove(Constants.KEY_TOKEN);

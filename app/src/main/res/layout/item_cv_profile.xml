@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cv_profile_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,85 +18,138 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Header: Tên hồ sơ + Default badge -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tv_cv_profile_name"
+            <!-- Icon hồ sơ -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/primary_100"
+                app:strokeWidth="0dp">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_user"
+                    android:padding="12dp"
+                    android:contentDescription="CV Icon"
+                    app:tint="@color/primary_600" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Tên hồ sơ"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
 
-            <CheckBox
-                android:id="@+id/cb_is_default"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="Mặc định"
-                android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tv_cv_profile_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tên hồ sơ"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/gray_900"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <!-- Default badge -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_default"
+                    android:layout_width="wrap_content"
+                    android:layout_height="28dp"
+                    android:layout_marginTop="4dp"
+                    android:text="Hồ sơ mặc định"
+                    android:textSize="11sp"
+                    android:textColor="@color/white"
+                    app:chipBackgroundColor="@color/secondary_500"
+                    app:chipCornerRadius="14dp"
+                    app:chipMinHeight="28dp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
+        <!-- Mô tả hồ sơ -->
         <TextView
             android:id="@+id/tv_cv_profile_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="12dp"
             android:text="Mô tả hồ sơ"
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray" />
+            android:textSize="13sp"
+            android:textColor="@color/gray_600"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:lineSpacingExtra="2dp" />
 
-        <TextView
-            android:id="@+id/tv_cv_profile_position"
+        <!-- Divider -->
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Vị trí mong muốn"
-            android:textSize="14sp"
-            android:textColor="@android:color/holo_blue_dark" />
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@color/gray_100" />
 
+        <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:orientation="horizontal">
 
-            <Button
+            <!-- Edit Button -->
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_edit_cv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
-                android:backgroundTint="@android:color/holo_orange_light"
+                android:layout_marginEnd="6dp"
                 android:text="Sửa"
-                android:textColor="@android:color/white" />
+                android:textSize="13sp"
+                android:textColor="@color/primary_600"
+                app:strokeColor="@color/primary_600"
+                app:strokeWidth="1dp"
+                app:cornerRadius="8dp" />
 
-            <Button
-                android:id="@+id/btn_delete_cv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:backgroundTint="@android:color/holo_red_dark"
-                android:text="Xóa"
-                android:textColor="@android:color/white" />
-
-            <Button
+            <!-- Set Default Button -->
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_set_default"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
-                android:backgroundTint="@android:color/holo_green_light"
+                android:layout_marginHorizontal="4dp"
                 android:text="Mặc định"
-                android:textColor="@android:color/white" />
+                android:textSize="13sp"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/secondary_500"
+                app:cornerRadius="8dp" />
+
+            <!-- Delete Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_delete_cv"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="Xóa"
+                android:textSize="13sp"
+                android:textColor="@color/red" />
 
         </LinearLayout>
 
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

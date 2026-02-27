@@ -57,6 +57,11 @@ public class CreateEditCvProfileFragment extends Fragment {
     private static final int REQUEST_CODE_PICK_CV = 1002;
     private static final int REQUEST_CODE_PERMISSION = 1003;
 
+    private String avatarFilePath;
+    private String cvFilePath;
+    private String existingAvatarUrl; // Lưu URL ảnh cũ khi edit
+    private String existingCvUrl; // Lưu URL CV cũ khi edit
+
     private EditText etCvProfileName, etCvProfileDescription, etFullName, etDateOfBirth,
             etPhone, etEducationStatus, etExperience, etTotalExperienceYears,
             etSelfIntroduction, etDesiredPosition, etDesiredTime, etExpectedSalary;
@@ -72,8 +77,6 @@ public class CreateEditCvProfileFragment extends Fragment {
     private ApiService apiService;
     private String mode; // "create" or "edit"
     private CvProfile currentCvProfile;
-    private String avatarFilePath;
-    private String cvFilePath;
 
     @Nullable
     @Override
@@ -249,6 +252,7 @@ public class CreateEditCvProfileFragment extends Fragment {
             // Hiển thị ảnh đại diện nếu có
             if (currentCvProfile.getUrlAnhDaiDien() != null && !currentCvProfile.getUrlAnhDaiDien().isEmpty()) {
                 String imageUrl = ServerConfig.getBaseUrl() + currentCvProfile.getUrlAnhDaiDien();
+                existingAvatarUrl = currentCvProfile.getUrlAnhDaiDien(); // Lưu URL cũ
                 Glide.with(this)
                     .load(imageUrl)
                     .placeholder(R.drawable.ic_boss)
@@ -259,6 +263,7 @@ public class CreateEditCvProfileFragment extends Fragment {
             // Hiển thị tên file CV nếu có
             if (currentCvProfile.getUrlCv() != null && !currentCvProfile.getUrlCv().isEmpty()) {
                 String fileName = new File(currentCvProfile.getUrlCv()).getName();
+                existingCvUrl = currentCvProfile.getUrlCv(); // Lưu URL cũ
                 tvCvFilename.setText(fileName);
             }
 
@@ -435,6 +440,16 @@ public class CreateEditCvProfileFragment extends Fragment {
 
         cvProfile.setLaMacDinh(cbSetAsDefault.isChecked());
 
+        // Nếu đang edit và không có file mới, giữ lại URL cũ
+        if ("edit".equals(mode) && currentCvProfile != null) {
+            if (existingAvatarUrl != null && !existingAvatarUrl.isEmpty() && (avatarFilePath == null || avatarFilePath.isEmpty())) {
+                cvProfile.setUrlAnhDaiDien(existingAvatarUrl);
+            }
+            if (existingCvUrl != null && !existingCvUrl.isEmpty() && (cvFilePath == null || cvFilePath.isEmpty())) {
+                cvProfile.setUrlCv(existingCvUrl);
+            }
+        }
+
         if ("edit".equals(mode) && currentCvProfile != null) {
             // Chế độ chỉnh sửa
             updateCvProfile(cvProfile);
@@ -488,7 +503,9 @@ public class CreateEditCvProfileFragment extends Fragment {
 
                 @Override
                 public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }
@@ -572,7 +589,9 @@ public class CreateEditCvProfileFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -605,7 +624,9 @@ public class CreateEditCvProfileFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -619,6 +640,10 @@ public class CreateEditCvProfileFragment extends Fragment {
             if (currentCvProfile == null) return;
 
             cvProfile.setMaHoSoCv(currentCvProfile.getMaHoSoCv());
+
+            // Log để debug
+            Log.d("UpdateCV", "Updating CV profile ID: " + cvProfile.getMaHoSoCv());
+            Log.d("UpdateCV", "CV Data: " + new com.google.gson.Gson().toJson(cvProfile));
 
             Call<ApiResponse> call = apiService.updateCvProfile(currentCvProfile.getMaHoSoCv(), cvProfile);
             call.enqueue(new retrofit2.Callback<ApiResponse>() {
@@ -645,22 +670,37 @@ public class CreateEditCvProfileFragment extends Fragment {
                                 applyForJobWithCvProfile(currentCvProfile.getMaHoSoCv(), jobId);
                             }
 
-                            Toast.makeText(requireContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
-                            if (getFragmentManager() != null) {
-                                getFragmentManager().popBackStack();
+                            if (isAdded()) {
+                                // PopBackStack ngay để quay lại danh sách CV
+                                if (getFragmentManager() != null) {
+                                    getFragmentManager().popBackStack();
+                                }
+                                
+                                // Hiển thị Toast sau khi đã popBackStack
+                                new android.os.Handler(requireContext().getMainLooper()).postDelayed(() -> {
+                                    if (isAdded()) {
+                                        Toast.makeText(requireContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
+                                    }
+                                }, 300);
                             }
                         } else {
-                            String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Cập nhật hồ sơ thất bại";
-                            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                            if (isAdded()) {
+                                String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Cập nhật hồ sơ thất bại";
+                                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                            }
                         }
                     } else {
-                        Toast.makeText(requireContext(), "Không thể cập nhật hồ sơ", Toast.LENGTH_SHORT).show();
+                        if (isAdded()) {
+                            Toast.makeText(requireContext(), "Không thể cập nhật hồ sơ", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }
@@ -723,24 +763,50 @@ public class CreateEditCvProfileFragment extends Fragment {
                             // Sau khi cập nhật hồ sơ thành công, tiến hành ứng tuyển
                             applyForJobWithCvProfile(cvProfileId, jobId);
                         }
-                        Toast.makeText(requireContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
-
-                        // Quay lại màn hình trước đó
-                        if (getFragmentManager() != null) {
-                            getFragmentManager().popBackStack();
+                        
+                        if (isAdded()) {
+                            // PopBackStack ngay để quay lại danh sách CV
+                            if (getFragmentManager() != null) {
+                                getFragmentManager().popBackStack();
+                            }
+                            
+                            // Hiển thị Toast sau khi đã popBackStack
+                            new android.os.Handler(requireContext().getMainLooper()).postDelayed(() -> {
+                                if (isAdded()) {
+                                    Toast.makeText(requireContext(), "Cập nhật hồ sơ thành công", Toast.LENGTH_SHORT).show();
+                                }
+                            }, 300);
                         }
                     } else {
-                        String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Cập nhật hồ sơ thất bại";
-                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                        if (isAdded()) {
+                            String message = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Cập nhật hồ sơ thất bại";
+                            Log.e("UpdateCV", "Error message: " + message);
+                            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                        }
                     }
                 } else {
-                    Toast.makeText(requireContext(), "Không thể cập nhật hồ sơ", Toast.LENGTH_SHORT).show();
+                    if (isAdded()) {
+                        String errorBody = "";
+                        try {
+                            if (response.errorBody() != null) {
+                                errorBody = response.errorBody().string();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Log.e("UpdateCV", "Response error: " + response.code() + " - " + errorBody);
+                        Toast.makeText(requireContext(), "Không thể cập nhật hồ sơ: " + response.code(), Toast.LENGTH_LONG).show();
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Log.e("UpdateCV", "Network error: " + t.getMessage());
+                    t.printStackTrace();
+                    Toast.makeText(requireContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
@@ -780,7 +846,9 @@ public class CreateEditCvProfileFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(requireContext(), "Lỗi upload ảnh: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), "Lỗi upload ảnh: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -806,7 +874,9 @@ public class CreateEditCvProfileFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Toast.makeText(requireContext(), "Lỗi upload CV: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), "Lỗi upload CV: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
