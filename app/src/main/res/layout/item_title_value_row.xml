@@ -10,22 +10,25 @@
     <!-- Tiêu đề (Mô tả) -->
     <TextView
         android:id="@+id/text1"
-        android:layout_width="0dp"
-        android:layout_weight="1"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Vị trí"
         android:textSize="14sp"
         android:textColor="#757575"
+        android:minWidth="120dp"
         tools:text="@{rowTitle}" />
 
     <!-- Giá trị -->
     <TextView
         android:id="@+id/text2"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:text="sfgfg"
         android:textSize="14sp"
         android:textStyle="bold"
         android:textColor="#333333"
+        android:maxLines="3"
+        android:ellipsize="end"
         tools:text="@{rowValue}" />
 </LinearLayout>
