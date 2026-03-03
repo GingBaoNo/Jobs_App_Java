@@ -1,11 +1,13 @@
 package com.example.fjobs.fragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -111,6 +113,7 @@ public class CreateEditCvProfileFragment extends Fragment {
         return view;
     }
 
+    @SuppressLint("WrongViewCast")
     private void initViews(View view) {
         etCvProfileName = view.findViewById(R.id.et_cv_profile_name);
         etCvProfileDescription = view.findViewById(R.id.et_cv_profile_description);

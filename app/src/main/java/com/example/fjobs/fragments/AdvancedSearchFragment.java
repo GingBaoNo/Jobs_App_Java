@@ -1,6 +1,7 @@
 package com.example.fjobs.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,6 +71,9 @@ public class AdvancedSearchFragment extends Fragment {
     private Integer selectedExperienceLevelId;
     private Integer selectedWorkTypeId;
     private String selectedKeyword;
+    
+    // Flag để tránh reset selectedWorkFieldId khi đang khởi tạo spinner
+    private boolean isInitializingSpinner = false;
 
     @Nullable
     @Override
@@ -85,24 +89,28 @@ public class AdvancedSearchFragment extends Fragment {
         // Khởi tạo dữ liệu mặc định cho các spinner
         initDefaultSpinnerData();
 
-        // Load dữ liệu từ API cho các dropdown
-        loadDropdownDataFromApi();
-
-        // Kiểm tra nếu có work_field_id từ bundle (click từ trang chủ)
+        // Kiểm tra nếu có work_field_id từ bundle (click từ trang chủ) - ĐỌC TRƯỚC KHI GỌI API
         Bundle bundle = getArguments();
         if (bundle != null && bundle.containsKey("work_field_id")) {
             int workFieldId = bundle.getInt("work_field_id", -1);
             String workFieldName = bundle.getString("work_field_name", "");
-            
+
+            Log.d("AdvancedSearch", "Nhận bundle từ HomeFragment:");
+            Log.d("AdvancedSearch", "  - work_field_id: " + workFieldId);
+            Log.d("AdvancedSearch", "  - work_field_name: " + workFieldName);
+
             if (workFieldId != -1) {
                 // Lưu ID để sử dụng sau khi load dữ liệu
                 selectedWorkFieldId = workFieldId;
-                // Set từ khóa tìm kiếm theo tên lĩnh vực
-                if (editTextKeyword != null) {
-                    editTextKeyword.setText(workFieldName);
-                }
+                Log.d("AdvancedSearch", "Đã lưu selectedWorkFieldId: " + selectedWorkFieldId);
+                // Không set từ khóa tìm kiếm - để trống theo yêu cầu
             }
+        } else {
+            Log.d("AdvancedSearch", "Không có bundle hoặc không có work_field_id");
         }
+
+        // Load dữ liệu từ API cho các dropdown (sau khi đã đọc bundle)
+        loadDropdownDataFromApi();
 
         return view;
     }
@@ -172,8 +180,23 @@ public class AdvancedSearchFragment extends Fragment {
         spinnerWorkField.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // Bỏ qua nếu đang trong quá trình khởi tạo
+                if (isInitializingSpinner) {
+                    Log.d("AdvancedSearch", "onItemSelected ignored (initializing)");
+                    return;
+                }
+                
+                Log.d("AdvancedSearch", "onItemSelected triggered! position=" + position + ", isInitializingSpinner=" + isInitializingSpinner + ", selectedWorkFieldId=" + selectedWorkFieldId);
+                
+                // Nếu selectedWorkFieldId đã được set từ bundle và position = 0 (đang init), không reset
+                if (selectedWorkFieldId != null && position == 0) {
+                    Log.d("AdvancedSearch", "Keeping selectedWorkFieldId=" + selectedWorkFieldId + " (from bundle)");
+                    return;
+                }
+                
                 if (position == 0) {
                     // Trường hợp "Tất cả lĩnh vực" được chọn
+                    Log.d("AdvancedSearch", "Setting selectedWorkFieldId = null (position 0)");
                     selectedWorkFieldId = null;
                     // Khi chọn "Tất cả lĩnh vực", hiển thị tất cả ngành nghề
                     updateWorkDisciplinesSpinner(null);
@@ -181,6 +204,7 @@ public class AdvancedSearchFragment extends Fragment {
                     // Các lĩnh vực cụ thể được chọn
                     if (workFields != null && position > 0 && workFields.size() >= position) {
                         selectedWorkFieldId = workFields.get(position - 1).getMaLinhVuc(); // Lấy ID lĩnh vực thực tế
+                        Log.d("AdvancedSearch", "Setting selectedWorkFieldId = " + selectedWorkFieldId + " from position " + position);
                         updateWorkDisciplinesSpinner(selectedWorkFieldId);
                     }
                 }
@@ -188,6 +212,7 @@ public class AdvancedSearchFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+                Log.d("AdvancedSearch", "onNothingSelected triggered! Setting selectedWorkFieldId = null");
                 selectedWorkFieldId = null;
             }
         });
@@ -759,7 +784,11 @@ public class AdvancedSearchFragment extends Fragment {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
                     android.R.layout.simple_spinner_item, fieldNames);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            
+            // Set flag để tránh reset selectedWorkFieldId
+            isInitializingSpinner = true;
             spinnerWorkField.setAdapter(adapter);
+            isInitializingSpinner = false;
         }
     }
 
@@ -827,6 +856,8 @@ public class AdvancedSearchFragment extends Fragment {
         workFieldCall.enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                Log.d("AdvancedSearch", "API callback started. selectedWorkFieldId = " + selectedWorkFieldId);
+                
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
@@ -844,10 +875,15 @@ public class AdvancedSearchFragment extends Fragment {
                             }
                             workFields = fields;
                             updateWorkFieldSpinner();
-                            
+                            Log.d("AdvancedSearch", "Đã load " + fields.size() + " lĩnh vực từ API");
+                            Log.d("AdvancedSearch", "selectedWorkFieldId sau updateWorkFieldSpinner: " + selectedWorkFieldId);
+
                             // Sau khi cập nhật spinner, chọn lĩnh vực đã lưu từ bundle
                             if (selectedWorkFieldId != null) {
+                                Log.d("AdvancedSearch", "Đang gọi selectWorkFieldById với ID: " + selectedWorkFieldId);
                                 selectWorkFieldById(selectedWorkFieldId);
+                            } else {
+                                Log.e("AdvancedSearch", "Không gọi selectWorkFieldById vì selectedWorkFieldId là null");
                             }
                         }
                     }
@@ -857,6 +893,7 @@ public class AdvancedSearchFragment extends Fragment {
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
                 // Trong trường hợp lỗi, vẫn giữ nguyên danh sách hiện tại
+                Log.e("AdvancedSearch", "API failure: " + t.getMessage());
                 updateWorkFieldSpinner();
             }
         });
@@ -991,26 +1028,37 @@ public class AdvancedSearchFragment extends Fragment {
      * Chọn lĩnh vực theo ID và thực hiện tìm kiếm
      */
     private void selectWorkFieldById(int workFieldId) {
+        Log.d("AdvancedSearch", "Đang chọn lĩnh vực có ID: " + workFieldId);
+        Log.d("AdvancedSearch", "workFields size: " + (workFields != null ? workFields.size() : "null"));
+        
         if (workFields != null && spinnerWorkField != null) {
             // Tìm vị trí của lĩnh vực trong danh sách (cộng 1 vì vị trí 0 là "Tất cả")
             int position = 0;
             for (int i = 0; i < workFields.size(); i++) {
+                Log.d("AdvancedSearch", "Checking field ID: " + workFields.get(i).getMaLinhVuc() + " at position " + i);
                 if (workFields.get(i).getMaLinhVuc() == workFieldId) {
                     position = i + 1; // +1 vì có mục "Tất cả" ở đầu
+                    Log.d("AdvancedSearch", "Found match at position: " + position);
                     break;
                 }
             }
-            
+
             if (position > 0) {
                 // Chọn vị trí trong spinner
                 spinnerWorkField.setSelection(position);
-                
+                Log.d("AdvancedSearch", "Đã set spinner selection: " + position);
+
                 // Tự động thực hiện tìm kiếm sau khi chọn
                 // Đợi một chút để spinner cập nhật xong
                 spinnerWorkField.postDelayed(() -> {
+                    Log.d("AdvancedSearch", "Đang thực hiện tìm kiếm nâng cao...");
                     performAdvancedSearch();
                 }, 300);
+            } else {
+                Log.e("AdvancedSearch", "Không tìm thấy lĩnh vực với ID: " + workFieldId);
             }
+        } else {
+            Log.e("AdvancedSearch", "workFields hoặc spinnerWorkField là null");
         }
     }
 }
