@@ -221,9 +221,9 @@ public class AdminController {
 
     // Cập nhật vai trò cho người dùng
     @PostMapping("/admin/users/{id}/update-role")
-    public String updateUserRole(@PathVariable Integer id, @RequestParam Integer roleId) {
+    public String updateUserRole(@PathVariable Integer id, @RequestParam String roleId) {
         User user = userService.getUserById(id).orElse(null);
-        Role role = roleService.getRoleById(roleId).orElse(null);
+        Role role = roleService.getRoleByTenVaiTro(roleId).orElse(null);
 
         if (user != null && role != null) {
             user.setRole(role);

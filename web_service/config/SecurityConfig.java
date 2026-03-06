@@ -24,6 +24,9 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Autowired
+    private LoginSuccessHandler loginSuccessHandler;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         // Trả về NoOpPasswordEncoder để không mã hóa mật khẩu trong quá trình phát triển
@@ -76,6 +79,8 @@ public class SecurityConfig {
                 .requestMatchers("/save-job").permitAll()
                 // Public API endpoints - Cho phép Android app chưa đăng nhập
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/companies").permitAll()
+                .requestMatchers("/api/companies/**").permitAll()
                 .requestMatchers("/api/v1/job-details/**").permitAll()
                 .requestMatchers("/api/v1/companies/**").permitAll()
                 .requestMatchers("/api/v1/work-fields").permitAll()
@@ -103,7 +108,7 @@ public class SecurityConfig {
                 .loginPage("/login")
                 .usernameParameter("taiKhoan")
                 .passwordParameter("matKhau")
-                .defaultSuccessUrl("/")
+                .successHandler(loginSuccessHandler) // Sử dụng custom success handler
                 .failureUrl("/login?error=true")
                 .permitAll()
             )

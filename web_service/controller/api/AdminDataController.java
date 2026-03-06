@@ -99,9 +99,9 @@ public class AdminDataController {
 
     // Cập nhật vai trò cho người dùng
     @PutMapping("/users/{id}/role")
-    public ResponseEntity<String> updateUserRole(@PathVariable Integer id, @RequestParam Integer roleId) {
+    public ResponseEntity<String> updateUserRole(@PathVariable Integer id, @RequestParam String roleId) {
         Optional<User> userOpt = userService.getUserById(id);
-        Optional<Role> roleOpt = roleService.getRoleById(roleId);
+        Optional<Role> roleOpt = roleService.getRoleByTenVaiTro(roleId);
 
         if (userOpt.isPresent() && roleOpt.isPresent()) {
             User user = userOpt.get();

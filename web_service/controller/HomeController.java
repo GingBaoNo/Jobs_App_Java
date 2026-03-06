@@ -137,11 +137,11 @@ public class HomeController {
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute User user,
-                              @RequestParam Integer roleId,
+                              @RequestParam String roleId,
                               Model model) {
         try {
-            // Lấy vai trò từ ID được gửi từ form
-            Role role = roleService.getRoleById(roleId).orElse(null);
+            // Lấy vai trò từ tên (NV, NTD, ADMIN)
+            Role role = roleService.getRoleByTenVaiTro(roleId).orElse(null);
             if (role == null) {
                 model.addAttribute("errorMessage", "Vai trò không hợp lệ.");
                 model.addAttribute("user", user);

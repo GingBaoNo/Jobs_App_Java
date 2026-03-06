@@ -336,6 +336,18 @@ public class ApiAppliedJobController {
                 jobInfo.put("ngayUngTuyen", job.getNgayUngTuyen());
                 jobInfo.put("urlCvUngTuyen", job.getUrlCvUngTuyen());
 
+                // Thêm thông tin employee (người ứng tuyển)
+                if (job.getEmployee() != null) {
+                    User employee = job.getEmployee();
+                    Map<String, Object> employeeInfo = new java.util.HashMap<>();
+                    employeeInfo.put("maNguoiDung", employee.getMaNguoiDung());
+                    employeeInfo.put("taiKhoan", employee.getTaiKhoan());
+                    employeeInfo.put("tenHienThi", employee.getTenHienThi());
+                    employeeInfo.put("email", employee.getEmail());
+                    employeeInfo.put("soDienThoai", employee.getSoDienThoai());
+                    jobInfo.put("employee", employeeInfo);
+                }
+
                 // Thêm thông tin hồ sơ CV nếu có
                 if (job.getCvProfile() != null) {
                     CvProfile cvProfile = job.getCvProfile();
@@ -366,33 +378,38 @@ public class ApiAppliedJobController {
 
                 // Thêm thông tin công việc
                 JobDetail jobDetail = job.getJobDetail();
-                jobInfo.put("jobDetail", Map.of(
-                    "maCongViec", jobDetail.getMaCongViec(),
-                    "tieuDe", jobDetail.getTieuDe(),
-                    "chiTiet", jobDetail.getChiTiet(),
-                    "yeuCauCongViec", jobDetail.getYeuCauCongViec(),
-                    "quyenLoi", jobDetail.getQuyenLoi(),
-                    "luong", jobDetail.getLuong(),
-                    "loaiLuong", jobDetail.getLoaiLuong(),
-                    "trangThaiDuyet", jobDetail.getTrangThaiDuyet(),
-                    "trangThaiTinTuyen", jobDetail.getTrangThaiTinTuyen()
-                ));
-
+                Map<String, Object> jobDetailInfo = new java.util.HashMap<>();
+                jobDetailInfo.put("maCongViec", jobDetail.getMaCongViec());
+                jobDetailInfo.put("tieuDe", jobDetail.getTieuDe());
+                jobDetailInfo.put("chiTiet", jobDetail.getChiTiet());
+                jobDetailInfo.put("yeuCauCongViec", jobDetail.getYeuCauCongViec());
+                jobDetailInfo.put("quyenLoi", jobDetail.getQuyenLoi());
+                jobDetailInfo.put("luong", jobDetail.getLuong());
+                jobDetailInfo.put("loaiLuong", jobDetail.getLoaiLuong());
+                jobDetailInfo.put("trangThaiDuyet", jobDetail.getTrangThaiDuyet());
+                jobDetailInfo.put("trangThaiTinTuyen", jobDetail.getTrangThaiTinTuyen());
+                
                 // Thêm thông tin công ty
-                Company company = jobDetail.getCompany();
-                jobInfo.put("company", Map.of(
-                    "maCongTy", company.getMaCongTy(),
-                    "tenCongTy", company.getTenCongTy(),
-                    "diaChi", company.getDiaChi(),
-                    "emailCty", company.getEmailCty(),
-                    "soDienThoaiCty", company.getSoDienThoaiCty()
-                ));
+                if (jobDetail.getCompany() != null) {
+                    Company company = jobDetail.getCompany();
+                    Map<String, Object> companyInfo = new java.util.HashMap<>();
+                    companyInfo.put("maCongTy", company.getMaCongTy());
+                    companyInfo.put("tenCongTy", company.getTenCongTy());
+                    companyInfo.put("diaChi", company.getDiaChi());
+                    companyInfo.put("emailCty", company.getEmailCty());
+                    companyInfo.put("soDienThoaiCty", company.getSoDienThoaiCty());
+                    companyInfo.put("hinhAnhCty", company.getHinhAnhCty());
+                    jobDetailInfo.put("company", companyInfo);
+                }
+                
+                jobInfo.put("jobDetail", jobDetailInfo);
 
                 return jobInfo;
             }).toList();
 
             return ApiResponseUtil.success("My applications retrieved successfully", result);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponseUtil.error("Error retrieving applications: " + e.getMessage());
         }
     }

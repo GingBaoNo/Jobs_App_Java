@@ -64,6 +64,7 @@ public interface AppliedJobRepository extends JpaRepository<AppliedJob, Integer>
      * Lấy danh sách ứng tuyển theo user ID với fetch join (tránh LazyLoadingException)
      */
     @Query("SELECT DISTINCT aj FROM AppliedJob aj " +
+           "JOIN FETCH aj.employee e " +
            "JOIN FETCH aj.jobDetail jd " +
            "JOIN FETCH jd.company c " +
            "LEFT JOIN FETCH jd.workField " +
