@@ -72,6 +72,8 @@ public class SecurityConfig {
                 .requestMatchers("/ws", "/ws/**").permitAll()
                 // Public access to job/company pages
                 .requestMatchers("/jobs/**", "/companies/**", "/job/**", "/company/**").permitAll()
+                // Save job endpoint (allows checking authentication in controller)
+                .requestMatchers("/save-job").permitAll()
                 // Public API endpoints - Cho phép Android app chưa đăng nhập
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/v1/job-details/**").permitAll()

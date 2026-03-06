@@ -107,9 +107,12 @@ public class CvProfileService {
             // Nếu đây là hồ sơ mặc định, đồng bộ thông tin sang hồ sơ cá nhân
             // Chỉ đồng bộ nếu chưa có flag tránh vòng lặp
             if (savedCvProfile.getLaMacDinh() && !Boolean.TRUE.equals(syncingToProfile.get())) {
-                syncingToProfile.set(true);
-                syncCvProfileToProfile(savedCvProfile);
-                syncingToProfile.set(false);
+                try {
+                    syncingToProfile.set(true);
+                    syncCvProfileToProfile(savedCvProfile);
+                } finally {
+                    syncingToProfile.remove();
+                }
             }
 
             return savedCvProfile;

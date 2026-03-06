@@ -40,6 +40,9 @@ public class JobController {
     private JobPositionService jobPositionService;
 
     @Autowired
+    private CvProfileService cvProfileService;
+
+    @Autowired
     private ExperienceLevelService experienceLevelService;
     
     // API endpoint to get company coordinates
@@ -421,65 +424,77 @@ public class JobController {
     
     // Trang danh sách công việc công khai
     @GetMapping("/jobs")
-    public String listJobs(@RequestParam(value = "search", required = false) String search,
-                          @RequestParam(value = "field", required = false) Integer fieldId,
+    public String listJobs(
+                          @RequestParam(value = "search", required = false) String search,
+                          // Nhận cả 'field' và 'fieldId' để tương thích API
+                          @RequestParam(value = "field", required = false) Integer field,
+                          @RequestParam(value = "fieldId", required = false) Integer fieldIdParam,
                           @RequestParam(value = "discipline", required = false) Integer disciplineId,
                           @RequestParam(value = "position", required = false) Integer positionId,
                           @RequestParam(value = "experience", required = false) Integer experienceId,
                           @RequestParam(value = "type", required = false) Integer typeId,
+                          @RequestParam(value = "minSalary", required = false) Integer minSalary,
+                          @RequestParam(value = "maxSalary", required = false) Integer maxSalary,
                           Model model) {
         try {
             List<JobDetail> jobsToShow;
+            
+            // Ưu tiên fieldId từ API, nếu không có thì dùng field từ form
+            Integer finalFieldId = (fieldIdParam != null) ? fieldIdParam : field;
+
+            System.out.println("=== DEBUG FILTER ===");
+            System.out.println("search: " + search);
+            System.out.println("field/fieldId: " + finalFieldId);
+            System.out.println("discipline: " + disciplineId);
+            System.out.println("position: " + positionId);
+            System.out.println("experience: " + experienceId);
+            System.out.println("type: " + typeId);
+            System.out.println("minSalary: " + minSalary);
+            System.out.println("maxSalary: " + maxSalary);
 
             // Nếu có tìm kiếm hoặc lọc, sử dụng phương thức tìm kiếm chuyên sâu
-            if (search != null || fieldId != null || disciplineId != null ||
+            if (search != null || finalFieldId != null || disciplineId != null ||
                 positionId != null || experienceId != null || typeId != null) {
 
-                // Lấy tất cả các công việc đã được duyệt và còn hiệu lực
-                jobsToShow = jobDetailService.searchJobsByCombinedCriteriaWithNewHierarchy(
-                    search,
-                    fieldId,
-                    disciplineId,
-                    positionId,
-                    experienceId,
-                    typeId
-                );
+                System.out.println("Using AdvancedSearch method...");
+
+                // Sử dụng CÙNG method với API (/api/v1/advanced-search/jobs)
+                // Dùng searchJobsAdvancedWithPaging nhưng không phân trang (page=0, size=1000)
+                org.springframework.data.domain.Pageable pageable = 
+                    org.springframework.data.domain.PageRequest.of(0, 1000);
+                
+                org.springframework.data.domain.Page<JobDetail> jobPage = 
+                    jobDetailService.searchJobsAdvancedWithPaging(
+                        search,
+                        finalFieldId,
+                        disciplineId,
+                        positionId,
+                        experienceId,
+                        typeId,
+                        null, // minSalary (đã loại bỏ)
+                        null, // maxSalary (đã loại bỏ)
+                        pageable
+                    );
+                
+                jobsToShow = jobPage.getContent();
+
+                System.out.println("After advanced search: " + jobsToShow.size() + " jobs");
+                System.out.println("Found " + jobsToShow.size() + " jobs");
             } else {
-                // Nếu không có điều kiện lọc, lấy tất cả công việc đã được duyệt
-                List<JobDetail> activeJobs = jobDetailService.getActiveJobsWithValidDate();
-                List<JobDetail> allApprovedJobs = jobDetailService.getJobsByTrangThaiDuyet("Đã duyệt");
-
-                if (!activeJobs.isEmpty()) {
-                    // Nếu có công việc active, dùng danh sách kết hợp
-                    java.util.Set<Integer> activeJobIds = new java.util.HashSet<>();
-                    for (JobDetail job : activeJobs) {
-                        activeJobIds.add(job.getMaCongViec());
-                    }
-
-                    jobsToShow = new java.util.ArrayList<>();
-                    jobsToShow.addAll(activeJobs);
-
-                    // Thêm các job đã duyệt khác mà không trùng với active jobs
-                    for (JobDetail job : allApprovedJobs) {
-                        if (!activeJobIds.contains(job.getMaCongViec())) {
-                            jobsToShow.add(job);
-                        }
-                    }
-                } else if (!allApprovedJobs.isEmpty()) {
-                    // Nếu không có công việc active nhưng có công việc đã duyệt, dùng danh sách công việc đã duyệt
-                    jobsToShow = allApprovedJobs;
-                } else {
-                    // Nếu không có công việc đã duyệt, trả về danh sách trống
-                    jobsToShow = new java.util.ArrayList<>();
-                }
+                // Nếu không có điều kiện lọc, lấy TẤT CẢ công việc (không filter trạng thái)
+                System.out.println("Using getAllJobs (no filter)...");
+                jobsToShow = jobDetailService.getAllJobs();
+                System.out.println("Total jobs: " + jobsToShow.size());
             }
+
+            System.out.println("=== END DEBUG ===");
 
             model.addAttribute("jobs", jobsToShow);
             model.addAttribute("title", "Danh sách việc làm");
 
             // Truyền tham số tìm kiếm để giữ lại trên giao diện
             model.addAttribute("searchQuery", search);
-            model.addAttribute("selectedFieldId", fieldId);
+            model.addAttribute("selectedFieldId", finalFieldId);
             model.addAttribute("selectedDisciplineId", disciplineId);
             model.addAttribute("selectedPositionId", positionId);
             model.addAttribute("selectedExperienceId", experienceId);
@@ -602,7 +617,7 @@ public class JobController {
     
     // Trang chi tiết công việc
     @GetMapping("/jobs/{id}")
-    public String jobDetail(@PathVariable Integer id, Model model) {
+    public String jobDetail(@PathVariable Integer id, Model model, Authentication authentication) {
         JobDetail job = jobDetailService.getJobById(id);
         if (job == null || !"Đã duyệt".equals(job.getTrangThaiDuyet())) {
             // Chỉ hiển thị công việc đã được duyệt
@@ -619,6 +634,18 @@ public class JobController {
         model.addAttribute("job", job);
         model.addAttribute("relatedJobs", relatedJobs);
         model.addAttribute("title", job.getTieuDe());
+        
+        // Nếu user đã đăng nhập và là ứng viên, lấy danh sách CV
+        if (authentication != null && authentication.isAuthenticated() && 
+            !"anonymousUser".equals(authentication.getPrincipal())) {
+            String username = authentication.getName();
+            User user = userService.getUserByTaiKhoan(username).orElse(null);
+            if (user != null && "NV".equals(user.getRole().getTenVaiTro())) {
+                List<CvProfile> cvProfiles = cvProfileService.getAllCvProfilesByUser(user);
+                model.addAttribute("cvProfiles", cvProfiles);
+            }
+        }
+        
         return "public/job-detail";
     }
 

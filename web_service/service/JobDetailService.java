@@ -26,7 +26,13 @@ public class JobDetailService {
     private NotificationEventService notificationEventService;
 
     public List<JobDetail> getAllJobs() {
-        // Chỉ lấy các công việc đã duyệt, đang mở và còn hạn
+        // Lấy tất cả công việc còn hạn (không áp dụng điều kiện duyệt)
+        // Để API public có thể trả về việc làm cho Android app
+        return jobDetailRepository.findJobsNotExpired();
+    }
+
+    public List<JobDetail> getActiveJobsOnly() {
+        // Chỉ lấy các công việc đã duyệt, đang mở và còn hạn (dành cho trang chủ)
         return jobDetailRepository.findActiveAndNotExpiredJobs();
     }
 
@@ -124,11 +130,6 @@ public class JobDetailService {
 
     // Phương thức tìm kiếm nâng cao
     public List<JobDetail> searchJobs(String keyword, Integer workFieldId, Integer workTypeId, Integer minSalary, Integer maxSalary) {
-        // Khi người dùng tìm kiếm hoặc lọc, áp dụng các điều kiện trạng thái hợp lý:
-        // - Công việc phải đang mở (trangThaiTinTuyen = 'Mở')
-        // - Công việc chưa hết hạn (ngayKetThucTuyenDung >= CURRENT_DATE)
-        // - Không yêu cầu công việc phải đã được duyệt để cho phép người dùng thấy cả công việc đang chờ
-
         System.out.println("JobDetailService.searchJobs called with:");
         System.out.println("Keyword: " + keyword);
         System.out.println("WorkFieldId: " + workFieldId);
@@ -136,6 +137,19 @@ public class JobDetailService {
         System.out.println("MinSalary: " + minSalary);
         System.out.println("MaxSalary: " + maxSalary);
 
+        // Nếu chỉ có workField (không có keyword), dùng query đơn giản hơn
+        if ((keyword == null || keyword.trim().isEmpty()) && workFieldId != null && workFieldId > 0) {
+            System.out.println("Searching by workField only: " + workFieldId);
+            return jobDetailRepository.findByWorkField_MaLinhVuc(workFieldId);
+        }
+        
+        // Nếu chỉ có workType (không có keyword và workField)
+        if ((keyword == null || keyword.trim().isEmpty()) && workFieldId == null && workTypeId != null && workTypeId > 0) {
+            System.out.println("Searching by workType only: " + workTypeId);
+            return jobDetailRepository.findByWorkType_MaHinhThuc(workTypeId);
+        }
+
+        // Nếu có keyword hoặc kết hợp nhiều filter
         List<JobDetail> result = jobDetailRepository.findByKeywordAndFiltersWithoutStatus(
             keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null,
             workFieldId,
@@ -285,9 +299,60 @@ public class JobDetailService {
             String search, Integer fieldId, Integer disciplineId, Integer positionId,
             Integer experienceId, Integer typeId) {
 
+        System.out.println("=== searchJobsByCombinedCriteriaWithNewHierarchy ===");
+        System.out.println("search: " + search);
+        System.out.println("fieldId: " + fieldId);
+        System.out.println("disciplineId: " + disciplineId);
+        System.out.println("positionId: " + positionId);
+        System.out.println("experienceId: " + experienceId);
+        System.out.println("typeId: " + typeId);
+
         // Gọi phương thức trong repository để tìm kiếm theo tất cả tiêu chí
-        return jobDetailRepository.findByWorkFieldAndDisciplineAndPositionAndExperience(
+        List<JobDetail> result = jobDetailRepository.findByWorkFieldAndDisciplineAndPositionAndExperience(
                 search, fieldId, disciplineId, positionId, experienceId, typeId);
+        
+        System.out.println("Result size: " + result.size());
+        
+        // Debug: Lấy TẤT CẢ jobs để kiểm tra
+        List<JobDetail> allJobs = jobDetailRepository.findAll();
+        System.out.println("Total jobs in DB: " + allJobs.size());
+        for (JobDetail job : allJobs) {
+            System.out.println("  Job ID=" + job.getMaCongViec() + 
+                ", title=" + job.getTieuDe() + 
+                ", fieldId=" + (job.getWorkField() != null ? job.getWorkField().getMaLinhVuc() : "null") +
+                ", status_duyet=" + job.getTrangThaiDuyet() +
+                ", status_tin=" + job.getTrangThaiTinTuyen() +
+                ", endDate=" + job.getNgayKetThucTuyenDung());
+        }
+        
+        if (!result.isEmpty()) {
+            for (JobDetail job : result) {
+                System.out.println("Matched Job: " + job.getTieuDe() + ", Field: " + 
+                    (job.getWorkField() != null ? job.getWorkField().getMaLinhVuc() : "null"));
+            }
+        }
+        System.out.println("==============================================");
+        
+        return result;
+    }
+
+    // Filter đơn giản chỉ theo field ID
+    public List<JobDetail> filterByFieldId(Integer fieldId) {
+        System.out.println("=== filterByFieldId ===");
+        System.out.println("fieldId: " + fieldId);
+        
+        // List tất cả jobs để debug
+        List<JobDetail> allJobs = jobDetailRepository.findAll();
+        System.out.println("Total jobs in DB: " + allJobs.size());
+        for (JobDetail job : allJobs) {
+            System.out.println("Job ID=" + job.getMaCongViec() + ", title=" + job.getTieuDe() + 
+                ", fieldId=" + (job.getWorkField() != null ? job.getWorkField().getMaLinhVuc() : "null") +
+                ", status=" + job.getTrangThaiDuyet());
+        }
+        
+        List<JobDetail> result = jobDetailRepository.findByWorkField_MaLinhVuc(fieldId);
+        System.out.println("Found " + result.size() + " jobs for field " + fieldId);
+        return result;
     }
 
     // Phương thức tìm kiếm nâng cao có phân trang
@@ -296,10 +361,27 @@ public class JobDetailService {
             Integer experienceLevelId, Integer workTypeId, Integer minSalary, Integer maxSalary,
             Pageable pageable) {
 
-        return jobDetailRepository.findByKeywordAndFiltersAdvancedWithPaging(
+        System.out.println("=== TÌM KIẾM NÂNG CAO ===");
+        System.out.println("Keyword: " + keyword);
+        System.out.println("WorkField: " + workFieldId);
+        System.out.println("WorkDiscipline: " + workDisciplineId);
+        System.out.println("JobPosition: " + jobPositionId);
+        System.out.println("ExperienceLevel: " + experienceLevelId);
+        System.out.println("WorkType: " + workTypeId);
+        System.out.println("MinSalary: " + minSalary);
+        System.out.println("MaxSalary: " + maxSalary);
+        System.out.println("Page: " + pageable.getPageNumber());
+        System.out.println("Size: " + pageable.getPageSize());
+
+        Page<JobDetail> result = jobDetailRepository.findByKeywordAndFiltersAdvancedWithPaging(
                 keyword, workFieldId, workDisciplineId, jobPositionId,
                 experienceLevelId, workTypeId, minSalary, maxSalary,
                 pageable);
+
+        System.out.println("Kết quả: " + result.getTotalElements() + " việc làm");
+        System.out.println("========================");
+
+        return result;
     }
 
     // Các phương thức tiện ích để tìm kiếm theo từng tiêu chí

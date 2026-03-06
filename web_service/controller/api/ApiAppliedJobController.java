@@ -225,9 +225,6 @@ public class ApiAppliedJobController {
         }
 
         appliedJob.setTrangThaiUngTuyen(request.getStatus());
-        if (request.getRating() != null) {
-            appliedJob.setDanhGiaNtd(request.getRating());
-        }
 
         AppliedJob updatedAppliedJob = appliedJobService.updateAppliedJob(appliedJob);
 

@@ -35,27 +35,39 @@ public class ApiSavedJobController {
     // Lưu công việc
     @PostMapping
     public ResponseEntity<?> saveJob(@RequestBody SaveJobRequest request) {
+        System.out.println("=== DEBUG saveJob ===");
+        System.out.println("Request body: jobId = " + (request != null ? request.getJobDetailId() : "null"));
+        
         // Lấy thông tin người dùng hiện tại
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Authentication: " + (authentication != null ? authentication.getName() : "null"));
+        
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            System.out.println("User not authenticated!");
             return ApiResponseUtil.error("User not authenticated");
         }
 
         String username = authentication.getName();
         Optional<User> user = userService.getUserByTaiKhoan(username);
         if (!user.isPresent()) {
+            System.out.println("User not found: " + username);
             return ApiResponseUtil.error("User not found");
         }
+        System.out.println("User found: " + user.get().getTaiKhoan());
 
         JobDetail jobDetail = jobDetailService.getJobById(request.getJobDetailId());
         if (jobDetail == null) {
+            System.out.println("Job not found: " + request.getJobDetailId());
             return ApiResponseUtil.error("Job detail not found with id: " + request.getJobDetailId());
         }
+        System.out.println("Job found: " + jobDetail.getTieuDe());
 
         try {
             SavedJob savedJob = savedJobService.saveJob(user.get(), jobDetail);
+            System.out.println("Saved successfully!");
             return ApiResponseUtil.created(savedJob);
         } catch (RuntimeException e) {
+            System.out.println("Error saving: " + e.getMessage());
             return ApiResponseUtil.error(e.getMessage());
         }
     }
@@ -78,30 +90,62 @@ public class ApiSavedJobController {
         return ApiResponseUtil.success("My saved jobs retrieved successfully", savedJobs);
     }
 
-    // Xóa công việc đã lưu theo công việc (hủy lưu)
+    // Xóa công việc đã lưu theo công việc (hủy lưu) - Support cả POST và DELETE
     @DeleteMapping
     public ResponseEntity<?> unsaveJob(@RequestBody UnsaveJobRequest request) {
+        return doUnsaveJob(request);
+    }
+    
+    // Support POST method cho Android apps gửi dễ hơn
+    @PostMapping("/unsave")
+    public ResponseEntity<?> unsaveJobPost(@RequestBody UnsaveJobRequest request) {
+        return doUnsaveJob(request);
+    }
+    
+    // Support DELETE với path variable
+    @DeleteMapping("/{jobId}")
+    public ResponseEntity<?> unsaveJobByPath(@PathVariable Integer jobId) {
+        UnsaveJobRequest request = new UnsaveJobRequest();
+        request.setJobDetailId(jobId);
+        return doUnsaveJob(request);
+    }
+    
+    // Phương thức chung xử lý unsave
+    private ResponseEntity<?> doUnsaveJob(UnsaveJobRequest request) {
+        System.out.println("=== DEBUG unsaveJob ===");
+        System.out.println("Request body: jobId = " + (request != null ? request.getJobDetailId() : "null"));
+        
         // Lấy thông tin người dùng hiện tại
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Authentication: " + (authentication != null ? authentication.getName() : "null"));
+        
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            System.out.println("User not authenticated!");
             return ApiResponseUtil.error("User not authenticated");
         }
 
         String username = authentication.getName();
         Optional<User> user = userService.getUserByTaiKhoan(username);
         if (!user.isPresent()) {
+            System.out.println("User not found: " + username);
             return ApiResponseUtil.error("User not found");
         }
+        System.out.println("User found: " + user.get().getTaiKhoan());
 
         JobDetail jobDetail = jobDetailService.getJobById(request.getJobDetailId());
         if (jobDetail == null) {
+            System.out.println("Job not found: " + request.getJobDetailId());
             return ApiResponseUtil.error("Job detail not found with id: " + request.getJobDetailId());
         }
+        System.out.println("Job found: " + jobDetail.getTieuDe());
 
         try {
             savedJobService.removeSavedJob(user.get(), jobDetail);
+            System.out.println("Unsaved successfully!");
             return ApiResponseUtil.success("Job removed from saved jobs successfully", null);
         } catch (Exception e) {
+            System.out.println("Error unsaving: " + e.getMessage());
+            e.printStackTrace();
             return ApiResponseUtil.error("Error removing saved job: " + e.getMessage());
         }
     }

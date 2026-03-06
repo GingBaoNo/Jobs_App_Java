@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,6 +22,7 @@ public class CvProfile {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ma_nguoi_tim_viec", nullable = false)
+    @JsonIgnore
     private User nguoiTimViec;
 
     @Column(name = "ten_ho_so", nullable = false)

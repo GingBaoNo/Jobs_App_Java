@@ -63,7 +63,7 @@
             android:id="@+id/btn_advanced_search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tìm kiếm nâng cao"
+            android:text="Lọc tìm kiếm"
             android:textSize="12sp"
             android:backgroundTint="@color/primary_500"
             android:paddingHorizontal="8dp"

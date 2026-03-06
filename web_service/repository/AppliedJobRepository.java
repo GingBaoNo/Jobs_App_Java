@@ -49,4 +49,27 @@ public interface AppliedJobRepository extends JpaRepository<AppliedJob, Integer>
     @Modifying
     @org.springframework.data.jpa.repository.Query("DELETE FROM AppliedJob a WHERE a.employee.maNguoiDung = :maNguoiTimViec")
     void deleteByMaNguoiTimViec(@org.springframework.data.repository.query.Param("maNguoiTimViec") Integer maNguoiTimViec);
+
+    /**
+     * Kiểm tra user đã ứng tuyển job chưa
+     */
+    boolean existsByEmployeeMaNguoiDungAndJobDetailMaCongViec(Integer maNguoiDung, Integer maCongViec);
+
+    /**
+     * Lấy danh sách ứng tuyển theo user ID
+     */
+    List<AppliedJob> findByEmployeeMaNguoiDung(Integer maNguoiDung);
+
+    /**
+     * Lấy danh sách ứng tuyển theo user ID với fetch join (tránh LazyLoadingException)
+     */
+    @Query("SELECT DISTINCT aj FROM AppliedJob aj " +
+           "JOIN FETCH aj.jobDetail jd " +
+           "JOIN FETCH jd.company c " +
+           "LEFT JOIN FETCH jd.workField " +
+           "LEFT JOIN FETCH jd.workType " +
+           "LEFT JOIN FETCH jd.experienceLevel " +
+           "LEFT JOIN FETCH aj.cvProfile " +
+           "WHERE aj.employee.maNguoiDung = :maNguoiDung")
+    List<AppliedJob> findByEmployeeMaNguoiDungWithDetails(@Param("maNguoiDung") Integer maNguoiDung);
 }

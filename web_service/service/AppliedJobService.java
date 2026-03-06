@@ -31,7 +31,7 @@ public class AppliedJobService {
     }
     
     public List<AppliedJob> getAppliedJobsByEmployee(User employee) {
-        return appliedJobRepository.findByEmployee(employee);
+        return appliedJobRepository.findByEmployeeMaNguoiDungWithDetails(employee.getMaNguoiDung());
     }
     
     public List<AppliedJob> getAppliedJobsByJobDetail(JobDetail jobDetail) {

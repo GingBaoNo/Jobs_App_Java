@@ -16,7 +16,11 @@ import java.util.List;
 
 @Repository
 public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
-    
+
+    // Lấy tất cả việc làm còn hạn (không cần điều kiện duyệt) - Dành cho API public
+    @Query("SELECT j FROM JobDetail j WHERE j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE")
+    List<JobDetail> findJobsNotExpired();
+
     // Phương thức mới để lấy tất cả công việc đang hoạt động và còn hạn
     @Query("SELECT j FROM JobDetail j WHERE j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở' AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
     List<JobDetail> findActiveAndNotExpiredJobs();
@@ -161,6 +165,7 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
                                            @Param("maxSalary") Integer maxSalary);
 
     // Thêm các phương thức tìm kiếm theo vị trí công việc và cấp độ kinh nghiệm
+    // Lưu ý: Không kiểm tra trangThaiDuyet để cho phép hiển thị cả jobs 'Chờ duyệt' khi test
     @Query("SELECT j FROM JobDetail j " +
            "LEFT JOIN j.company c " +
            "LEFT JOIN j.workField wf " +
@@ -173,7 +178,6 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
            "AND (:experienceLevel IS NULL OR el.maCapDo = :experienceLevel) " +
            "AND (:workType IS NULL OR wt.maHinhThuc = :workType) " +
            "AND (:workDiscipline IS NULL OR EXISTS (SELECT 1 FROM JobPosition jp2 WHERE jp2.maViTri = j.jobPosition.maViTri AND jp2.workDiscipline.maNganh = :workDiscipline)) " +
-           "AND j.trangThaiDuyet = 'Đã duyệt' " +
            "AND j.trangThaiTinTuyen = 'Mở' " +
            "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE) ")
     List<JobDetail> findByWorkFieldAndDisciplineAndPositionAndExperience(@Param("keyword") String keyword,
@@ -220,7 +224,7 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
                                                                                                                  @Param("workType") Integer workType,
                                                                                                                  org.springframework.data.domain.Pageable pageable);
 
-    // Tìm kiếm nâng cao có phân trang với nhiều tiêu chí - Đã thêm điều kiện lọc ngày hết hạn
+    // Tìm kiếm nâng cao có phân trang với nhiều tiêu chí (KHÔNG áp dụng điều kiện trạng thái)
     @Query(value = "SELECT j FROM JobDetail j " +
            "LEFT JOIN j.company c " +
            "LEFT JOIN j.workField wf " +
@@ -233,10 +237,7 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
            "AND (:experienceLevel IS NULL OR el.maCapDo = :experienceLevel) " +
            "AND (:workType IS NULL OR wt.maHinhThuc = :workType) " +
            "AND (:minSalary IS NULL OR j.luong >= :minSalary) " +
-           "AND (:maxSalary IS NULL OR j.luong <= :maxSalary) " +
-           "AND j.trangThaiDuyet = 'Đã duyệt' " +
-           "AND j.trangThaiTinTuyen = 'Mở' " +
-           "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE) ",
+           "AND (:maxSalary IS NULL OR j.luong <= :maxSalary) ",
            countQuery = "SELECT COUNT(j) FROM JobDetail j " +
            "LEFT JOIN j.workField wf " +
            "LEFT JOIN j.jobPosition jp " +
@@ -248,9 +249,7 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
            "AND (:experienceLevel IS NULL OR el.maCapDo = :experienceLevel) " +
            "AND (:workType IS NULL OR wt.maHinhThuc = :workType) " +
            "AND (:minSalary IS NULL OR j.luong >= :minSalary) " +
-           "AND (:maxSalary IS NULL OR j.luong <= :maxSalary) " +
-           "AND j.trangThaiDuyet = 'Đã duyệt' " +
-           "AND j.trangThaiTinTuyen = 'Mở' ")
+           "AND (:maxSalary IS NULL OR j.luong <= :maxSalary) ")
     org.springframework.data.domain.Page<JobDetail> findByKeywordAndFiltersAdvancedWithPaging(@Param("keyword") String keyword,
                                                                                              @Param("workField") Integer workField,
                                                                                              @Param("workDiscipline") Integer workDiscipline,
@@ -261,39 +260,39 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
                                                                                              @Param("maxSalary") Integer maxSalary,
                                                                                              org.springframework.data.domain.Pageable pageable);
 
-    // Tìm kiếm theo vị trí công việc - Đã thêm điều kiện lọc công việc hết hạn
+    // Tìm kiếm theo vị trí công việc - Không kiểm tra trạng thái duyệt
     @Query("SELECT j FROM JobDetail j WHERE j.jobPosition = :jobPosition " +
-           "AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
            "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
     List<JobDetail> findByJobPosition(JobPosition jobPosition);
 
-    // Tìm kiếm theo ID vị trí công việc - Đã thêm điều kiện lọc công việc hết hạn
+    // Tìm kiếm theo ID vị trí công việc - Không kiểm tra trạng thái duyệt
     @Query("SELECT j FROM JobDetail j WHERE j.jobPosition.maViTri = :maViTri " +
-           "AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
            "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
     List<JobDetail> findByJobPosition_MaViTri(Integer maViTri);
 
-    // Tìm kiếm theo cấp độ kinh nghiệm - Đã thêm điều kiện lọc công việc hết hạn
+    // Tìm kiếm theo cấp độ kinh nghiệm - Không kiểm tra trạng thái duyệt
     @Query("SELECT j FROM JobDetail j WHERE j.experienceLevel = :experienceLevel " +
-           "AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
            "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
     List<JobDetail> findByExperienceLevel(ExperienceLevel experienceLevel);
 
-    // Tìm kiếm theo ID cấp độ kinh nghiệm - Đã thêm điều kiện lọc công việc hết hạn
+    // Tìm kiếm theo ID cấp độ kinh nghiệm - Không kiểm tra trạng thái duyệt
     @Query("SELECT j FROM JobDetail j WHERE j.experienceLevel.maCapDo = :maCapDo " +
-           "AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
            "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
     List<JobDetail> findByExperienceLevel_MaCapDo(Integer maCapDo);
 
-    // Tìm kiếm theo ID lĩnh vực - Đã thêm điều kiện lọc công việc hết hạn
+    // Tìm kiếm theo ID lĩnh vực - Không kiểm tra trạng thái duyệt
     @Query("SELECT j FROM JobDetail j WHERE j.workField.maLinhVuc = :maLinhVuc " +
-           "AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
            "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
     List<JobDetail> findByWorkField_MaLinhVuc(Integer maLinhVuc);
 
-    // Tìm kiếm theo ID hình thức làm việc - Đã thêm điều kiện lọc công việc hết hạn
+    // Tìm kiếm theo ID hình thức làm việc - Không kiểm tra trạng thái duyệt
     @Query("SELECT j FROM JobDetail j WHERE j.workType.maHinhThuc = :maHinhThuc " +
-           "AND j.trangThaiDuyet = 'Đã duyệt' AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
            "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
     List<JobDetail> findByWorkType_MaHinhThuc(Integer maHinhThuc);
 
@@ -329,4 +328,48 @@ public interface JobDetailRepository extends JpaRepository<JobDetail, Integer> {
 
     // Phương thức đếm số lượng công việc theo trạng thái
     int countByTrangThaiDuyetAndTrangThaiTinTuyen(@Param("trangThaiDuyet") String trangThaiDuyet, @Param("trangThaiTinTuyen") String trangThaiTinTuyen);
+
+    /**
+     * Tìm job theo lĩnh vực, loại trừ các job đã biết
+     * Dùng cho gợi ý việc làm
+     */
+    @Query("SELECT j FROM JobDetail j " +
+           "JOIN FETCH j.workField wf " +
+           "LEFT JOIN FETCH j.company c " +
+           "LEFT JOIN FETCH j.jobPosition jp " +
+           "LEFT JOIN FETCH j.experienceLevel el " +
+           "WHERE wf.maLinhVuc IN :fieldIds " +
+           "AND j.maCongViec NOT IN :excludeJobIds " +
+           "AND j.trangThaiDuyet = 'Đã duyệt' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE)")
+    List<JobDetail> findByWorkFieldMaLinhVucInAndMaCongViecNotIn(
+            @Param("fieldIds") List<Integer> fieldIds,
+            @Param("excludeJobIds") List<Integer> excludeJobIds);
+
+    /**
+     * Lấy tất cả job đang hoạt động
+     */
+    @Query("SELECT j FROM JobDetail j " +
+           "LEFT JOIN FETCH j.company c " +
+           "LEFT JOIN FETCH j.workField wf " +
+           "LEFT JOIN FETCH j.jobPosition jp " +
+           "LEFT JOIN FETCH j.experienceLevel el " +
+           "WHERE j.trangThaiDuyet = 'Đã duyệt' " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE) " +
+           "ORDER BY j.ngayDang DESC")
+    List<JobDetail> findActiveJobs();
+
+    /**
+     * Tìm top job phổ biến
+     */
+    @Query("SELECT j FROM JobDetail j " +
+           "LEFT JOIN FETCH j.company c " +
+           "WHERE j.trangThaiDuyet = :trangThaiDuyet " +
+           "AND j.trangThaiTinTuyen = 'Mở' " +
+           "AND (j.ngayKetThucTuyenDung IS NULL OR j.ngayKetThucTuyenDung >= CURRENT_DATE) " +
+           "ORDER BY j.luotXem DESC, j.ngayDang DESC")
+    List<JobDetail> findTop20ByTrangThaiDuyetOrderByLuotXemDescNgayDangDesc(
+            @Param("trangThaiDuyet") String trangThaiDuyet, Pageable pageable);
 }

@@ -1194,8 +1194,12 @@ public class JobDetailFragment extends Fragment {
     private void unsaveJob() {
         // Gọi API hủy lưu công việc
         ApiService apiService = ApiClient.getApiService();
-        
-        Call<ApiResponse> call = apiService.unsaveJob(jobId);
+
+        // Tạo request object
+        ApiService.SaveJobRequest request = new ApiService.SaveJobRequest();
+        request.setJobDetailId(jobId);
+
+        Call<ApiResponse> call = apiService.unsaveJob(request);
         call.enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
@@ -1229,7 +1233,7 @@ public class JobDetailFragment extends Fragment {
             updateSaveButtonState();
             return;
         }
-        
+
         // Kiểm tra trạng thái lưu công việc
         ApiService apiService = ApiClient.getApiService();
 
@@ -1240,9 +1244,25 @@ public class JobDetailFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        // Dữ liệu trả về là boolean cho biết công việc đã được lưu hay chưa
-                        if (apiResponse.getData() instanceof Boolean) {
-                            isJobSaved = (Boolean) apiResponse.getData();
+                        // Dữ liệu trả về là Map với isSaved và savedJobId
+                        if (apiResponse.getData() instanceof java.util.Map) {
+                            java.util.Map<String, Object> dataMap = (java.util.Map<String, Object>) apiResponse.getData();
+                            if (dataMap.containsKey("isSaved")) {
+                                Object isSavedObj = dataMap.get("isSaved");
+                                if (isSavedObj instanceof Boolean) {
+                                    isJobSaved = (Boolean) isSavedObj;
+                                }
+                            }
+                            if (dataMap.containsKey("savedJobId")) {
+                                Object savedJobIdObj = dataMap.get("savedJobId");
+                                if (savedJobIdObj != null) {
+                                    if (savedJobIdObj instanceof Integer) {
+                                        savedJobId = (Integer) savedJobIdObj;
+                                    } else if (savedJobIdObj instanceof Double) {
+                                        savedJobId = ((Double) savedJobIdObj).intValue();
+                                    }
+                                }
+                            }
                             updateSaveButtonState();
                         }
                     }

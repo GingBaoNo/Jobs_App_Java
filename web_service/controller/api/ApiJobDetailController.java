@@ -387,38 +387,14 @@ public class ApiJobDetailController {
             companyInfo.put("viDo", company.getViDo());
             jobMap.put("company", companyInfo);
         }
-        // Xử lý workField - tạo Map để tránh circular reference
-        if (job.getWorkField() != null) {
-            Map<String, Object> workFieldInfo = new HashMap<>();
-            workFieldInfo.put("maLinhVuc", job.getWorkField().getMaLinhVuc());
-            workFieldInfo.put("tenLinhVuc", job.getWorkField().getTenLinhVuc());
-            jobMap.put("workField", workFieldInfo);
-        } else {
-            jobMap.put("workField", null);
-        }
-        // Xử lý workType
-        if (job.getWorkType() != null) {
-            Map<String, Object> workTypeInfo = new HashMap<>();
-            workTypeInfo.put("maHinhThuc", job.getWorkType().getMaHinhThuc());
-            workTypeInfo.put("tenHinhThuc", job.getWorkType().getTenHinhThuc());
-            jobMap.put("workType", workTypeInfo);
-        } else {
-            jobMap.put("workType", null);
-        }
+        jobMap.put("workField", job.getWorkField());
+        jobMap.put("workType", job.getWorkType());
         // Thêm các trường mới: jobPosition và experienceLevel
         if (job.getJobPosition() != null) {
             Map<String, Object> jobPositionInfo = new HashMap<>();
             jobPositionInfo.put("maViTri", job.getJobPosition().getMaViTri());
             jobPositionInfo.put("tenViTri", job.getJobPosition().getTenViTri());
-            // Xử lý workDiscipline trong jobPosition
-            if (job.getJobPosition().getWorkDiscipline() != null) {
-                Map<String, Object> disciplineInfo = new HashMap<>();
-                disciplineInfo.put("maNganh", job.getJobPosition().getWorkDiscipline().getMaNganh());
-                disciplineInfo.put("tenNganh", job.getJobPosition().getWorkDiscipline().getTenNganh());
-                jobPositionInfo.put("workDiscipline", disciplineInfo);
-            } else {
-                jobPositionInfo.put("workDiscipline", null);
-            }
+            jobPositionInfo.put("workDiscipline", job.getJobPosition().getWorkDiscipline());
             jobMap.put("jobPosition", jobPositionInfo);
         } else {
             jobMap.put("jobPosition", null);

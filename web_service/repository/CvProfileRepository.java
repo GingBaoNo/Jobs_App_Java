@@ -21,4 +21,9 @@ public interface CvProfileRepository extends JpaRepository<CvProfile, Integer> {
     @Modifying
     @org.springframework.data.jpa.repository.Query("DELETE FROM CvProfile c WHERE c.nguoiTimViec.maNguoiDung = :maNguoiTimViec")
     void deleteByMaNguoiTimViec(@org.springframework.data.repository.query.Param("maNguoiTimViec") Integer maNguoiTimViec);
+
+    /**
+     * Lấy CV theo user ID
+     */
+    List<CvProfile> findByNguoiTimViecMaNguoiDung(Integer maNguoiDung);
 }

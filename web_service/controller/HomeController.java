@@ -10,6 +10,7 @@ import com.example.demo.service.UserService;
 import com.example.demo.service.JobDetailService;
 import com.example.demo.service.WorkFieldService;
 import com.example.demo.service.WorkTypeService;
+import com.example.demo.service.CompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +20,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class HomeController {
@@ -40,29 +45,80 @@ public class HomeController {
 
     @Autowired
     private WorkTypeService workTypeService;
+    
+    @Autowired
+    private CompanyService companyService;
 
     @GetMapping("/")
     public String home(Model model, Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
-            // Nếu người dùng đã đăng nhập, chuyển hướng dựa trên vai trò
-            String username = authentication.getName();
-            User user = userService.getUserByTaiKhoan(username).orElse(null);
-            if (user != null) {
-                String roleName = user.getRole().getTenVaiTro(); // Lấy tên vai trò từ entity Role
-                if ("NTD".equals(roleName)) {
-                    return "redirect:/employer/dashboard";
-                } else if ("ADMIN".equals(roleName)) {
-                    return "redirect:/admin/dashboard";
-                }
-                // Các vai trò khác (ví dụ: NV nếu vẫn còn) sẽ không bị redirect ở đây
-                // nhưng giao diện của index.html sẽ được thay đổi để không phục vụ NV nữa.
+        try {
+            // Dữ liệu cho trang chủ
+            model.addAttribute("title", "Tìm Việc Làm Nhanh Chóng - Kết Nối Nhà Tuyển Dụng Và Ứng Viên");
+
+            // Thống kê
+            List<JobDetail> allJobs = jobDetailService.getAllJobs();
+            long totalJobs = allJobs != null ? allJobs.size() : 0;
+            model.addAttribute("totalJobs", totalJobs);
+            System.out.println("Total jobs: " + totalJobs);
+
+            long totalCompanies = companyService.getAllCompanies() != null ? companyService.getAllCompanies().size() : 0;
+            model.addAttribute("totalCompanies", totalCompanies);
+            System.out.println("Total companies: " + totalCompanies);
+
+            // Số lượng ứng viên (người dùng vai trò NV)
+            long totalApplicants = userService.getAllUsers().stream()
+                .filter(u -> u.getRole() != null && "NV".equals(u.getRole().getTenVaiTro()))
+                .count();
+            model.addAttribute("totalApplicants", totalApplicants);
+            System.out.println("Total applicants: " + totalApplicants);
+
+            // Số người đã tìm được việc (ước lượng)
+            model.addAttribute("totalEmployed", totalApplicants > 0 ? totalApplicants * 60 / 100 : 0);
+
+            // Việc làm nổi bật (đã duyệt)
+            List<JobDetail> featuredJobs = jobDetailService.getJobsByTrangThaiDuyet("Đã duyệt");
+            model.addAttribute("featuredJobs", featuredJobs != null ? featuredJobs : new java.util.ArrayList<>());
+            System.out.println("Featured jobs: " + (featuredJobs != null ? featuredJobs.size() : 0));
+
+            // Lĩnh vực phổ biến
+            List<WorkField> workFields = workFieldService.getAllWorkFields();
+            model.addAttribute("workFields", workFields != null ? workFields : new java.util.ArrayList<>());
+            System.out.println("Work fields: " + (workFields != null ? workFields.size() : 0));
+
+            // Hình thức làm việc
+            List<WorkType> workTypes = workTypeService.getAllWorkTypes();
+            model.addAttribute("workTypes", workTypes != null ? workTypes : new java.util.ArrayList<>());
+
+            // Top lĩnh vực có nhiều việc làm
+            if (allJobs != null && !allJobs.isEmpty()) {
+                Map<WorkField, Long> jobsByField = allJobs.stream()
+                    .filter(job -> job.getWorkField() != null)
+                    .collect(Collectors.groupingBy(JobDetail::getWorkField, Collectors.counting()));
+
+                List<Map.Entry<WorkField, Long>> topFields = jobsByField.entrySet().stream()
+                    .sorted(Map.Entry.<WorkField, Long>comparingByValue().reversed())
+                    .limit(8)
+                    .collect(Collectors.toList());
+                model.addAttribute("topFields", topFields);
+                System.out.println("Top fields: " + topFields.size());
+            } else {
+                model.addAttribute("topFields", new java.util.ArrayList<>());
             }
+
+        } catch (Exception e) {
+            System.err.println("Error loading home page data: " + e.getMessage());
+            e.printStackTrace();
+            // Vẫn return trang chủ ngay cả khi có lỗi
+            model.addAttribute("totalJobs", 0);
+            model.addAttribute("totalCompanies", 0);
+            model.addAttribute("totalApplicants", 0);
+            model.addAttribute("totalEmployed", 0);
+            model.addAttribute("featuredJobs", new java.util.ArrayList<>());
+            model.addAttribute("workFields", new java.util.ArrayList<>());
+            model.addAttribute("workTypes", new java.util.ArrayList<>());
+            model.addAttribute("topFields", new java.util.ArrayList<>());
         }
 
-        // Nếu chưa đăng nhập, hiển thị trang chủ mới cho NTD và Admin
-        model.addAttribute("title", "Chào mừng đến với Web Service Tuyển Dụng");
-        // Có thể truyền thêm dữ liệu nếu cần cho trang chủ công khai (thường ít có)
-        // Ví dụ: Thống kê số lượng công ty đang hoạt động, hoặc số lượng NTD đã đăng ký?
         return "index";
     }
 
@@ -118,28 +174,5 @@ public class HomeController {
             model.addAttribute("roles", roleService.getAllRoles());
             return "auth/register";
         }
-    }
-
-    // Trang hồ sơ - sẽ chuyển hướng tùy theo vai trò người dùng
-    @GetMapping("/profile")
-    public String profile(Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            User user = userService.getUserByTaiKhoan(username).orElse(null);
-            if (user != null) {
-                String roleName = user.getRole().getTenVaiTro();
-                if ("NTD".equals(roleName)) {
-                    return "redirect:/employer/dashboard";
-                } else if ("ADMIN".equals(roleName)) {
-                    return "redirect:/admin/dashboard";
-                } else if ("NV".equals(roleName)) {
-                    // Trả về trang thông báo nếu là người tìm việc
-                    return "employee-not-supported";
-                }
-                // Các vai trò khác (nếu có) có thể được xử lý nếu cần
-            }
-        }
-        // Nếu không xác thực được hoặc không tìm thấy người dùng, quay về trang chủ
-        return "redirect:/";
     }
 }

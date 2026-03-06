@@ -47,9 +47,12 @@ public class ProfileService {
         // Đồng bộ thông tin sang hồ sơ CV mặc định nếu có
         // Chỉ đồng bộ nếu chưa có flag tránh vòng lặp
         if (!Boolean.TRUE.equals(syncingToCv.get())) {
-            syncingToCv.set(true);
-            syncProfileToDefaultCvProfile(updatedProfile);
-            syncingToCv.set(false);
+            try {
+                syncingToCv.set(true);
+                syncProfileToDefaultCvProfile(updatedProfile);
+            } finally {
+                syncingToCv.remove();
+            }
         }
 
         return updatedProfile;

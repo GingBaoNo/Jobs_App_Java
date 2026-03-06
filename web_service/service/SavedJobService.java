@@ -21,7 +21,8 @@ public class SavedJobService {
     }
     
     public List<SavedJob> getSavedJobsByUser(User user) {
-        return savedJobRepository.findByUser(user);
+        // Sử dụng fetch join để tránh LazyLoadingException
+        return savedJobRepository.findByUserMaNguoiDungWithDetails(user.getMaNguoiDung());
     }
     
     public List<SavedJob> getSavedJobsByJobDetail(JobDetail jobDetail) {

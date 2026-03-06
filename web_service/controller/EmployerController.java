@@ -398,7 +398,6 @@ public class EmployerController {
     @PostMapping("/employer/applicants/{id}/cv")
     public String updateApplicantStatus(@PathVariable Integer id,
                                    @RequestParam String status,
-                                   @RequestParam(required = false) Byte rating,
                                    Authentication authentication, Model model) {
         User user = userService.getUserByTaiKhoan(authentication.getName()).orElse(null);
         if (user == null) {
@@ -428,9 +427,6 @@ public class EmployerController {
 
         // Cập nhật trạng thái
         appliedJob.setTrangThaiUngTuyen(status);
-        if (rating != null) {
-            appliedJob.setDanhGiaNtd(rating);
-        }
 
         appliedJobService.updateAppliedJob(appliedJob);
 

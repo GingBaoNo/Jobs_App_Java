@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -195,7 +196,13 @@ public class ApiChatController {
 
         // Lấy danh sách admin và các NTD mà người dùng đã ứng tuyển
         List<UserWithLastMessage> availableChats = chatService.getAvailableChatsForApplicant(currentUser.get());
-        return ApiResponseUtil.success("Danh sách người trò chuyện cho người tìm việc đã được tải thành công", availableChats);
+        
+        // Thêm thông tin current user vào response
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("currentUser", currentUser.get());
+        response.put("availableChats", availableChats);
+        
+        return ApiResponseUtil.success("Danh sách người trò chuyện cho người tìm việc đã được tải thành công", response);
     }
 
     // API để gửi tin nhắn
