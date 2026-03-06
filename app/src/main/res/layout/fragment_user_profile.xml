@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F6F9"
+    android:background="@color/gray_50"
     tools:context=".fragments.UserProfileFragment">
 
     <!-- Header (Tiêu đề trang) -->
@@ -144,7 +144,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE"
+                            android:background="@color/gray_200"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"/>
 
@@ -295,7 +295,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE"
+                            android:background="@color/gray_200"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"/>
 
@@ -615,7 +615,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE"
+                            android:background="@color/gray_200"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"/>
 
@@ -655,7 +655,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#EEEEEE"
+                            android:background="@color/gray_200"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"/>
 

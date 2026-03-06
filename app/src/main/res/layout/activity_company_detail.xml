@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F6F9"
+    android:background="@color/gray_50"
     tools:context=".fragments.CompanyDetailFragment">
 
     <!-- 1. App Bar (Header) - Using Toolbar for standard Android app bar -->

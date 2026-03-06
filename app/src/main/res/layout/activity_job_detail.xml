@@ -154,7 +154,7 @@
                         android:textStyle="bold"
                         android:textColor="#333333"
                         android:layout_marginBottom="8dp"/>
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginBottom="12dp"/>
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_200" android:layout_marginBottom="12dp"/>
 
                     <!-- Nội dung mô tả -->
                     <TextView
@@ -239,7 +239,7 @@
                         android:textStyle="bold"
                         android:textColor="#333333"
                         android:layout_marginBottom="8dp"/>
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginBottom="12dp"/>
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_200" android:layout_marginBottom="12dp"/>
 
                     <!-- Danh sách Yêu cầu -->
                     <LinearLayout
@@ -275,7 +275,7 @@
                         android:textStyle="bold"
                         android:textColor="#333333"
                         android:layout_marginBottom="8dp"/>
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginBottom="12dp"/>
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_200" android:layout_marginBottom="12dp"/>
 
                     <!-- Danh sách Quyền lợi -->
                     <LinearLayout

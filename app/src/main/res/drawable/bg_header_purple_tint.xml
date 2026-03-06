@@ -3,7 +3,7 @@
     <item android:drawable="@drawable/photo" />
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#995E35B1" />
+            <solid android:color="#991565C0" />
         </shape>
     </item>
 </layer-list>
