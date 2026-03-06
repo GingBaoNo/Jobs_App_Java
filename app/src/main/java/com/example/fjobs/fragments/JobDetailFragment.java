@@ -1196,7 +1196,7 @@ public class JobDetailFragment extends Fragment {
         ApiService apiService = ApiClient.getApiService();
 
         // Tạo request object
-        ApiService.SaveJobRequest request = new ApiService.SaveJobRequest();
+        ApiService.UnsaveJobRequest request = new ApiService.UnsaveJobRequest();
         request.setJobDetailId(jobId);
 
         Call<ApiResponse> call = apiService.unsaveJob(request);

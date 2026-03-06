@@ -95,16 +95,24 @@ public class ApiSavedJobController {
     public ResponseEntity<?> unsaveJob(@RequestBody UnsaveJobRequest request) {
         return doUnsaveJob(request);
     }
-    
-    // Support POST method cho Android apps gửi dễ hơn
+
+    // Support POST method cho Android apps gửi dễ hơn (nhận JSON body)
     @PostMapping("/unsave")
     public ResponseEntity<?> unsaveJobPost(@RequestBody UnsaveJobRequest request) {
         return doUnsaveJob(request);
     }
-    
+
+    // Support POST với path variable (Android có thể gửi @Body int)
+    @PostMapping("/unsave/{jobId}")
+    public ResponseEntity<?> unsaveJobByPath(@PathVariable Integer jobId) {
+        UnsaveJobRequest request = new UnsaveJobRequest();
+        request.setJobDetailId(jobId);
+        return doUnsaveJob(request);
+    }
+
     // Support DELETE với path variable
     @DeleteMapping("/{jobId}")
-    public ResponseEntity<?> unsaveJobByPath(@PathVariable Integer jobId) {
+    public ResponseEntity<?> unsaveJobByPathDelete(@PathVariable Integer jobId) {
         UnsaveJobRequest request = new UnsaveJobRequest();
         request.setJobDetailId(jobId);
         return doUnsaveJob(request);

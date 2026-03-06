@@ -304,7 +304,7 @@ public interface ApiService {
     Call<ApiResponse> saveJob(@Body SaveJobRequest request);
 
     @POST("v1/saved-jobs/unsave")
-    Call<ApiResponse> unsaveJob(@Body SaveJobRequest request);
+    Call<ApiResponse> unsaveJob(@Body UnsaveJobRequest request);
 
     @GET("v1/saved-jobs/check/{jobId}")
     Call<ApiResponse> checkIfJobSaved(@Path("jobId") int jobId);
