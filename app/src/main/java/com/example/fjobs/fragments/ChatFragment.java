@@ -27,7 +27,6 @@ import retrofit2.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map;
 
 public class ChatFragment extends Fragment implements ChatUserAdapter.OnChatUserClickListener {
 
@@ -87,8 +86,10 @@ public class ChatFragment extends Fragment implements ChatUserAdapter.OnChatUser
                     showLoading(false);
 
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        // Xử lý dữ liệu trả về
-                        List<ChatUser> chatUsers = (List<ChatUser>) response.body().getData();
+                        // Xử lý dữ liệu trả về - deserialize từ List<Map> sang List<ChatUser>
+                        Object data = response.body().getData();
+                        List<ChatUser> chatUsers = parseChatUsersFromData(data);
+                        
                         if (chatUsers != null && !chatUsers.isEmpty()) {
                             chatUserList.clear();
                             chatUserList.addAll(chatUsers);
@@ -125,26 +126,13 @@ public class ChatFragment extends Fragment implements ChatUserAdapter.OnChatUser
                         android.util.Log.d("ChatFragment", "Response success: " + response.body().isSuccess());
 
                         if (response.body().isSuccess()) {
-                            // Xử lý dữ liệu trả về
+                            // Xử lý dữ liệu trả về - Backend trả về Map chứa currentUser và availableChats
                             Object data = response.body().getData();
                             android.util.Log.d("ChatFragment", "Raw data type: " + (data != null ? data.getClass().getName() : "null"));
 
-                            // Deserialize dữ liệu từ JSON sang List<ChatUser>
-                            List<ChatUser> chatUsers;
-                            if (data instanceof List) {
-                                List<Map<String, Object>> rawList = (List<Map<String, Object>>) data;
-                                chatUsers = new java.util.ArrayList<>();
-                                for (Map<String, Object> item : rawList) {
-                                    // Chuyển đổi từng item trong list sang ChatUser
-                                    ChatUser chatUser = new com.google.gson.Gson().fromJson(
-                                        new com.google.gson.Gson().toJson(item),
-                                        ChatUser.class
-                                    );
-                                    chatUsers.add(chatUser);
-                                }
-                            } else {
-                                chatUsers = null;
-                            }
+                            // Sử dụng helper method để parse dữ liệu
+                            List<ChatUser> chatUsers = parseChatUsersFromData(data);
+
                             if (chatUsers != null) {
                                 android.util.Log.d("ChatFragment", "Number of chat users: " + chatUsers.size());
 
@@ -212,7 +200,8 @@ public class ChatFragment extends Fragment implements ChatUserAdapter.OnChatUser
                 List<ChatUser> combinedChatUsers = new ArrayList<>();
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    List<ChatUser> adminUsers = (List<ChatUser>) response.body().getData();
+                    Object data = response.body().getData();
+                    List<ChatUser> adminUsers = parseChatUsersFromData(data);
                     if (adminUsers != null) {
                         combinedChatUsers.addAll(adminUsers);
                     }
@@ -225,7 +214,8 @@ public class ChatFragment extends Fragment implements ChatUserAdapter.OnChatUser
                         showLoading(false);
 
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            List<ChatUser> applicantUsers = (List<ChatUser>) response.body().getData();
+                            Object data = response.body().getData();
+                            List<ChatUser> applicantUsers = parseChatUsersFromData(data);
                             if (applicantUsers != null) {
                                 combinedChatUsers.addAll(applicantUsers);
                             }
@@ -290,6 +280,49 @@ public class ChatFragment extends Fragment implements ChatUserAdapter.OnChatUser
                 .addToBackStack(null)
                 .commit();
         }
+    }
+
+    /**
+     * Helper method để parse dữ liệu từ response thành List<ChatUser>
+     * Backend có thể trả về List trực tiếp hoặc Map chứa availableChats
+     */
+    private List<ChatUser> parseChatUsersFromData(Object data) {
+        if (data == null) {
+            return null;
+        }
+        
+        List<ChatUser> chatUsers = null;
+        
+        if (data instanceof Map) {
+            // Backend trả về Map { currentUser: ..., availableChats: [...] }
+            Map<String, Object> dataMap = (Map<String, Object>) data;
+            Object availableChatsObj = dataMap.get("availableChats");
+            
+            if (availableChatsObj instanceof List) {
+                List<Map<String, Object>> rawList = (List<Map<String, Object>>) availableChatsObj;
+                chatUsers = new ArrayList<>();
+                for (Map<String, Object> item : rawList) {
+                    ChatUser chatUser = new com.google.gson.Gson().fromJson(
+                        new com.google.gson.Gson().toJson(item),
+                        ChatUser.class
+                    );
+                    chatUsers.add(chatUser);
+                }
+            }
+        } else if (data instanceof List) {
+            // Backend trả về List trực tiếp
+            List<Map<String, Object>> rawList = (List<Map<String, Object>>) data;
+            chatUsers = new ArrayList<>();
+            for (Map<String, Object> item : rawList) {
+                ChatUser chatUser = new com.google.gson.Gson().fromJson(
+                    new com.google.gson.Gson().toJson(item),
+                    ChatUser.class
+                );
+                chatUsers.add(chatUser);
+            }
+        }
+        
+        return chatUsers;
     }
 
     // Cập nhật lại dữ liệu khi quay lại fragment

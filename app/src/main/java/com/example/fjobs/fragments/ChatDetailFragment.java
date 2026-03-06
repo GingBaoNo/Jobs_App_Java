@@ -291,7 +291,7 @@ public class ChatDetailFragment extends Fragment implements WebSocketManager.Web
     @Override
     public void onDisconnected() {
         if (getActivity() != null) {
-            getActivity().runOnUiThread(() -> Toast.makeText(requireContext(), "Mất kết nối chat thời gian thực", Toast.LENGTH_SHORT).show());
+            //getActivity().runOnUiThread(() -> Toast.makeText(requireContext(), "Mất kết nối chat thời gian thực", Toast.LENGTH_SHORT).show());
         }
     }
 
